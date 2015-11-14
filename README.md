@@ -1,4 +1,4 @@
-# Microsoft Azure Mobile Apps
+# Microsoft Azure Mobile Apps: .NET Client SDK
 
 With Microsoft Azure Mobile Apps you can add a scalable backend to your connected client applications in minutes. To learn more, visit our [Developer Center](http://azure.microsoft.com/en-us/develop/mobile).
 
@@ -12,8 +12,8 @@ and [Windows Phone 8 apps](http://azure.microsoft.com/en-us/documentation/articl
 
 To get the source code of our SDKs and samples via **git** just type:
 
-    git clone https://github.com/Azure/azure-mobile-services.git
-    cd ./azure-mobile-services/
+    git clone https://github.com/Azure/azure-mobile-apps-net-client
+    cd ./azure-mobile-apps-net-client/
 
 ## Reference Documentation
 
