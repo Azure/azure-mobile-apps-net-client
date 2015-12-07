@@ -44,6 +44,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         protected async override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             Test.Log("    >>> {0} {1} {2}", request.Method, request.RequestUri, request.Content);
+            request.Headers.Add("If-Modified-Since", System.DateTime.UtcNow.ToString("r"));
             HttpResponseMessage response = await base.SendAsync(request, cancellationToken);
             Test.Log("    <<< {0} {1} {2}", response.StatusCode, response.ReasonPhrase, response.Content);
             return response;
