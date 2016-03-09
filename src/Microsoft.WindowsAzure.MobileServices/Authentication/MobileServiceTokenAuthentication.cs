@@ -53,7 +53,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <returns>
         /// Task that will complete with the response string when the user has finished authentication.
         /// </returns>
-        protected override Task<string> LoginAsyncOverride()
+        protected override Task<string> LoginAsyncOverride(string title = "")
         {
             string path = MobileServiceUrlBuilder.CombinePaths(LoginAsyncUriFragment, ProviderName);
             if (!string.IsNullOrEmpty(client.LoginUriPrefix))

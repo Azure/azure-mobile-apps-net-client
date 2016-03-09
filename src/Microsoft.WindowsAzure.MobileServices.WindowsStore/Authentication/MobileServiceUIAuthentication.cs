@@ -32,7 +32,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <returns>
         /// Task that will complete with the response string when the user has finished authentication.
         /// </returns>
-        protected override Task<string> LoginAsyncOverride()
+        protected override Task<string> LoginAsyncOverride(string title = "")
         {
             AuthenticationBroker broker = new AuthenticationBroker();
 

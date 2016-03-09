@@ -26,14 +26,19 @@ namespace Microsoft.WindowsAzure.MobileServices
             this.view = view;
         }
 
-        protected override Task<string> LoginAsyncOverride()
+        protected override Task<string> LoginAsyncOverride(string title = "")
         {
             var tcs = new TaskCompletionSource<string>();
 
             var auth = new WebRedirectAuthenticator(StartUri, EndUri);
+
             auth.ShowUIErrors = false;
             auth.ClearCookiesBeforeLogin = false;
-
+            if (!string.IsNullOrEmpty(title))
+            {
+                auth.Title = title;
+            }
+            
             UIViewController c = auth.GetUI();
 
             UIViewController controller = null;
