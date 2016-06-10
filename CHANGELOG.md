@@ -7,7 +7,7 @@
 - Nuget package updates [6bc545b](https://github.com/Azure/azure-mobile-apps-net-client/commit/6bc545b)
 
 ### Version 2.0.0
-- Azure Mobile Apps release
+- Azure Mobile Apps release 
 
 ### Version 2.0.0-beta
 - Support for Azure Mobile Apps
