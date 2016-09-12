@@ -58,7 +58,7 @@ namespace Microsoft.WindowsAzure.MobileServices
                 // set to an instance of IContractResolver that is not a 
                 // MobileServiceContractResolver. Therefore, we must check for 
                 // this condition and throw an exception as needed.
-                MobileServiceContractResolver contractResolver = 
+                MobileServiceContractResolver contractResolver =
                     base.ContractResolver as MobileServiceContractResolver;
                 if (contractResolver == null)
                 {
@@ -99,45 +99,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// </returns>
         internal JsonSerializer GetSerializerFromSettings()
         {
-            JsonSerializer serializer = new JsonSerializer();
-
-            // We do not set the JsonSerializer.Binder because it breaks our .Net4.5 
-            // release with Json.NET
-
-            // JsonSerializer will throw id ReferenceResolver is set to null
-            if (this.ReferenceResolver != null)
-            {
-                serializer.ReferenceResolver = this.ReferenceResolver;
-            }
-
-            // Add each of the converters
-            foreach (var converter in this.Converters)
-            {
-                serializer.Converters.Add(converter);
-            }
-
-            // Set all of the other settings on the serializer
-            serializer.CheckAdditionalContent = this.CheckAdditionalContent;
-            serializer.ConstructorHandling = this.ConstructorHandling;
-            serializer.Context = this.Context;
-            serializer.ContractResolver = this.ContractResolver;
-            serializer.Culture = this.Culture;
-            serializer.DateFormatHandling = this.DateFormatHandling;
-            serializer.DateParseHandling = this.DateParseHandling;
-            serializer.DateTimeZoneHandling = this.DateTimeZoneHandling;
-            serializer.DefaultValueHandling = this.DefaultValueHandling;
-            serializer.Error += this.Error;
-            serializer.Formatting = this.Formatting;
-            serializer.MaxDepth = this.MaxDepth;
-            serializer.MissingMemberHandling = this.MissingMemberHandling;
-            serializer.NullValueHandling = this.NullValueHandling;
-            serializer.ObjectCreationHandling = this.ObjectCreationHandling;
-            serializer.PreserveReferencesHandling = this.PreserveReferencesHandling;
-            serializer.ReferenceLoopHandling = this.ReferenceLoopHandling;
-            serializer.TraceWriter = this.TraceWriter;
-            serializer.TypeNameHandling = this.TypeNameHandling;
-
-            return serializer;
+            return JsonSerializer.Create(this);
         }
     }
 }

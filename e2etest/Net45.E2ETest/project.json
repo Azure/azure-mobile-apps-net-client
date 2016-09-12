@@ -1,0 +1,12 @@
+﻿{
+  "supports": {},
+  "dependencies": {
+    "SQLitePCLRaw.bundle_green": "1.0.0-pre20160901085507"
+  },
+  "frameworks": {
+    "net451": {}
+  },
+  "runtimes": {
+    "win-x86": {}
+  }
+}
