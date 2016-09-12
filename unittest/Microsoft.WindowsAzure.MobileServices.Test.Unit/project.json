@@ -1,0 +1,13 @@
+﻿{
+  "supports": {},
+  "dependencies": {
+    "Moq": "4.5.21"
+  },
+  "frameworks": {
+    "net45": {}
+  },
+  "runtimes":
+  {
+    "win":{}
+  }
+}

@@ -1,0 +1,13 @@
+﻿{
+  "dependencies": {
+    "Newtonsoft.Json": "9.0.1",
+    "SQLitePCLRaw.bundle_green": "1.0.0-pre20160901085507",
+    "Microsoft.OneDriveSDK": "1.1.47"
+  },
+  "frameworks": {
+    ".NETCore,Version=v4.5.1": {}
+  },
+  "runtimes": {
+    "win-x86": {}
+  }
+}

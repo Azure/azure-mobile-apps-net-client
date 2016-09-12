@@ -1,0 +1,12 @@
+﻿{
+  "supports": {},
+  "dependencies": {
+     "Newtonsoft.Json": "9.0.1"
+  },
+  "frameworks": {
+    "WindowsPhone,Version=8.1": {}
+  },
+  "runtimes": {
+    "win": {}
+  }
+}

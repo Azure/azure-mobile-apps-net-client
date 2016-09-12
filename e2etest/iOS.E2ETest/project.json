@@ -1,0 +1,12 @@
+﻿{
+  "dependencies": {
+    "Newtonsoft.Json": "9.0.1",
+    "SQLitePCLRaw.bundle_green": "1.0.0-pre20160901085507"
+  },
+  "frameworks": {
+    "Xamarin.iOS,Version=v1.0": {}
+  },
+  "runtimes": {
+    "win": {}
+  }
+}

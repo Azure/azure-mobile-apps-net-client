@@ -1,0 +1,12 @@
+﻿{
+  "dependencies": {
+     "Newtonsoft.Json": "9.0.1"
+  },
+  "frameworks": {
+    "WindowsPhoneApp,Version=8.1": {}
+  },
+  "runtimes": {
+    "win": {},
+    "win-x86": {}
+  }
+}

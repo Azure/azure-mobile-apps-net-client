@@ -20,3 +20,4 @@ unittest/**/AppPackages/*
 .vs/
 e2etest/*/project.lock.json
 e2etest/*/*.nuget.targets
+*.lock.json
