@@ -66,14 +66,9 @@ namespace Microsoft.WindowsAzure.MobileServices
             var file = Path.GetFileName(path);
 
             // This section is executed synchronously.
-            EnsureFileExistsAsync(folder, file).RunSynchronously();
+            StorageFolder folderRef = StorageFolder.GetFolderFromPathAsync(folder).AsTask().Result;
+            folderRef.CreateFileAsync(file, CreationCollisionOption.OpenIfExists).AsTask().Wait();
             // End of synchronous section
-        }
-
-        async Task EnsureFileExistsAsync(string folder, string file)
-        {
-            StorageFolder folderRef = await StorageFolder.GetFolderFromPathAsync(folder);
-            await folderRef.CreateFileAsync(file, CreationCollisionOption.OpenIfExists);
         }
     }
 }
