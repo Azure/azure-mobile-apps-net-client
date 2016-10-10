@@ -2,8 +2,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
 
+using System;
 using System.IO;
-using Windows.Foundation;
+using System.Threading.Tasks;
 using Windows.Storage;
 
 namespace Microsoft.WindowsAzure.MobileServices
@@ -65,26 +66,10 @@ namespace Microsoft.WindowsAzure.MobileServices
             var file = Path.GetFileName(path);
 
             // This section is executed synchronously.
-            StorageFolder folderRef;
-            IAsyncOperation<StorageFolder> getFolderOperation = StorageFolder.GetFolderFromPathAsync(folder);
-            try
-            {
-                folderRef = getFolderOperation.GetResults();
-            }
-            finally
-            {
-                getFolderOperation.Close();
-            }
+            StorageFolder folderRef = StorageFolder.GetFolderFromPathAsync(folder).AsTask().Result;
 
-            IAsyncOperation<StorageFile> createFileOperation = folderRef.CreateFileAsync(file, CreationCollisionOption.OpenIfExists);
-            try
-            {
-                createFileOperation.GetResults();
-            }
-            finally
-            {
-                createFileOperation.Close();
-            }
+            Task createFileTask = folderRef.CreateFileAsync(file, CreationCollisionOption.OpenIfExists).AsTask();
+            createFileTask.RunSynchronously();
             // End of synchronous section
         }
     }
