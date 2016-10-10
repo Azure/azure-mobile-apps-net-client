@@ -3,6 +3,7 @@
 // ----------------------------------------------------------------------------
 
 using System.IO;
+using Windows.Foundation;
 using Windows.Storage;
 
 namespace Microsoft.WindowsAzure.MobileServices
@@ -64,8 +65,26 @@ namespace Microsoft.WindowsAzure.MobileServices
             var file = Path.GetFileName(path);
 
             // This section is executed synchronously.
-            var sf = StorageFolder.GetFolderFromPathAsync(folder).GetResults();
-            sf.CreateFileAsync(file, CreationCollisionOption.OpenIfExists).GetResults();
+            StorageFolder folderRef;
+            IAsyncOperation<StorageFolder> getFolderOperation = StorageFolder.GetFolderFromPathAsync(folder);
+            try
+            {
+                folderRef = getFolderOperation.GetResults();
+            }
+            finally
+            {
+                getFolderOperation.Close();
+            }
+
+            IAsyncOperation<StorageFile> createFileOperation = folderRef.CreateFileAsync(file, CreationCollisionOption.OpenIfExists);
+            try
+            {
+                createFileOperation.GetResults();
+            }
+            finally
+            {
+                createFileOperation.Close();
+            }
             // End of synchronous section
         }
     }
