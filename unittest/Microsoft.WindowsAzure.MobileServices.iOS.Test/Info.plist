@@ -11,9 +11,7 @@
 		<string>UIInterfaceOrientationPortrait</string>
 	</array>
 	<key>MinimumOSVersion</key>
-	<string>5.2</string>
-	<key>NSMainNibFile</key>
-	<string></string>
+	<string>10.0</string>
 	<key>UIStatusBarTintParameters</key>
 	<dict>
 		<key>UINavigationBar</key>
