@@ -58,6 +58,29 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <param name="provider">
         /// Authentication provider to use.
         /// </param>
+        /// <param name="parameters">
+        /// Provider specific extra parameters that are sent as query string parameters to login endpoint.
+        /// </param>
+        /// <param name="customHeaders">
+        /// User specified custom headers to send with request
+        /// </param>
+        /// <returns>
+        /// Task that will complete when the user has finished authentication.
+        /// </returns>
+        public static Task<MobileServiceUser> LoginAsync(this IMobileServiceClient client, MobileServiceAuthenticationProvider provider, IDictionary<string, string> parameters, IDictionary<string, string> customHeaders)
+        {
+            return LoginAsync(client, provider.ToString(), parameters, customHeaders);
+        }
+
+        /// <summary>
+        /// Log a user into a Mobile Services application given a provider name.
+        /// </summary>
+        /// <param name="client">
+        /// The client.
+        /// </param>
+        /// <param name="provider">
+        /// Authentication provider to use.
+        /// </param>
         /// <returns>
         /// Task that will complete when the user has finished authentication.
         /// </returns>
@@ -78,12 +101,16 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <param name="parameters">
         /// Provider specific extra parameters that are sent as query string parameters to login endpoint.
         /// </param>
+        /// <param name="customHeaders">
+        /// User specified custom headers to send with request
+        /// </param>
         /// <returns>
         /// Task that will complete when the user has finished authentication.
         /// </returns>
-        public static Task<MobileServiceUser> LoginAsync(this IMobileServiceClient client, string provider, IDictionary<string, string> parameters)
+        public static Task<MobileServiceUser> LoginAsync(this IMobileServiceClient client, string provider, IDictionary<string, string> parameters, IDictionary<string, string> customHeaders)
         {
             MobileServiceUIAuthentication auth = new MobileServiceUIAuthentication(client, provider, parameters);
+            auth.SetCustomHeaders(customHeaders);
             return auth.LoginAsync();
         }
 
