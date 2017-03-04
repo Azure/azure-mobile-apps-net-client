@@ -162,13 +162,20 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// </param>
         /// <param name="features">
         /// Optional MobileServiceFeatures used for telemetry purpose.
-        /// </param>>
+        /// </param>
+        /// <param name="customHeaders">
+        /// Optional custom headers to send with request, if needed
+        /// </param>
         /// <returns>
         /// The content of the response as a string.
         /// </returns>
-        public async Task<string> RequestWithoutHandlersAsync(HttpMethod method, string uriPathAndQuery, MobileServiceUser user, string content = null, MobileServiceFeatures features = MobileServiceFeatures.None)
+        public async Task<string> RequestWithoutHandlersAsync(HttpMethod method, string uriPathAndQuery, MobileServiceUser user, string content = null, MobileServiceFeatures features = MobileServiceFeatures.None, IDictionary<string, string> customHeaders = null)
         {
             IDictionary<string, string> requestHeaders = FeaturesHelper.AddFeaturesHeader(requestHeaders: null, features: features);
+
+            if (customHeaders != null)
+                requestHeaders.Add(customHeaders);
+
             MobileServiceHttpResponse response = await this.RequestAsync(false, method, uriPathAndQuery, user, content, false, requestHeaders);
             return response.Content;
         }

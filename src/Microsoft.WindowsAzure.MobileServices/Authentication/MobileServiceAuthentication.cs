@@ -87,6 +87,16 @@ namespace Microsoft.WindowsAzure.MobileServices
         }
 
         /// <summary>
+        /// Set custom headers to be executed with requests
+        /// </summary>
+        /// <param name="customHeaders">Custom headers sent with the request as required by user.</param>
+        public void SetCustomHeaders(IDictionary<string, string> customHeaders)
+        {
+            if (customHeaders != null && customHeaders.Count > 0)
+                CustomHeaders = customHeaders;
+        }
+
+        /// <summary>
         /// The <see cref="MobileServiceClient"/> associated with this 
         /// <see cref="MobileServiceAuthentication"/> instance.
         /// </summary>
@@ -113,6 +123,11 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// Provider specific extra parameters that are sent as query string parameters to login endpoint.
         /// </summary>
         internal IDictionary<string, string> Parameters { get; private set; }
+
+        /// <summary>
+        /// Custom headers sent with the request as required by user.
+        /// </summary>
+        internal IDictionary<string, string> CustomHeaders { get; private set; }
 
         /// <summary>
         /// The start uri to use for authentication.

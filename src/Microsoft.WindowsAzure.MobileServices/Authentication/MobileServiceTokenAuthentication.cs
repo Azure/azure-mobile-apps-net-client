@@ -64,9 +64,9 @@ namespace Microsoft.WindowsAzure.MobileServices
             string pathAndQuery = MobileServiceUrlBuilder.CombinePathAndQuery(path, queryString);
             if (client.AlternateLoginHost != null)
             {
-                return client.AlternateAuthHttpClient.RequestWithoutHandlersAsync(HttpMethod.Post, pathAndQuery, client.CurrentUser, token.ToString());
+                return client.AlternateAuthHttpClient.RequestWithoutHandlersAsync(HttpMethod.Post, pathAndQuery, client.CurrentUser, token.ToString(), MobileServiceFeatures.None, CustomHeaders);
             }
-            return client.HttpClient.RequestWithoutHandlersAsync(HttpMethod.Post, pathAndQuery, client.CurrentUser, token.ToString());
+            return client.HttpClient.RequestWithoutHandlersAsync(HttpMethod.Post, pathAndQuery, client.CurrentUser, token.ToString(), MobileServiceFeatures.None, CustomHeaders);
         }
     }
 }

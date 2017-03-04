@@ -40,7 +40,7 @@ namespace Microsoft.WindowsAzure.MobileServices
             MobileServiceTokenAuthentication tokenAuth = new MobileServiceTokenAuthentication(thisClient,
                 MobileServiceAuthenticationProvider.MicrosoftAccount.ToString(),
                 token, parameters: null);
-
+            
             return tokenAuth.LoginAsync();
         }
     }
