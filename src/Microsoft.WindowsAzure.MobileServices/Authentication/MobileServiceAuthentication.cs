@@ -158,6 +158,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <returns>
         /// Task that will complete with the response string when the user has finished authentication.
         /// </returns>
-        protected abstract Task<string> LoginAsyncOverride();
+        protected abstract Task<string> LoginAsyncOverride(string title = "");
+        
     }
 }

@@ -17,13 +17,22 @@ namespace Microsoft.WindowsAzure.MobileServices
 
         private Context context;
 
-        protected override Task<string> LoginAsyncOverride()
+        protected void Logout()
         {
+            WebAuthenticator.ClearCookies();
+        }
+
+        protected override Task<string> LoginAsyncOverride(string title = "")
+        { 
             var tcs = new TaskCompletionSource<string>();
 
             var auth = new WebRedirectAuthenticator (StartUri, EndUri);
             auth.ShowUIErrors = false;
             auth.ClearCookiesBeforeLogin = false;
+            if (!string.IsNullOrEmpty(title))
+            {
+                auth.Title = title;
+            }
 
             Intent intent = auth.GetUI (this.context);
 
