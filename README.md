@@ -1,6 +1,6 @@
 # Azure Mobile Apps: .NET Client SDK
 
-With Azure Mobile Apps you can add a scalable backend to your connected client applications in minutes. To learn more, visit our [Developer Center](http://azure.microsoft.com/en-us/develop/mobile) and the [App Service Mobile learning path](https://azure.microsoft.com/en-us/documentation/learning-paths/appservice-mobileapps/).
+With Azure Mobile Apps you can add a scalable backend to your connected client applications in minutes. 
 
 ## Getting Started
 
@@ -17,40 +17,31 @@ To get the source code of our SDKs and samples via **git** just type:
 
 ## Supported platforms
 
+* .NET Standard 1.1
+* .NET Standard 1.4
 * Xamarin Android releases for API 19 through 24 (KitKat through Nougat)
 * Xamarin iOS releases for iOS versions 8.0 through 10.0
 * Universal Windows Platform
-* Windows Phone 8.1
-* Windows Phone 8.0
 
 Other versions may work.  We do not test them and thus cannot support them.
-
-**ADVANCED WARNING**: We intend to move to .NETStandard 1.1 in the next major release (v4.0.0).  At that
-time we will no longer support Windows Phone 8.0 in any form.
 
 ## Change log
 - [Managed SDK](CHANGELOG.md)
 
 ## Managed Windows Client SDK
 
-Our managed portable library for Window and Xamarin makes it easy to use Azure Mobile Apps from your managed client applications. The [Azure Mobile Client SDK](https://www.nuget.org/packages/Microsoft.Azure.Mobile.Client/) is available
-as a NuGet package or you can download the source using the instructions above. The managed portable library also supports the full .NET 4.5 platform.
+Our managed portable library for Window and Xamarin makes it easy to use Azure Mobile Apps from your managed client applications. The [Azure Mobile Client SDK](https://www.nuget.org/packages/Microsoft.Azure.Mobile.Client/) is available as a NuGet package or you can download the source using the instructions above. The managed portable library also supports .NET Standard 1.1 and .NET Standard 1.4.
 
 To learn more about the client library, see [How to use the managed client for Azure Mobile Apps](https://azure.microsoft.com/en-us/documentation/articles/app-service-mobile-dotnet-how-to-use-client-library/).
 
 ### Prerequisites
 
-The SDK requires Visual Studio 2015.
+The SDK requires Visual Studio 2017.
 
 ### Building and Referencing the SDK
 
-The managed portable library solution includes a core portable assembly and platform-specific assemblies for each of the
-supported platforms: Xamarin.iOS, Xamarin.Android, Windows 8.1, Windows Phone 8.1 and .NET 4.5. The core portable platform
-project is ```Microsoft.WindowsAzure.Mobile```. The platform-specific assembly projects are
-named using a ```Microsoft.WindowsAzure.Mobile.Ext.<Platform>``` convention. The Windows Phone 8 platform also
-include a ```Microsoft.WindowsAzure.Mobile.UI.<Platform>``` project that contain UI components. To build the Managed Portable Libray:
-
-1. Open the ```Microsoft.WindowsAzure.Mobile.Managed_Full_IncludeXamarin_VS15.sln``` solution file in Visual Studio 2015.
+1. Open the ```Microsoft.Azure.Mobile.Client.sln``` solution file in Visual Studio 2017.
+2. Ensure you have connected an iOS Build Agent prior to building
 2. Use Solution -> Restore NuGet Packages...
 3. Press F6 to build the solution.
 
