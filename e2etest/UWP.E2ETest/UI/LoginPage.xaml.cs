@@ -5,6 +5,7 @@
 using System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Navigation;
 
 namespace Microsoft.WindowsAzure.MobileServices.Test
 {
@@ -13,6 +14,15 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         public LoginPage()
         {
             this.InitializeComponent();
+            NavigationCacheMode = NavigationCacheMode.Required;
+        }
+
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            if (e.Parameter is Uri)
+            {
+                LoginTests.client.ResumeWithURL(e.Parameter as Uri);
+            }
         }
 
         private async void LoginButtonClicked(object sender, RoutedEventArgs e)

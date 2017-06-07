@@ -22,6 +22,11 @@
       </uap:VisualElements>
       <Extensions>
         <uap:Extension Category="windows.protocol">
+          <uap:Protocol Name="zumoe2etestapp">
+            <uap:DisplayName>UWP.E2E</uap:DisplayName>
+          </uap:Protocol>
+        </uap:Extension>
+        <uap:Extension Category="windows.protocol">
           <uap:Protocol Name="zumoe2e-uwp">
             <uap:Logo>Assets\Logo.png</uap:Logo>
           </uap:Protocol>

@@ -1,7 +1,7 @@
 ﻿// ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------'
-
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -9,7 +9,10 @@ namespace Microsoft.WindowsAzure.MobileServices
 {
     /// <summary>
     /// Provides extension methods for single sign-on.
+    /// Single Sign-On is no longer supported for Google. 
+    /// For server flow authentication with Google, please use LoginAsync methods with uriScheme parameter.
     /// </summary>
+    [Obsolete]
     public static class SingleSignOnExtensions
     {
         /// <summary>
@@ -109,7 +112,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         {
             if (!useSingleSignOn)
             {
-                return client.LoginAsync(provider, parameters);
+                throw new InvalidOperationException("This api is deprecated. Please use LoginSync method with uriScheme parameter.");
             }
 
             MobileServiceSingleSignOnAuthentication auth = new MobileServiceSingleSignOnAuthentication(client, provider, parameters);

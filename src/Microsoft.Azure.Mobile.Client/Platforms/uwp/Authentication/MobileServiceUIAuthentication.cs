@@ -2,13 +2,16 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
 
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Microsoft.WindowsAzure.MobileServices
 {
-    internal class MobileServiceUIAuthentication : MobileServiceAuthentication
+    internal class MobileServiceUIAuthentication : MobileServicePKCEAuthentication
     {
+        internal static AuthenticationHelper CurrentAuthenticator;
+
         /// <summary>
         /// Instantiates a new instance of <see cref="MobileServiceUIAuthentication"/>.
         /// </summary>
@@ -18,25 +21,56 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <param name="provider">
         /// The authentication provider.
         /// </param>
+        /// <param name="uriScheme">
+        /// The uri scheme.
+        /// </param>
         /// <param name="parameters">
         /// Provider specific extra parameters that are sent as query string parameters to login endpoint.
         /// </param>
-        public MobileServiceUIAuthentication(IMobileServiceClient client, string provider, IDictionary<string, string> parameters)
-            : base(client, provider, parameters)
+        public MobileServiceUIAuthentication(MobileServiceClient client, string provider, string uriScheme, IDictionary<string, string> parameters)
+            : base(client, provider, uriScheme, parameters)
         {
         }
 
         /// <summary>
-        /// Provides Login logic by showing a login UI.
+        /// Provides login UI to start authentication process.
         /// </summary>
         /// <returns>
-        /// Task that will complete with the response string when the user has finished authentication.
+        /// Task that will complete with the authorization code when the user will finish authentication.
         /// </returns>
-        protected override Task<string> LoginAsyncOverride()
+        protected override Task<string> GetAuthorizationCodeAsync()
         {
-            AuthenticationBroker broker = new AuthenticationBroker();
+            var tcs = new TaskCompletionSource<string>();
 
-            return broker.AuthenticateAsync(this.StartUri, this.EndUri, false);
+            if (CurrentAuthenticator != null)
+            {
+                tcs.TrySetException(new InvalidOperationException("Authentication is already in progress."));
+                return tcs.Task;
+            }
+
+            CurrentAuthenticator = new AuthenticationHelper();
+
+            CurrentAuthenticator.Completed += (o, e) =>
+            {
+                if (!e.IsAuthenticated)
+                {
+                    tcs.TrySetException(new InvalidOperationException("Authentication was cancelled by the user."));
+                }
+                else
+                {
+                    tcs.TrySetResult(e.AuthorizationCode);
+                }
+                CurrentAuthenticator = null;
+            };
+
+            CurrentAuthenticator.Error += (o, e) =>
+            {
+                tcs.TrySetException(new InvalidOperationException(e.Message));
+                CurrentAuthenticator = null;
+            };
+
+            var browserLaunched = Windows.System.Launcher.LaunchUriAsync(LoginUri);
+            return tcs.Task;
         }
     }
 }

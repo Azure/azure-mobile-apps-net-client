@@ -127,6 +127,10 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
                 {
                     content.Navigate(typeof(MainPage), args);
                 }
+                else if (content.Content.GetType() == typeof(LoginPage))
+                {
+                    content.Navigate(typeof(LoginPage), protocolArgs.Uri);
+                }
             }
             Window.Current.Activate();
             base.OnActivated(args);
