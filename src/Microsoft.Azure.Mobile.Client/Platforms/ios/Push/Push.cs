@@ -9,6 +9,7 @@ namespace Microsoft.WindowsAzure.MobileServices
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
+    using System.Text;
     using Newtonsoft.Json.Linq;
 
 #if __UNIFIED__
@@ -107,8 +108,15 @@ namespace Microsoft.WindowsAzure.MobileServices
             {
                 throw new ArgumentNullException("deviceToken");
             }
-
-            return deviceToken.Description.Trim('<', '>').Replace(" ", string.Empty).ToUpperInvariant();
+            byte[] byteArray = deviceToken.ToArray();
+            if (byteArray.Length == 0)
+            {
+                throw new ArgumentException("deviceToken.ToArray() returned empty array.");
+            }
+            StringBuilder hex = new StringBuilder(byteArray.Length * 2);
+            foreach (byte b in byteArray)
+                hex.AppendFormat("{0:x2}", b);
+            return hex.ToString();
         }
     }
 }
