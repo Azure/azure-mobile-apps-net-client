@@ -115,7 +115,9 @@ namespace Microsoft.WindowsAzure.MobileServices
             }
             StringBuilder hex = new StringBuilder(byteArray.Length * 2);
             foreach (byte b in byteArray)
+            {
                 hex.AppendFormat("{0:x2}", b);
+            }                
             return hex.ToString();
         }
     }
