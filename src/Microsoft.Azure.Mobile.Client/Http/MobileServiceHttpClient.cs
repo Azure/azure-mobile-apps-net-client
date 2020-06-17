@@ -573,20 +573,31 @@ namespace Microsoft.WindowsAzure.MobileServices
             return request;
         }
 
-        private static bool IsDecompressionUsed(HttpRequestMessage request)
+        private static bool IsResponseCompressed(HttpResponseMessage response)
         {
-            IEnumerable<string> AcceptEncodingList;
-            request.Headers.TryGetValues("Accept-Encoding", out AcceptEncodingList);
-            if (AcceptEncodingList == null) 
+            response.Headers.TryGetValues("Content-Encoding", out IEnumerable<string> EncodingList);
+            if (EncodingList == null)
             {
-                return false;
+                response.Headers.TryGetValues("Vary", out IEnumerable<string> VaryList);
+                if (VaryList == null)
+                {
+                    return false;
+                }
+                else
+                {
+                    string allVaryValues = VaryList.Aggregate((allValues, next) => allValues = allValues + ";" + next);
+                    return !string.IsNullOrEmpty(allVaryValues) && allVaryValues.Contains("Accept-Encoding");
+                }
             }
-            string allAcceptEncodingValues = AcceptEncodingList.Aggregate((allValues, next) => allValues = allValues + ";" + next);
-            return !string.IsNullOrEmpty(allAcceptEncodingValues) &&
-                 (allAcceptEncodingValues.Contains("gzip") ||
-                 allAcceptEncodingValues.Contains("deflate") ||
-                 allAcceptEncodingValues.Contains("br") ||
-                 allAcceptEncodingValues.Contains("compress"));
+            else
+            {
+                string allEncodingValues = EncodingList.Aggregate((allValues, next) => allValues = allValues + ";" + next);
+                return !string.IsNullOrEmpty(allEncodingValues) &&
+                     (allEncodingValues.Contains("gzip") ||
+                     allEncodingValues.Contains("deflate") ||
+                     allEncodingValues.Contains("br") ||
+                     allEncodingValues.Contains("compress"));
+            }
         }
 
         /// <summary>
@@ -629,13 +640,11 @@ namespace Microsoft.WindowsAzure.MobileServices
             {
                 await ThrowInvalidResponse(request, response);
             }
-
             // If there was supposed to be response content and there was not, throw
             if (ensureResponseContent)
             {
-                bool decompressionUsed = IsDecompressionUsed(request);
-
-                if (!decompressionUsed && response.Content != null)
+                bool isCompressed = IsResponseCompressed(response);
+                if (!isCompressed && response.Content != null)
                 {
                     long? contentLength = response.Content.Headers.ContentLength;
                     if (contentLength == null || contentLength <= 0)
