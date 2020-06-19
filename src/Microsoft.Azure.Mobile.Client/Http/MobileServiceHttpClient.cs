@@ -583,21 +583,15 @@ namespace Microsoft.WindowsAzure.MobileServices
                 {
                     return false;
                 }
-                else
-                {
-                    string allVaryValues = VaryList.Aggregate((allValues, next) => allValues = allValues + ";" + next);
-                    return !string.IsNullOrEmpty(allVaryValues) && allVaryValues.Contains("Accept-Encoding");
-                }
+                string allVaryValues = VaryList.Aggregate((allValues, next) => allValues = allValues + ";" + next);
+                return !string.IsNullOrEmpty(allVaryValues) && allVaryValues.Contains("Accept-Encoding");
             }
-            else
-            {
-                string allEncodingValues = EncodingList.Aggregate((allValues, next) => allValues = allValues + ";" + next);
-                return !string.IsNullOrEmpty(allEncodingValues) &&
-                     (allEncodingValues.Contains("gzip") ||
-                     allEncodingValues.Contains("deflate") ||
-                     allEncodingValues.Contains("br") ||
-                     allEncodingValues.Contains("compress"));
-            }
+            string allEncodingValues = EncodingList.Aggregate((allValues, next) => allValues = allValues + ";" + next);
+            return !string.IsNullOrEmpty(allEncodingValues) &&
+                    (allEncodingValues.Contains("gzip") ||
+                    allEncodingValues.Contains("deflate") ||
+                    allEncodingValues.Contains("br") ||
+                    allEncodingValues.Contains("compress"));
         }
 
         /// <summary>
