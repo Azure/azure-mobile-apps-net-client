@@ -588,13 +588,13 @@ namespace Microsoft.WindowsAzure.MobileServices
             {
                 // The NullHandlingConverter will ensure that nulls get treated as the default value
                 // for value types.
-                if (property.MemberConverter == null)
+                if (property.Converter == null)
                 {
-                    property.MemberConverter = NullHandlingConverter.Instance;
+                    property.Converter = NullHandlingConverter.Instance;
                 }
                 else
                 {
-                    property.MemberConverter = new NullHandlingConverter(property.MemberConverter);
+                    property.Converter = new NullHandlingConverter(property.Converter);
                 }
             }
         }

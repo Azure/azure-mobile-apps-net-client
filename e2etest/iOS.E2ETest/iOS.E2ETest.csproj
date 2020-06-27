@@ -142,8 +142,10 @@
     <PackageReference Include="Microsoft.Azure.Mobile.Client.SQLiteStore" Version="4.1.2" />
   </ItemGroup>
   <ItemGroup Condition=" '$(Configuration)' != 'SdkRel' ">
-    <ProjectReference Include="..\..\src\Microsoft.Azure.Mobile.Client\Microsoft.Azure.Mobile.Client.csproj" Name="Microsoft.Azure.Mobile.Client" />
-    <ProjectReference Include="..\..\src\Microsoft.Azure.Mobile.Client.SQLiteStore\Microsoft.Azure.Mobile.Client.SQLiteStore.csproj" Name="Microsoft.Azure.Mobile.Client.SQLiteStore" />
+    <ProjectReference Include="..\..\src\Microsoft.Azure.Mobile.Client\Microsoft.Azure.Mobile.Client.csproj" Name="Microsoft.Azure.Mobile.Client"><Project>{04FC5444-1240-41D7-9AA8-648B9A465C9D}</Project>
+</ProjectReference>
+    <ProjectReference Include="..\..\src\Microsoft.Azure.Mobile.Client.SQLiteStore\Microsoft.Azure.Mobile.Client.SQLiteStore.csproj" Name="Microsoft.Azure.Mobile.Client.SQLiteStore"><Project>{99C2F464-172A-4B49-93B7-9B0E4FED1310}</Project>
+</ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
 </Project>
