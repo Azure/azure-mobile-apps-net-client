@@ -2,10 +2,10 @@
 
   <Import Project="..\..\build\Microsoft.Azure.Mobile.Client.Build.props" />
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.4;portable-net45+win8+wpa81+wp8;net45;MonoAndroid70;Xamarin.iOS10;uap10.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <DefaultLanguage>en-US</DefaultLanguage>
     <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
-    <VersionPrefix>4.1.2</VersionPrefix>
+    <VersionPrefix>5.0.0</VersionPrefix>
     <PackageTitle>Azure Mobile Client SDK</PackageTitle>
     <Title>Azure Mobile Client SDK</Title>
     <Authors>Microsoft</Authors>
@@ -24,96 +24,14 @@
     <!-- Workaround until Xamarin supports PPDB -->
     <DebugType>full</DebugType>
     <RootNamespace>Microsoft.WindowsAzure.MobileServices</RootNamespace>
-    <Company>Microsoft, mobile-center</Company>
+    <Company>Microsoft</Company>
   </PropertyGroup>
   <ItemGroup>
-    <!-- Need this to see the parent refs to Auth -->
-    <ProjectCapability Include="ShowFilesOutsideOfProject" />
-    <!-- This None is here so the conditinonally included files show up in the Solution Explorer -->
-    <None Include="**\*.cs;**\*.xml;**\*.axml" Exclude="obj\**\*.*;bin\**\*.*" />
-    <None Include="..\External\Xamarin.Auth\source\Xamarin.Auth.LinkSource\**\*.cs" Exclude="**\AssemblyInfo.cs" />
-    <None Include="..\External\Xamarin.Auth\source\Xamarin.Auth.XamarinIOS\**\*.cs" Exclude="**\AssemblyInfo.cs" />
-    <None Include="..\External\Xamarin.Auth\source\Xamarin.Auth.XamarinAndroid\**\*.cs" Exclude="**\AssemblyInfo.cs" />
-    <Compile Remove="Platforms\**\*.*" />
-    <Compile Remove="Features\**\*.*" />
     <EmbeddedResource Include="Properties\*.rd.xml" />
     <Compile Update="Resources.Designer.cs" DesignTime="true" AutoGen="true" DependentUpon="Resources.resx" />
     <EmbeddedResource Update="Resources.resx" Generator="ResXFileCodeGenerator" LastGenOutput="Resources.Designer.cs" />
   </ItemGroup>
-
-
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'portable-net45+win8+wpa81+wp8' ">
-    <TargetFrameworkIdentifier>.NETPortable</TargetFrameworkIdentifier>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <TargetFrameworkProfile>Profile259</TargetFrameworkProfile>
-    <DefineConstants>$(DefineConstants);PLATFORM_PCL</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'MonoAndroid70' ">
-    <TargetFrameworkIdentifier>MonoAndroid</TargetFrameworkIdentifier>
-    <TargetFrameworkVersion>v7.0</TargetFrameworkVersion>
-    <LanguageTargets>$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets</LanguageTargets>
-    <AndroidResgenNamespace>Xamarin.Auth._MobileServices</AndroidResgenNamespace>
-    <MonoAndroidResourcePrefix>..\External\Xamarin.Auth\source\Xamarin.Auth.XamarinAndroid\Resources</MonoAndroidResourcePrefix>
-    <DefineConstants>$(DefineConstants);PLATFORM_ANDROID;XAMARIN_AUTH_INTERNAL</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'Xamarin.iOS10' ">
-    <TargetFrameworkIdentifier>Xamarin.iOS</TargetFrameworkIdentifier>
-    <TargetFrameworkVersion>v1.0</TargetFrameworkVersion>
-    <LanguageTargets>$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets</LanguageTargets>
-    <DefineConstants>$(DefineConstants);PLATFORM_IOS;XAMARIN_AUTH_INTERNAL</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'uap10.0' ">
-    <NugetTargetMoniker>UAP,Version=v10.0</NugetTargetMoniker>
-    <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
-    <TargetPlatformVersion>10.0.10586.0</TargetPlatformVersion>
-    <TargetPlatformMinVersion>10.0.10240.0</TargetPlatformMinVersion>
-    <TargetFrameworkIdentifier>.NETCore</TargetFrameworkIdentifier>
-    <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
-    <LanguageTargets>$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets</LanguageTargets>
-  </PropertyGroup>
-
-
   <ItemGroup>
-    <PackageReference Include="MSBuild.Sdk.Extras" Version="1.0.5" PrivateAssets="All" />
-    <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'uap10.0' ">
-    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="5.2.6" />
-    <PackageReference Include="System.Linq.Queryable" Version="4.0.1" />
-    <Compile Include="Platforms\uwp\**\*.cs" Exclude="Platforms\uwp\Extensions\MobileServiceCollectionViewExtensions.cs" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'portable-net45+win8+wpa81+wp8' ">
-    <PackageReference Include="Microsoft.Net.Http" Version="2.2.29" />
-    <PackageReference Include="PCLCrypto" Version="2.0.147" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.4' ">
-    <Compile Include="Platforms\netstandard14\**\*.cs" />
-    <PackageReference Include="System.IO.IsolatedStorage" Version="4.3.0" />
-    <PackageReference Include="System.Runtime.Extensions" Version="4.3.0" />
-    <PackageReference Include="System.Linq.Queryable" Version="4.3.0" />
-    <PackageReference Include="System.Security.Cryptography.Algorithms" Version="4.3.0" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Security" />
-    <Compile Include="Platforms\net45\**\*.cs" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'MonoAndroid70' ">
-    <PackageReference Include="PCLCrypto" Version="2.0.147" />
-    <PackageReference Include="Xamarin.Android.Support.CustomTabs" Version="23.3.0" />
-    <AndroidResource Include="..\External\Xamarin.Auth\source\Xamarin.Auth.XamarinAndroid\Resources\**\*.xml" />
-    <AndroidResource Include="..\External\Xamarin.Auth\source\Xamarin.Auth.XamarinAndroid\Resources\**\*.png" />
-    <Compile Include="..\External\Xamarin.Auth\source\Xamarin.Auth.LinkSource\**\*.cs" Exclude="**\AssemblyInfo.cs;**\*.Portable.cs;**\*.netfx.cs;**\*.netfx45.cs;**\*.net45.cs;**\*.LinkSource.cs" />
-    <Compile Include="..\External\Xamarin.Auth\source\Xamarin.Auth.XamarinAndroid\**\*.cs" Exclude="**\AssemblyInfo.cs" />
-    <Compile Include="Platforms\android\**\*.cs" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'Xamarin.iOS10' ">
-    <PackageReference Include="PCLCrypto" Version="2.0.147" />
-    <Compile Include="..\External\Xamarin.Auth\source\Xamarin.Auth.LinkSource\**\*.cs" Exclude="**\AssemblyInfo.cs;**\*.Portable.cs;**\*.netfx.cs;**\*.netfx45.cs;**\*.net45.cs;**\*.LinkSource.cs" />
-    <Compile Include="..\External\Xamarin.Auth\source\Xamarin.Auth.XamarinIOS\**\*.cs" Exclude="**\AssemblyInfo.cs" />
-    <Compile Include="Platforms\ios\**\*.cs" />
-  </ItemGroup>
-
-  <Import Project="$(MSBuildSDKExtrasTargets)" Condition="Exists('$(MSBuildSDKExtrasTargets)')" />
 </Project>

@@ -10,11 +10,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "E2ETest", "e2etest\E2ETest\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "E2ETestFramework", "e2etest\E2ETestFramework\E2ETestFramework.csproj", "{A2500BD2-A9A2-4085-9978-DEE3675B02DD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Net45.E2ETest", "e2etest\Net45.E2ETest\Net45.E2ETest.csproj", "{7C1A9BC1-3E60-4673-AC08-AC8399032D49}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "unittest", "unittest", "{E71D0135-3872-467B-9C4C-D6B6FEF2665C}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.WindowsAzure.Mobile.Net461.Test", "unittest\Microsoft.WindowsAzure.Mobile.Net45.Test\Microsoft.WindowsAzure.Mobile.Net461.Test.csproj", "{BCF9BADC-8D46-4530-BF62-4C31C5DBB61F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.WindowsAzure.Mobile.UWP.Test", "unittest\Microsoft.WindowsAzure.MobileServices.UWP.Test\Microsoft.WindowsAzure.Mobile.UWP.Test.csproj", "{882C5B40-F18B-4873-AB65-392154F441DF}"
 EndProject
@@ -33,8 +29,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.WindowsAzure.Mobile.iOS.Test", "unittest\Microsoft.WindowsAzure.MobileServices.iOS.Test\Microsoft.WindowsAzure.Mobile.iOS.Test.csproj", "{CDE8F9C2-D145-4522-A91A-58DDB84573EB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.WindowsAzure.Mobile.SQLiteStore.Android.Test", "unittest\Microsoft.WindowsAzure.MobileServices.SQLiteStore.Android.Test\Microsoft.WindowsAzure.Mobile.SQLiteStore.Android.Test.csproj", "{984C6927-3A86-4EBF-9754-73952C2623F8}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.WindowsAzure.Mobile.SQLiteStore.Net461.Test", "unittest\Microsoft.WindowsAzure.MobileServices.SQLiteStore.Net45.Test\Microsoft.WindowsAzure.Mobile.SQLiteStore.Net461.Test.csproj", "{1A8BCF31-2199-453C-A761-5AF2F8FD5B81}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.WindowsAzure.Mobile.SQLiteStore.Test", "unittest\Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test\Microsoft.WindowsAzure.Mobile.SQLiteStore.Test.csproj", "{CD5D8A3A-5631-41BF-8161-8A2A7F892B71}"
 EndProject

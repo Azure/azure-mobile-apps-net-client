@@ -31,11 +31,7 @@ namespace Microsoft.WindowsAzure.MobileServices
                 // create if not yet created
                 if (current == null)
                 {
-#if !PLATFORM_PCL
                     current = new CurrentPlatform();
-#else
-                    throw new PlatformNotSupportedException("The empty PCL implementation for Microsoft Azure Mobile Services was loaded. Ensure you have added nuget package to each of your platform projects.");
-#endif
                 }
 
                 return current;

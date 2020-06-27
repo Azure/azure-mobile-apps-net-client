@@ -653,7 +653,7 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore
             var row = new JObject();
             for (int i = 0; i < raw.sqlite3_column_count(statement); i++)
             {
-                string name = raw.sqlite3_column_name(statement, i);
+                string name = raw.sqlite3_column_name(statement, i).utf8_to_string();
                 object value = SQLitePCLRawHelpers.GetValue(statement, i);
 
                 ColumnDefinition column;

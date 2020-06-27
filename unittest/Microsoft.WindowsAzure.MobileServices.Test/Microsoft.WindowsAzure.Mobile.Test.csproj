@@ -1,31 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
    <Import Project="..\..\build\Microsoft.Azure.Mobile.Client.Build.props" />
    <PropertyGroup>
-    <TargetFrameworks>netstandard1.4;net45;MonoAndroid70;Xamarin.iOS10;uap10.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <Product>$(AssemblyName) ($(TargetFramework))</Product>
      <!-- Workaround until Xamarin supports PPDB -->
      <DebugType>full</DebugType>
    </PropertyGroup>
    <ItemGroup>
      <PackageReference Include="MSBuild.Sdk.Extras" Version="1.0.5" PrivateAssets="All" />
-     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
+     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
      <ProjectReference Include="..\..\src\Microsoft.Azure.Mobile.Client\Microsoft.Azure.Mobile.Client.csproj" />
      <ProjectReference Include="..\Microsoft.WindowsAzure.MobileServices.TestFramework\Microsoft.WindowsAzure.Mobile.TestFramework.csproj" />
    </ItemGroup>
-   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
-     <Reference Include="System.Net.Http" />
-   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'uap10.0' ">
-    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="5.2.6" />
-  </ItemGroup>
-
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'MonoAndroid70' ">
-    <TargetFrameworkIdentifier>MonoAndroid</TargetFrameworkIdentifier>
-    <TargetFrameworkVersion>v7.0</TargetFrameworkVersion>
-    <DefineConstants>$(DefineConstants);PLATFORM_ANDROID;</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'Xamarin.iOS10' ">
-    <DefineConstants>$(DefineConstants);PLATFORM_IOS;</DefineConstants>
-  </PropertyGroup>
   <Import Project="$(MSBuildSDKExtrasTargets)" Condition="Exists('$(MSBuildSDKExtrasTargets)')" />
 </Project>

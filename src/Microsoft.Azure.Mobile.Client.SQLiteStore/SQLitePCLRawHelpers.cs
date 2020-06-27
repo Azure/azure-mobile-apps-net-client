@@ -46,7 +46,9 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore
         {
             if (result != expectedResult)
             {
-                string sqliteErrorMessage = (db == null) ? raw.sqlite3_errstr(result) : raw.sqlite3_errmsg(db);
+                string sqliteErrorMessage = (db == null)
+                    ? raw.sqlite3_errstr(result).utf8_to_string()
+                    : raw.sqlite3_errmsg(db).utf8_to_string();
                 throw new SQLiteException(string.Format("Error executing SQLite command: '{0}'.", sqliteErrorMessage));
             }
         }
@@ -139,10 +141,10 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore
                     result = raw.sqlite3_column_double(stm, index);
                     break;
                 case SQLiteType.TEXT:
-                    result = raw.sqlite3_column_text(stm, index);
+                    result = raw.sqlite3_column_text(stm, index).utf8_to_string();
                     break;
                 case SQLiteType.BLOB:
-                    result = raw.sqlite3_column_blob(stm, index);
+                    result = raw.sqlite3_column_blob(stm, index).ToArray();
                     break;
                 case SQLiteType.NULL:
                     break;
