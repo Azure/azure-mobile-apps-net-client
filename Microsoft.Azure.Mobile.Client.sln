@@ -4,9 +4,15 @@ VisualStudioVersion = 15.0.26430.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{28D05719-6DC4-4962-BC7E-75F9C72E695C}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{486FBF9D-0C66-4E71-B76F-E6419A2A9D69}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Mobile.Client", "src\Microsoft.Azure.Mobile.Client\Microsoft.Azure.Mobile.Client.csproj", "{04FC5444-1240-41D7-9AA8-648B9A465C9D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Mobile.Client.SQLiteStore", "src\Microsoft.Azure.Mobile.Client.SQLiteStore\Microsoft.Azure.Mobile.Client.SQLiteStore.csproj", "{99C2F464-172A-4B49-93B7-9B0E4FED1310}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.WindowsAzure.MobileServices.Test", "test\Microsoft.WindowsAzure.MobileServices.Test\Microsoft.WindowsAzure.MobileServices.Test.csproj", "{4317B9AA-7DBD-4ECD-A7D4-968E564D58FA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test", "test\Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test\Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test.csproj", "{909FB359-1399-4F86-9562-5358143E99EE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1345,5 +1351,7 @@ Global
 		{9220B6E2-0E5E-41E5-A990-98823F74C209} = {E71D0135-3872-467B-9C4C-D6B6FEF2665C}
 		{04FC5444-1240-41D7-9AA8-648B9A465C9D} = {28D05719-6DC4-4962-BC7E-75F9C72E695C}
 		{99C2F464-172A-4B49-93B7-9B0E4FED1310} = {28D05719-6DC4-4962-BC7E-75F9C72E695C}
+		{909FB359-1399-4F86-9562-5358143E99EE} = {486FBF9D-0C66-4E71-B76F-E6419A2A9D69}
+		{4317B9AA-7DBD-4ECD-A7D4-968E564D58FA} = {486FBF9D-0C66-4E71-B76F-E6419A2A9D69}
 	EndGlobalSection
 EndGlobal
