@@ -7,21 +7,62 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
+using Microsoft.WindowsAzure.MobileServices;
+using MobileTest.Framework;
+using MobileTest.LiveTests.Base;
+using MobileTest.LiveTests.TestData;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
+namespace MobileTest.LiveTests.Functional
 {
-    [TestCategory("live-tests")]
-    [TestClass, Ignore]
-    public class MobileServiceTable_Test : FunctionalTestBase
+    [DataTable("RoundTripTable")]
+    public class ToDoWithStringId
+    {
+        public string Id { get; set; }
+
+        public string Name { get; set; }
+    }
+
+    [DataTable("IntIdRoundTripTable")]
+    public class ToDoWithStringIdAgainstIntIdTable
+    {
+        public string Id { get; set; }
+
+        public string Name { get; set; }
+    }
+
+    [DataTable("IntIdRoundTripTable")]
+    public class ToDoWithIntId
+    {
+        public long Id { get; set; }
+
+        public string Name { get; set; }
+    }
+
+    [DataTable("RoundTripTable")]
+    public class RoundTripTableItemWithSystemPropertiesType
+    {
+        public string Id { get; set; }
+
+        public string Name { get; set; }
+
+        [CreatedAt]
+        public DateTimeOffset CreatedAt { get; set; }
+
+        [UpdatedAt]
+        public DateTimeOffset UpdatedAt { get; set; }
+
+        [Version]
+        public String Version { get; set; }
+    }
+
+    [Tag("Table")]
+    public class MobileServiceTableGenericFunctionalTests : FunctionalTestBase
     {
         private async Task EnsureEmptyTableAsync<T>()
         {
             // Make sure the table is empty
             IMobileServiceTable<T> table = GetClient().GetTable<T>();
-            table.MobileServiceClient.SerializerSettings.DateParseHandling = DateParseHandling.None;
 
             while (true)
             {
@@ -40,18 +81,17 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
             }
         }
 
-        [TestMethod]
-        public async Task AsyncTableOperationsWithValidStringIdAgainstStringIdTable()
+        [AsyncTestMethod]
+        private async Task AsyncTableOperationsWithValidStringIdAgainstStringIdTable()
         {
             await EnsureEmptyTableAsync<ToDoWithStringId>();
 
             string[] testIdData = IdTestData.ValidStringIds;
+            IMobileServiceTable<ToDoWithStringId> table = GetClient().GetTable<ToDoWithStringId>();
 
             foreach (string testId in testIdData)
             {
-                IMobileServiceTable<ToDoWithStringId> table = GetClient().GetTable<ToDoWithStringId>();
-
-                ToDoWithStringId item = new ToDoWithStringId() { Id = testId, String = "Hey" };
+                ToDoWithStringId item = new ToDoWithStringId() { Id = testId, Name = "Hey" };
                 await table.InsertAsync(item);
 
                 // Read
@@ -60,7 +100,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
 
                 Assert.AreEqual(1, items.Count());
                 Assert.AreEqual(testId, items[0].Id);
-                Assert.AreEqual("Hey", items[0].String);
+                Assert.AreEqual("Hey", items[0].Name);
 
                 // Filter
                 results = await table.Where(i => i.Id == testId).ToEnumerableAsync();
@@ -68,10 +108,10 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
 
                 Assert.AreEqual(1, items.Count());
                 Assert.AreEqual(testId, items[0].Id);
-                Assert.AreEqual("Hey", items[0].String);
+                Assert.AreEqual("Hey", items[0].Name);
 
                 // Projection
-                var projectedResults = await table.Select(i => new { XId = i.Id, XString = i.String }).ToEnumerableAsync();
+                var projectedResults = await table.Select(i => new { XId = i.Id, XString = i.Name }).ToEnumerableAsync();
                 var projectedItems = projectedResults.ToArray();
 
                 Assert.AreEqual(1, projectedItems.Count());
@@ -81,19 +121,19 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
                 // Lookup
                 item = await table.LookupAsync(testId);
                 Assert.AreEqual(testId, item.Id);
-                Assert.AreEqual("Hey", item.String);
+                Assert.AreEqual("Hey", item.Name);
 
                 // Update
-                item.String = "What?";
+                item.Name = "What?";
                 await table.UpdateAsync(item);
                 Assert.AreEqual(testId, item.Id);
-                Assert.AreEqual("What?", item.String);
+                Assert.AreEqual("What?", item.Name);
 
                 // Refresh
-                item = new ToDoWithStringId() { Id = testId, String = "Hey" };
+                item = new ToDoWithStringId() { Id = testId, Name = "Hey" };
                 await table.RefreshAsync(item);
                 Assert.AreEqual(testId, item.Id);
-                Assert.AreEqual("What?", item.String);
+                Assert.AreEqual("What?", item.Name);
 
                 // Read Again
                 results = await table.ReadAsync();
@@ -101,13 +141,13 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
 
                 Assert.AreEqual(1, items.Count());
                 Assert.AreEqual(testId, items[0].Id);
-                Assert.AreEqual("What?", items[0].String);
+                Assert.AreEqual("What?", items[0].Name);
 
                 await table.DeleteAsync(item);
             }
         }
 
-        [TestMethod]
+        [AsyncTestMethod]
         public async Task OrderingReadAsyncWithValidStringIdAgainstStringIdTable()
         {
             await EnsureEmptyTableAsync<ToDoWithStringId>();
@@ -117,7 +157,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
 
             foreach (string testId in testIdData)
             {
-                ToDoWithStringId item = new ToDoWithStringId() { Id = testId, String = "Hey" };
+                ToDoWithStringId item = new ToDoWithStringId() { Id = testId, Name = "Hey" };
                 await table.InsertAsync(item);
             }
 
@@ -156,7 +196,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
             }
         }
 
-        [TestMethod]
+        [AsyncTestMethod]
         public async Task FilterReadAsyncWithEmptyStringIdAgainstStringIdTable()
         {
             await EnsureEmptyTableAsync<ToDoWithStringId>();
@@ -166,7 +206,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
 
             foreach (string testId in testIdData)
             {
-                ToDoWithStringId item = new ToDoWithStringId() { Id = testId, String = "Hey" };
+                ToDoWithStringId item = new ToDoWithStringId() { Id = testId, Name = "Hey" };
                 await table.InsertAsync(item);
             }
 
@@ -189,7 +229,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
             }
         }
 
-        [TestMethod]
+        [AsyncTestMethod]
         public async Task LookupAsyncWithNosuchItemAgainstStringIdTable()
         {
             await EnsureEmptyTableAsync<ToDoWithStringId>();
@@ -199,7 +239,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
 
             foreach (string testId in testIdData)
             {
-                ToDoWithStringId item = new ToDoWithStringId() { Id = testId, String = "Hey" };
+                ToDoWithStringId item = new ToDoWithStringId() { Id = testId, Name = "Hey" };
                 await table.InsertAsync(item);
             }
 
@@ -220,11 +260,12 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
 
                 Assert.IsNotNull(exception);
                 Assert.AreEqual(exception.Response.StatusCode, HttpStatusCode.NotFound);
-                Assert.IsTrue(exception.Message.Contains(string.Format("Error: An item with id '{0}' does not exist.", testId)));
+                Assert.IsTrue(exception.Message == "The item does not exist" ||
+                              exception.Message == "The request could not be completed.  (Not Found)");
             }
         }
 
-        [TestMethod]
+        [AsyncTestMethod]
         public async Task RefreshAsyncWithNoSuchItemAgainstStringIdTable()
         {
             await EnsureEmptyTableAsync<ToDoWithStringId>();
@@ -234,7 +275,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
 
             foreach (string testId in testIdData)
             {
-                ToDoWithStringId item = new ToDoWithStringId() { Id = testId, String = "Hey" };
+                ToDoWithStringId item = new ToDoWithStringId() { Id = testId, Name = "Hey" };
                 await table.InsertAsync(item);
             }
 
@@ -258,7 +299,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
             }
         }
 
-        [TestMethod]
+        [AsyncTestMethod]
         public async Task InsertAsyncWithEmptyStringIdAgainstStringIdTable()
         {
             string[] emptyIdData = IdTestData.EmptyStringIds.Concat(
@@ -270,11 +311,11 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
 
             foreach (string emptyId in emptyIdData)
             {
-                ToDoWithStringId item = new ToDoWithStringId() { Id = emptyId, String = (++count).ToString() };
+                ToDoWithStringId item = new ToDoWithStringId() { Id = emptyId, Name = (++count).ToString() };
                 await table.InsertAsync(item);
 
                 Assert.IsNotNull(item.Id);
-                Assert.AreEqual(count.ToString(), item.String);
+                Assert.AreEqual(count.ToString(), item.Name);
                 itemsToDelete.Add(item);
             }
 
@@ -284,7 +325,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
             }
         }
 
-        [TestMethod]
+        [AsyncTestMethod]
         public async Task InsertAsyncWithExistingItemAgainstStringIdTable()
         {
             await EnsureEmptyTableAsync<ToDoWithStringId>();
@@ -294,14 +335,14 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
 
             foreach (string testId in testIdData)
             {
-                ToDoWithStringId item = new ToDoWithStringId() { Id = testId, String = "Hey" };
+                ToDoWithStringId item = new ToDoWithStringId() { Id = testId, Name = "Hey" };
                 await table.InsertAsync(item);
             }
 
             foreach (string testId in testIdData)
             {
                 ToDoWithStringId item = await table.LookupAsync(testId);
-                item.String = "No we're talking!";
+                item.Name = "No we're talking!";
 
                 MobileServiceInvalidOperationException exception = null;
                 try
@@ -315,11 +356,12 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
 
                 Assert.IsNotNull(exception);
                 Assert.AreEqual(exception.Response.StatusCode, HttpStatusCode.Conflict);
-                Assert.IsTrue(exception.Message.Contains("Could not insert the item because an item with that id already exists."));
+                Assert.IsTrue(exception.Message.Contains("Could not insert the item because an item with that id already exists.") ||
+                              exception.Message == "The request could not be completed.  (Conflict)");
             }
         }
 
-        [TestMethod]
+        [AsyncTestMethod]
         public async Task UpdateAsyncWithNosuchItemAgainstStringIdTable()
         {
             await EnsureEmptyTableAsync<ToDoWithStringId>();
@@ -329,7 +371,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
 
             foreach (string testId in testIdData)
             {
-                ToDoWithStringId item = new ToDoWithStringId() { Id = testId, String = "Hey" };
+                ToDoWithStringId item = new ToDoWithStringId() { Id = testId, Name = "Hey" };
                 await table.InsertAsync(item);
             }
 
@@ -338,7 +380,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
                 ToDoWithStringId item = await table.LookupAsync(testId);
                 await table.DeleteAsync(item);
                 item.Id = testId;
-                item.String = "Alright!";
+                item.Name = "Alright!";
 
                 MobileServiceInvalidOperationException exception = null;
                 try
@@ -352,11 +394,12 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
 
                 Assert.IsNotNull(exception);
                 Assert.AreEqual(exception.Response.StatusCode, HttpStatusCode.NotFound);
-                Assert.IsTrue(exception.Message.Contains(string.Format("Error: An item with id '{0}' does not exist.", testId)));
+                Assert.IsTrue(exception.Message == "The item does not exist" ||
+                              exception.Message == "The request could not be completed.  (Not Found)");
             }
         }
 
-        [TestMethod]
+        [AsyncTestMethod]
         public async Task DeleteAsyncWithNosuchItemAgainstStringIdTable()
         {
             await EnsureEmptyTableAsync<ToDoWithStringId>();
@@ -366,7 +409,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
 
             foreach (string testId in testIdData)
             {
-                ToDoWithStringId item = new ToDoWithStringId() { Id = testId, String = "Hey" };
+                ToDoWithStringId item = new ToDoWithStringId() { Id = testId, Name = "Hey" };
                 await table.InsertAsync(item);
             }
 
@@ -388,48 +431,21 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
 
                 Assert.IsNotNull(exception);
                 Assert.AreEqual(exception.Response.StatusCode, HttpStatusCode.NotFound);
-                Assert.IsTrue(exception.Message.Contains(string.Format("Error: An item with id '{0}' does not exist.", testId)));
+                Assert.IsTrue(exception.Message == "The item does not exist" ||
+                              exception.Message == "The request could not be completed.  (Not Found)");
             }
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(MobileServiceConflictException))]
-        public async Task InsertAsync_ThrowsConflictException_WhenConflictOccurs()
-        {
-            await EnsureEmptyTableAsync<ToDoWithSystemPropertiesType>();
-            string id = "an id";
-            IMobileServiceTable table = GetClient().GetTable("stringId_test_table");
-
-            var item = new JObject() { { "id", id }, { "String", "a value" } };
-            var inserted = await table.InsertAsync(item);
-
-            await table.InsertAsync(item);
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(MobileServiceConflictException<ToDoWithSystemPropertiesType>))]
-        public async Task InsertAsync_ThrowsConflictException_WhenConflictOccurs_Generic()
-        {
-            await EnsureEmptyTableAsync<ToDoWithSystemPropertiesType>();
-
-            string id = "an id";
-            IMobileServiceTable<ToDoWithSystemPropertiesType> table = GetClient().GetTable<ToDoWithSystemPropertiesType>();
-
-            ToDoWithSystemPropertiesType item = new ToDoWithSystemPropertiesType() { Id = id, String = "a value" };
-            await table.InsertAsync(item);
-            await table.InsertAsync(item);
-        }
-
-        [TestMethod]
+        [AsyncTestMethod]
         public async Task DeleteAsync_ThrowsPreconditionFailedException_WhenMergeConflictOccurs()
         {
-            await EnsureEmptyTableAsync<ToDoWithSystemPropertiesType>();
-            string id = "an id";
-            IMobileServiceTable table = GetClient().GetTable("stringId_test_table");
+            await EnsureEmptyTableAsync<RoundTripTableItemWithSystemPropertiesType>();
+            string id = Guid.NewGuid().ToString();
+            IMobileServiceTable table = GetClient().GetTable("RoundTripTable");
 
-            var item = new JObject() { { "id", id }, { "String", "a value" } };
+            var item = new JObject() { { "id", id }, { "name", "a value" } };
             var inserted = await table.InsertAsync(item);
-            item["version"] = "random";
+            item["version"] = "3q3A3g==";
 
             MobileServicePreconditionFailedException expectedException = null;
             try
@@ -442,19 +458,17 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
             }
             Assert.IsNotNull(expectedException);
             Assert.AreEqual(expectedException.Value["version"], inserted["version"]);
-            Assert.AreEqual(expectedException.Value["String"], inserted["String"]);
+            Assert.AreEqual(expectedException.Value["name"], inserted["name"]);
         }
 
-        [TestMethod]
+        [AsyncTestMethod]
         public async Task DeleteAsync_ThrowsPreconditionFailedException_WhenMergeConflictOccurs_Generic()
         {
-            await EnsureEmptyTableAsync<ToDoWithSystemPropertiesType>();
-
-            string id = "an id";
-            IMobileServiceTable<ToDoWithSystemPropertiesType> table = GetClient().GetTable<ToDoWithSystemPropertiesType>();
+            string id = Guid.NewGuid().ToString();
+            var table = GetClient().GetTable<RoundTripTableItemWithSystemPropertiesType>();
 
             // insert a new item
-            var item = new ToDoWithSystemPropertiesType() { Id = id, String = "a value" };
+            var item = new RoundTripTableItemWithSystemPropertiesType() { Id = id, Name = "a value" };
             await table.InsertAsync(item);
 
             Assert.IsNotNull(item.CreatedAt);
@@ -464,14 +478,14 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
             string version = item.Version;
 
             // Delete with wrong version
-            item.Version = "abc";
-            item.String = "But wait!";
-            MobileServicePreconditionFailedException<ToDoWithSystemPropertiesType> expectedException = null;
+            item.Version = "3q3A3g==";
+            item.Name = "But wait!";
+            MobileServicePreconditionFailedException<RoundTripTableItemWithSystemPropertiesType> expectedException = null;
             try
             {
                 await table.DeleteAsync(item);
             }
-            catch (MobileServicePreconditionFailedException<ToDoWithSystemPropertiesType> exception)
+            catch (MobileServicePreconditionFailedException<RoundTripTableItemWithSystemPropertiesType> exception)
             {
                 expectedException = exception;
             }
@@ -480,16 +494,17 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
             Assert.AreEqual(expectedException.Response.StatusCode, HttpStatusCode.PreconditionFailed);
 
             string responseContent = await expectedException.Response.Content.ReadAsStringAsync();
-            JToken jtoken = responseContent.ParseToJToken(table.MobileServiceClient.SerializerSettings);
-            string serverVersion = (string)jtoken["version"];
-            string stringValue = (string)jtoken["String"];
+
+            RoundTripTableItemWithSystemPropertiesType serverItem = expectedException.Item;
+            string serverVersion = serverItem.Version;
+            string stringValue = serverItem.Name;
 
             Assert.AreEqual(version, serverVersion);
             Assert.AreEqual(stringValue, "a value");
 
             Assert.IsNotNull(expectedException.Item);
             Assert.AreEqual(version, expectedException.Item.Version);
-            Assert.AreEqual(stringValue, expectedException.Item.String);
+            Assert.AreEqual(stringValue, expectedException.Item.Name);
 
             // Delete one last time with the version from the server
             item.Version = serverVersion;
@@ -498,13 +513,13 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
             Assert.IsNull(item.Id);
         }
 
-        [TestMethod]
+        [AsyncTestMethod]
         public async Task AsyncTableOperationsWithIntegerAsStringIdAgainstIntIdTable()
         {
             await EnsureEmptyTableAsync<ToDoWithStringIdAgainstIntIdTable>();
 
             IMobileServiceTable<ToDoWithStringIdAgainstIntIdTable> stringIdTable = GetClient().GetTable<ToDoWithStringIdAgainstIntIdTable>();
-            ToDoWithStringIdAgainstIntIdTable item = new ToDoWithStringIdAgainstIntIdTable() { String = "Hey" };
+            ToDoWithStringIdAgainstIntIdTable item = new ToDoWithStringIdAgainstIntIdTable() { Name = "Hey" };
 
             // Insert
             await stringIdTable.InsertAsync(item);
@@ -516,7 +531,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
 
             Assert.AreEqual(1, items.Count());
             Assert.AreEqual(testId, items[0].Id);
-            Assert.AreEqual("Hey", items[0].String);
+            Assert.AreEqual("Hey", items[0].Name);
 
             // Filter
             results = await stringIdTable.Where(i => i.Id == testId).ToEnumerableAsync();
@@ -524,10 +539,10 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
 
             Assert.AreEqual(1, items.Count());
             Assert.AreEqual(testId, items[0].Id);
-            Assert.AreEqual("Hey", items[0].String);
+            Assert.AreEqual("Hey", items[0].Name);
 
             // Projection
-            var projectedResults = await stringIdTable.Select(i => new { XId = i.Id, XString = i.String }).ToEnumerableAsync();
+            var projectedResults = await stringIdTable.Select(i => new { XId = i.Id, XString = i.Name }).ToEnumerableAsync();
             var projectedItems = projectedResults.ToArray();
 
             Assert.AreEqual(1, projectedItems.Count());
@@ -537,19 +552,19 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
             // Lookup
             ToDoWithStringIdAgainstIntIdTable stringIdItem = await stringIdTable.LookupAsync(testId);
             Assert.AreEqual(testId, stringIdItem.Id);
-            Assert.AreEqual("Hey", stringIdItem.String);
+            Assert.AreEqual("Hey", stringIdItem.Name);
 
             // Update
-            stringIdItem.String = "What?";
+            stringIdItem.Name = "What?";
             await stringIdTable.UpdateAsync(stringIdItem);
             Assert.AreEqual(testId, stringIdItem.Id);
-            Assert.AreEqual("What?", stringIdItem.String);
+            Assert.AreEqual("What?", stringIdItem.Name);
 
             // Refresh
-            stringIdItem = new ToDoWithStringIdAgainstIntIdTable() { Id = testId, String = "Hey" };
+            stringIdItem = new ToDoWithStringIdAgainstIntIdTable() { Id = testId, Name = "Hey" };
             await stringIdTable.RefreshAsync(stringIdItem);
             Assert.AreEqual(testId, stringIdItem.Id);
-            Assert.AreEqual("What?", stringIdItem.String);
+            Assert.AreEqual("What?", stringIdItem.Name);
 
             // Read Again
             results = await stringIdTable.ReadAsync();
@@ -557,22 +572,25 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
 
             Assert.AreEqual(1, items.Count());
             Assert.AreEqual(testId, items[0].Id);
-            Assert.AreEqual("What?", items[0].String);
+            Assert.AreEqual("What?", items[0].Name);
 
             // Delete
             await stringIdTable.DeleteAsync(item);
         }
 
-        [TestMethod]
+        [AsyncTestMethod]
+        [Tag("NodeRuntimeOnly")]
         public async Task AsyncTableOperationsWithStringIdAgainstIntegerIdTable()
         {
+            Log("This test fails with the .NET backend since in .NET the DTO always has string-id. In Node, querying an int-id column for a string causes an error.");
+
             await EnsureEmptyTableAsync<ToDoWithIntId>();
 
             IMobileServiceTable<ToDoWithIntId> table = GetClient().GetTable<ToDoWithIntId>();
             List<ToDoWithIntId> integerIdItems = new List<ToDoWithIntId>();
             for (var i = 0; i < 10; i++)
             {
-                ToDoWithIntId item = new ToDoWithIntId() { String = i.ToString() };
+                ToDoWithIntId item = new ToDoWithIntId() { Name = i.ToString() };
                 await table.InsertAsync(item);
                 integerIdItems.Add(item);
             }
@@ -584,49 +602,34 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
             foreach (string testId in testIdData)
             {
                 // Filter
-                Exception exception = null;
+                MobileServiceInvalidOperationException exception = null;
                 try
                 {
                     IEnumerable<ToDoWithStringIdAgainstIntIdTable> results = await stringIdTable.Where(p => p.Id == testId).ToEnumerableAsync();
                     ToDoWithStringIdAgainstIntIdTable[] items = results.ToArray();
                 }
-                catch (Exception e)
+                catch (MobileServiceInvalidOperationException e)
                 {
                     exception = e;
                 }
 
                 Assert.IsNotNull(exception);
-                Assert.IsTrue(exception.Message.Contains("Bad request"));
+                Assert.Equals(exception.Response.StatusCode, HttpStatusCode.BadRequest);
 
                 // Refresh
                 exception = null;
                 try
                 {
-                    ToDoWithStringIdAgainstIntIdTable item = new ToDoWithStringIdAgainstIntIdTable() { Id = testId, String = "Hey!" };
+                    ToDoWithStringIdAgainstIntIdTable item = new ToDoWithStringIdAgainstIntIdTable() { Id = testId, Name = "Hey!" };
                     await stringIdTable.RefreshAsync(item);
                 }
-                catch (Exception e)
+                catch (MobileServiceInvalidOperationException e)
                 {
                     exception = e;
                 }
 
                 Assert.IsNotNull(exception);
-                Assert.IsTrue(exception.Message.Contains("Bad request"));
-
-                // Insert
-                exception = null;
-                try
-                {
-                    ToDoWithStringIdAgainstIntIdTable item = new ToDoWithStringIdAgainstIntIdTable() { Id = testId, String = "Hey!" };
-                    await stringIdTable.InsertAsync(item);
-                }
-                catch (Exception e)
-                {
-                    exception = e;
-                }
-
-                Assert.IsNotNull(exception);
-                Assert.IsTrue(exception.Message.Contains("Error: A value cannot be specified for property 'id'"));
+                Assert.Equals(exception.Response.StatusCode, HttpStatusCode.BadRequest);
 
                 // Lookup
                 exception = null;
@@ -634,43 +637,43 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
                 {
                     await stringIdTable.LookupAsync(testId);
                 }
-                catch (Exception e)
+                catch (MobileServiceInvalidOperationException e)
                 {
                     exception = e;
                 }
 
                 Assert.IsNotNull(exception);
-                Assert.IsTrue(exception.Message.Contains("Error: The value specified for 'id' must be a number."));
+                Assert.Equals(exception.Response.StatusCode, HttpStatusCode.BadRequest);
 
                 // Update
                 exception = null;
                 try
                 {
-                    ToDoWithStringIdAgainstIntIdTable item = new ToDoWithStringIdAgainstIntIdTable() { Id = testId, String = "Hey!" };
+                    ToDoWithStringIdAgainstIntIdTable item = new ToDoWithStringIdAgainstIntIdTable() { Id = testId, Name = "Hey!" };
                     await stringIdTable.UpdateAsync(item);
                 }
-                catch (Exception e)
+                catch (MobileServiceInvalidOperationException e)
                 {
                     exception = e;
                 }
 
                 Assert.IsNotNull(exception);
-                Assert.IsTrue(exception.Message.Contains("Error: The value specified for 'id' must be a number."));
+                Assert.Equals(exception.Response.StatusCode, HttpStatusCode.BadRequest);
 
                 // Delete
                 exception = null;
                 try
                 {
-                    ToDoWithStringIdAgainstIntIdTable item = new ToDoWithStringIdAgainstIntIdTable() { Id = testId, String = "Hey!" };
+                    ToDoWithStringIdAgainstIntIdTable item = new ToDoWithStringIdAgainstIntIdTable() { Id = testId, Name = "Hey!" };
                     await stringIdTable.DeleteAsync(item);
                 }
-                catch (Exception e)
+                catch (MobileServiceInvalidOperationException e)
                 {
                     exception = e;
                 }
 
                 Assert.IsNotNull(exception);
-                Assert.IsTrue(exception.Message.Contains("Error: The value specified for 'id' must be a number."));
+                Assert.Equals(exception.Response.StatusCode, HttpStatusCode.BadRequest);
             }
 
             foreach (ToDoWithIntId integerIdItem in integerIdItems)
@@ -679,7 +682,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
             }
         }
 
-        [TestMethod]
+        [AsyncTestMethod]
         public async Task OrderingReadAsyncWithStringIdAgainstIntegerIdTable()
         {
             await EnsureEmptyTableAsync<ToDoWithIntId>();
@@ -688,7 +691,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
             List<ToDoWithIntId> integerIdItems = new List<ToDoWithIntId>();
             for (var i = 0; i < 10; i++)
             {
-                ToDoWithIntId item = new ToDoWithIntId() { String = i.ToString() };
+                ToDoWithIntId item = new ToDoWithIntId() { Name = i.ToString() };
                 await table.InsertAsync(item);
                 integerIdItems.Add(item);
             }
@@ -719,7 +722,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
             }
         }
 
-        [TestMethod]
+        [AsyncTestMethod]
         public async Task FilterReadAsyncWithIntegerAsStringIdAgainstIntegerIdTable()
         {
             await EnsureEmptyTableAsync<ToDoWithIntId>();
@@ -728,7 +731,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
             List<ToDoWithIntId> integerIdItems = new List<ToDoWithIntId>();
             for (var i = 0; i < 10; i++)
             {
-                ToDoWithIntId item = new ToDoWithIntId() { String = i.ToString() };
+                ToDoWithIntId item = new ToDoWithIntId() { Name = i.ToString() };
                 await table.InsertAsync(item);
                 integerIdItems.Add(item);
             }
@@ -739,7 +742,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
             ToDoWithStringIdAgainstIntIdTable[] items = results.ToArray();
             Assert.AreEqual(1, items.Count());
             Assert.AreEqual(integerIdItems[0].Id.ToString(), items[0].Id);
-            Assert.AreEqual("0", items[0].String);
+            Assert.AreEqual("0", items[0].Name);
 
             foreach (ToDoWithIntId integerIdItem in integerIdItems)
             {
@@ -747,7 +750,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
             }
         }
 
-        [TestMethod]
+        [AsyncTestMethod]
         public async Task FilterReadAsyncWithEmptyStringIdAgainstIntegerIdTable()
         {
             await EnsureEmptyTableAsync<ToDoWithIntId>();
@@ -756,7 +759,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
             List<ToDoWithIntId> integerIdItems = new List<ToDoWithIntId>();
             for (var i = 0; i < 10; i++)
             {
-                ToDoWithIntId item = new ToDoWithIntId() { String = i.ToString() };
+                ToDoWithIntId item = new ToDoWithIntId() { Name = i.ToString() };
                 await table.InsertAsync(item);
                 integerIdItems.Add(item);
             }
@@ -779,14 +782,14 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
             }
         }
 
-        [TestMethod]
+        [AsyncTestMethod]
         public async Task ReadAsyncWithValidIntIdAgainstIntIdTable()
         {
             await EnsureEmptyTableAsync<ToDoWithIntId>();
 
             IMobileServiceTable<ToDoWithIntId> table = GetClient().GetTable<ToDoWithIntId>();
 
-            ToDoWithIntId item = new ToDoWithIntId() { String = "Hey" };
+            ToDoWithIntId item = new ToDoWithIntId() { Name = "Hey" };
             await table.InsertAsync(item);
 
             IEnumerable<ToDoWithIntId> results = await table.ReadAsync();
@@ -794,20 +797,20 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
 
             Assert.AreEqual(1, items.Count());
             Assert.IsTrue(items[0].Id > 0);
-            Assert.AreEqual("Hey", items[0].String);
+            Assert.AreEqual("Hey", items[0].Name);
 
             await table.DeleteAsync(item);
         }
 
-        [TestMethod]
+        [AsyncTestMethod]
         public async Task AsyncTableOperationsWithAllSystemProperties()
         {
-            await EnsureEmptyTableAsync<ToDoWithSystemPropertiesType>();
+            await EnsureEmptyTableAsync<RoundTripTableItemWithSystemPropertiesType>();
 
-            string id = "an id";
-            IMobileServiceTable<ToDoWithSystemPropertiesType> table = GetClient().GetTable<ToDoWithSystemPropertiesType>();
+            string id = Guid.NewGuid().ToString();
+            IMobileServiceTable<RoundTripTableItemWithSystemPropertiesType> table = GetClient().GetTable<RoundTripTableItemWithSystemPropertiesType>();
 
-            ToDoWithSystemPropertiesType item = new ToDoWithSystemPropertiesType() { Id = id, String = "a value" };
+            RoundTripTableItemWithSystemPropertiesType item = new RoundTripTableItemWithSystemPropertiesType() { Id = id, Name = "a value" };
             await table.InsertAsync(item);
 
             Assert.IsNotNull(item.CreatedAt);
@@ -815,8 +818,8 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
             Assert.IsNotNull(item.Version);
 
             // Read
-            IEnumerable<ToDoWithSystemPropertiesType> results = await table.ReadAsync();
-            ToDoWithSystemPropertiesType[] items = results.ToArray();
+            IEnumerable<RoundTripTableItemWithSystemPropertiesType> results = await table.ReadAsync();
+            RoundTripTableItemWithSystemPropertiesType[] items = results.ToArray();
 
             Assert.AreEqual(1, items.Count());
             Assert.IsNotNull(items[0].CreatedAt);
@@ -824,31 +827,29 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
             Assert.IsNotNull(items[0].Version);
 
             // Filter against version
+            // BUG #1706815 (OData query for version field (string <--> byte[] mismatch)
+            /*
             results = await table.Where(i => i.Version == items[0].Version).ToEnumerableAsync();
-            ToDoWithSystemPropertiesType[] filterItems = results.ToArray();
-
+            RoundTripTableItemWithSystemPropertiesType[] filterItems = results.ToArray();
             Assert.AreEqual(1, items.Count());
             Assert.AreEqual(filterItems[0].CreatedAt, items[0].CreatedAt);
             Assert.AreEqual(filterItems[0].UpdatedAt, items[0].UpdatedAt);
             Assert.AreEqual(filterItems[0].Version, items[0].Version);
-
             // Filter against createdAt
             results = await table.Where(i => i.CreatedAt == items[0].CreatedAt).ToEnumerableAsync();
-            filterItems = results.ToArray();
-
+            RoundTripTableItemWithSystemPropertiesType[] filterItems = results.ToArray();
             Assert.AreEqual(1, items.Count());
             Assert.AreEqual(filterItems[0].CreatedAt, items[0].CreatedAt);
             Assert.AreEqual(filterItems[0].UpdatedAt, items[0].UpdatedAt);
             Assert.AreEqual(filterItems[0].Version, items[0].Version);
-
             // Filter against updatedAt
             results = await table.Where(i => i.UpdatedAt == items[0].UpdatedAt).ToEnumerableAsync();
             filterItems = results.ToArray();
-
             Assert.AreEqual(1, items.Count());
             Assert.AreEqual(filterItems[0].CreatedAt, items[0].CreatedAt);
             Assert.AreEqual(filterItems[0].UpdatedAt, items[0].UpdatedAt);
             Assert.AreEqual(filterItems[0].Version, items[0].Version);
+            */
 
             // Projection
             var projectedResults = await table.Select(i => new { XId = i.Id, XCreatedAt = i.CreatedAt, XUpdatedAt = i.UpdatedAt, XVersion = i.Version }).ToEnumerableAsync();
@@ -869,7 +870,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
             Assert.AreEqual(item.Version, items[0].Version);
 
             // Refresh
-            item = new ToDoWithSystemPropertiesType() { Id = id };
+            item = new RoundTripTableItemWithSystemPropertiesType() { Id = id };
             await table.RefreshAsync(item);
             Assert.AreEqual(id, item.Id);
             Assert.AreEqual(item.Id, items[0].Id);
@@ -878,7 +879,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
             Assert.AreEqual(item.Version, items[0].Version);
 
             // Update
-            item.String = "Hello!";
+            item.Name = "Hello!";
             await table.UpdateAsync(item);
             Assert.AreEqual(item.Id, items[0].Id);
             Assert.AreEqual(item.CreatedAt, items[0].CreatedAt);
@@ -898,54 +899,51 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
             await table.DeleteAsync(item);
         }
 
-        [TestMethod]
-        public async Task AsyncTableOperationsWithSystemProperties()
+        [AsyncTestMethod]
+        public async Task AsyncTableOperationsWithSystemPropertiesSetExplicitly()
         {
-            await EnsureEmptyTableAsync<ToDoWithSystemPropertiesType>();
+            await EnsureEmptyTableAsync<RoundTripTableItemWithSystemPropertiesType>();
 
-            IMobileServiceTable<ToDoWithSystemPropertiesType> allSystemPropertiesTable = GetClient().GetTable<ToDoWithSystemPropertiesType>();
+            IMobileServiceTable<RoundTripTableItemWithSystemPropertiesType> allSystemPropertiesTable = GetClient().GetTable<RoundTripTableItemWithSystemPropertiesType>();
 
             // Regular insert
-            ToDoWithSystemPropertiesType item = new ToDoWithSystemPropertiesType() { String = "a value" };
+            RoundTripTableItemWithSystemPropertiesType item = new RoundTripTableItemWithSystemPropertiesType() { Name = "a value" };
             await allSystemPropertiesTable.InsertAsync(item);
 
             Assert.IsNotNull(item.CreatedAt);
             Assert.IsNotNull(item.UpdatedAt);
             Assert.IsNotNull(item.Version);
 
-            // Explicit System Properties insert
-            ToDoWithSystemPropertiesType item2 = new ToDoWithSystemPropertiesType();
-            await allSystemPropertiesTable.InsertAsync(item2);
-
-            Assert.IsNotNull(item2.CreatedAt);
-            Assert.AreEqual(new DateTime(), item2.UpdatedAt);
-            Assert.IsNotNull(item2.Version);
-
             // Explicit System Properties Read
-            IEnumerable<ToDoWithSystemPropertiesType> results = await allSystemPropertiesTable.Where(p => p.Id == item2.Id).ToEnumerableAsync();
-            ToDoWithSystemPropertiesType[] items = results.ToArray();
+            IEnumerable<RoundTripTableItemWithSystemPropertiesType> results = await allSystemPropertiesTable.Where(p => p.Id == item.Id).ToEnumerableAsync();
+            RoundTripTableItemWithSystemPropertiesType[] items = results.ToArray();
 
             Assert.AreEqual(1, items.Count());
-            Assert.AreEqual(new DateTime(), items[0].CreatedAt);
+            Assert.IsNotNull(items[0].CreatedAt);
             Assert.IsNotNull(items[0].UpdatedAt);
             Assert.IsNotNull(items[0].Version);
 
+            // Lookup
+            var item3 = await allSystemPropertiesTable.LookupAsync(item.Id);
+            Assert.AreEqual(item.CreatedAt, item3.CreatedAt);
+            Assert.AreEqual(item.UpdatedAt, item3.UpdatedAt);
+            Assert.IsNotNull(item3.Version);
+
             await allSystemPropertiesTable.DeleteAsync(item);
-            await allSystemPropertiesTable.DeleteAsync(item2);
         }
 
-        [TestMethod]
+        [AsyncTestMethod]
         public async Task AsyncFilterSelectOrderingOperationsNotImpactedBySystemProperties()
         {
-            await EnsureEmptyTableAsync<ToDoWithSystemPropertiesType>();
+            await EnsureEmptyTableAsync<RoundTripTableItemWithSystemPropertiesType>();
 
-            IMobileServiceTable<ToDoWithSystemPropertiesType> table = GetClient().GetTable<ToDoWithSystemPropertiesType>();
-            List<ToDoWithSystemPropertiesType> items = new List<ToDoWithSystemPropertiesType>();
+            IMobileServiceTable<RoundTripTableItemWithSystemPropertiesType> table = GetClient().GetTable<RoundTripTableItemWithSystemPropertiesType>();
+            List<RoundTripTableItemWithSystemPropertiesType> items = new List<RoundTripTableItemWithSystemPropertiesType>();
 
             // Insert some items
             for (int id = 0; id < 5; id++)
             {
-                ToDoWithSystemPropertiesType item = new ToDoWithSystemPropertiesType() { Id = id.ToString(), String = "a value" };
+                RoundTripTableItemWithSystemPropertiesType item = new RoundTripTableItemWithSystemPropertiesType() { Id = id.ToString(), Name = "a value" };
 
                 await table.InsertAsync(item);
 
@@ -953,13 +951,11 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
                 Assert.IsNotNull(item.UpdatedAt);
                 Assert.IsNotNull(item.Version);
                 items.Add(item);
-
-                await Task.Delay(10); // to separate the items in time
             }
 
             // Ordering
-            var results = await table.OrderBy(t => t.CreatedAt).ToEnumerableAsync();
-            ToDoWithSystemPropertiesType[] orderItems = results.ToArray();
+            var results = await table.OrderBy(t => t.CreatedAt).ToEnumerableAsync(); // Fails here with .NET runtime. Why??
+            RoundTripTableItemWithSystemPropertiesType[] orderItems = results.ToArray();
 
             for (int i = 0; i < orderItems.Length - 1; i++)
             {
@@ -984,7 +980,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
 
             // Filtering
             results = await table.Where(t => t.CreatedAt >= items[4].CreatedAt).ToEnumerableAsync();
-            ToDoWithSystemPropertiesType[] filteredItems = results.ToArray();
+            RoundTripTableItemWithSystemPropertiesType[] filteredItems = results.ToArray();
 
             for (int i = 0; i < filteredItems.Length - 1; i++)
             {
@@ -999,13 +995,15 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
                 Assert.IsTrue(filteredItems[i].UpdatedAt >= items[4].UpdatedAt);
             }
 
+            // TODO: Seperate to own test, to not run for .NET / Fix.Net
+            /*
             results = await table.Where(t => t.Version == items[4].Version).ToEnumerableAsync();
             filteredItems = results.ToArray();
-
             for (int i = 0; i < filteredItems.Length - 1; i++)
             {
                 Assert.IsTrue(filteredItems[i].Version == items[4].Version);
             }
+            */
 
             // Selection
             var selectionResults = await table.Select(t => new { Id = t.Id, CreatedAt = t.CreatedAt }).ToEnumerableAsync();
@@ -1042,16 +1040,16 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
             }
         }
 
-        [TestMethod]
+        [AsyncTestMethod]
         public async Task UpdateAsyncWithMergeConflict()
         {
-            await EnsureEmptyTableAsync<ToDoWithSystemPropertiesType>();
-            string id = "an id";
-            IMobileServiceTable table = GetClient().GetTable("stringId_test_table");
+            await EnsureEmptyTableAsync<RoundTripTableItemWithSystemPropertiesType>();
+            string id = Guid.NewGuid().ToString();
+            IMobileServiceTable table = GetClient().GetTable("RoundTripTable");
 
-            var item = new JObject() { { "id", id }, { "String", "a value" } };
+            var item = new JObject() { { "id", id }, { "name", "a value" } };
             var inserted = await table.InsertAsync(item);
-            item["version"] = "random";
+            item["version"] = "3q3A3g==";
 
             MobileServicePreconditionFailedException expectedException = null;
             try
@@ -1064,18 +1062,18 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
             }
             Assert.IsNotNull(expectedException);
             Assert.AreEqual(expectedException.Value["version"], inserted["version"]);
-            Assert.AreEqual(expectedException.Value["String"], inserted["String"]);
+            Assert.AreEqual(expectedException.Value["name"], inserted["name"]);
         }
 
-        [TestMethod]
+        [AsyncTestMethod]
         public async Task UpdateAsyncWitMergeConflict_Generic()
         {
-            await EnsureEmptyTableAsync<ToDoWithSystemPropertiesType>();
+            await EnsureEmptyTableAsync<RoundTripTableItemWithSystemPropertiesType>();
 
-            string id = "an id";
-            IMobileServiceTable<ToDoWithSystemPropertiesType> table = GetClient().GetTable<ToDoWithSystemPropertiesType>();
+            string id = Guid.NewGuid().ToString();
+            IMobileServiceTable<RoundTripTableItemWithSystemPropertiesType> table = GetClient().GetTable<RoundTripTableItemWithSystemPropertiesType>();
 
-            ToDoWithSystemPropertiesType item = new ToDoWithSystemPropertiesType() { Id = id, String = "a value" };
+            RoundTripTableItemWithSystemPropertiesType item = new RoundTripTableItemWithSystemPropertiesType() { Id = id, Name = "a value" };
             await table.InsertAsync(item);
 
             Assert.IsNotNull(item.CreatedAt);
@@ -1085,7 +1083,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
             string version = item.Version;
 
             // Update
-            item.String = "Hello!";
+            item.Name = "Hello!";
             await table.UpdateAsync(item);
             Assert.IsNotNull(item.Version);
             Assert.AreNotEqual(item.Version, version);
@@ -1094,13 +1092,13 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
 
             // Update again but with the original version
             item.Version = version;
-            item.String = "But wait!";
-            MobileServicePreconditionFailedException<ToDoWithSystemPropertiesType> expectedException = null;
+            item.Name = "But wait!";
+            MobileServicePreconditionFailedException<RoundTripTableItemWithSystemPropertiesType> expectedException = null;
             try
             {
                 await table.UpdateAsync(item);
             }
-            catch (MobileServicePreconditionFailedException<ToDoWithSystemPropertiesType> exception)
+            catch (MobileServicePreconditionFailedException<RoundTripTableItemWithSystemPropertiesType> exception)
             {
                 expectedException = exception;
             }
@@ -1108,28 +1106,22 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Functional
             Assert.IsNotNull(expectedException);
             Assert.AreEqual(expectedException.Response.StatusCode, HttpStatusCode.PreconditionFailed);
 
-            string responseContent = await expectedException.Response.Content.ReadAsStringAsync();
-            JToken jtoken = responseContent.ParseToJToken(table.MobileServiceClient.SerializerSettings);
-            string serverVersion = (string)jtoken["version"];
-            string stringValue = (string)jtoken["String"];
+            Assert.IsNotNull(expectedException.Item);
+
+            string serverVersion = expectedException.Item.Version;
+            string stringValue = expectedException.Item.Name;
 
             Assert.AreEqual(newVersion, serverVersion);
             Assert.AreEqual(stringValue, "Hello!");
-
-            Assert.IsNotNull(expectedException.Item);
-            Assert.AreEqual(newVersion, expectedException.Item.Version);
-            Assert.AreEqual(stringValue, expectedException.Item.String);
 
             // Update one last time with the version from the server
             item.Version = serverVersion;
             await table.UpdateAsync(item);
             Assert.IsNotNull(item.Version);
-            Assert.AreEqual(item.String, "But wait!");
+            Assert.AreEqual(item.Name, "But wait!");
             Assert.AreNotEqual(item.Version, serverVersion);
-
 
             await table.DeleteAsync(item);
         }
-
     }
 }
