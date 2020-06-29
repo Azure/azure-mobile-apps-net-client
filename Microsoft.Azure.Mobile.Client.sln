@@ -14,10 +14,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.WindowsAzure.Mobi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test", "test\Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test\Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test.csproj", "{909FB359-1399-4F86-9562-5358143E99EE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MobileTestFramework", "test\MobileTestFramework\MobileTestFramework.csproj", "{5FE87B81-EB40-42EF-B9AC-C49DB96719C1}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LiveTests", "test\LiveTests\LiveTests.csproj", "{D1D82D83-7B01-4E19-9780-F2AB0DCB2701}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		AppStore|Any CPU = AppStore|Any CPU
