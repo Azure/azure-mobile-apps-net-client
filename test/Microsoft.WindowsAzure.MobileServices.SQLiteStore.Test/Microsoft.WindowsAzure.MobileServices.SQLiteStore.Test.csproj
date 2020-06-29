@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.Azure.Mobile.Clinet.SQLiteStore\Microsoft.Azure.Mobile.Client.SQLiteStore.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Azure.Mobile.Client.SQLiteStore\Microsoft.Azure.Mobile.Client.SQLiteStore.csproj" />
     <ProjectReference Include="..\Microsoft.WindowsAzure.MobileServices.Test\Microsoft.WindowsAzure.MobileServices.Test.csproj" />
   </ItemGroup>
 

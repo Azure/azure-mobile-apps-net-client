@@ -2,6 +2,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
 
+using System;
+using System.Net.Http.Headers;
+
 namespace Microsoft.WindowsAzure.MobileServices
 {
     /// <summary>
@@ -20,13 +23,21 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// </param>
         public MobileServiceUser(string userId)
         {
+            if (userId == null)
+            {
+                throw new ArgumentNullException(nameof(userId));
+            }
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                throw new ArgumentException("Cannot be empty", nameof(userId));
+            }
             this.userId = userId;
         }
 
         /// <summary>
         /// Gets or sets the user id of a successfully authenticated user.
         /// </summary>
-        public virtual string UserId 
+        public virtual string UserId
         {
             get { return this.userId; }
             set { this.userId = value; }
@@ -34,11 +45,11 @@ namespace Microsoft.WindowsAzure.MobileServices
 
         /// <summary>
         /// A Microsoft Azure Mobile Services authentication token for the user given by
-        /// the <see cref="UserId"/>. If non-null, the authentication token will be 
-        /// included in all requests made to the Microsoft Azure Mobile Service, allowing 
-        /// the client to perform all actions on the Microsoft Azure Mobile Service that 
+        /// the <see cref="UserId"/>. If non-null, the authentication token will be
+        /// included in all requests made to the Microsoft Azure Mobile Service, allowing
+        /// the client to perform all actions on the Microsoft Azure Mobile Service that
         /// require authenticated-user level permissions.
-        /// </summary>        
+        /// </summary>
         public virtual string MobileServiceAuthenticationToken
         {
             get { return this.mobileServiceAuthenticationToken; }
