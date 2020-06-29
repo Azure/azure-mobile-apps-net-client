@@ -16,6 +16,7 @@ e2etest/**/AppPackages/*
 e2etest/output/*
 src/**/AppPackages/*
 unittest/**/AppPackages/*
+TestResults
 
 # Ignore generated resource files
 [Rr]esource.[Dd]esigner.cs
