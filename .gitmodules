@@ -1,3 +1,0 @@
-[submodule "src/External/Xamarin.Auth"]
-	path = src/External/Xamarin.Auth
-	url = https://github.com/azure/azure-mobile-services-xamarin-auth.git
