@@ -52,18 +52,6 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             Assert.AreEqual((long)248, ((ITotalCountProvider)dataSource).TotalCount);
         }
 
-        //[Tag("NodeRuntimeOnly")]
-        //[AsyncTestMethod]
-        //private async Task QueryTests_Node()
-        //{
-        //    Log("This test fails with the .NET backend since it does not support 'replace' in OData queries.");
-
-        //    await CreateQueryTestIntId("String: Replace - Movies ending with either 'Part 2' or 'Part II'",
-        //        m => m.Title.Replace("II", "2").EndsWith("Part 2"));
-        //    await CreateQueryTestStringId("String: Replace - Movies ending with either 'Part 2' or 'Part II'",
-        //        m => m.Title.Replace("II", "2").EndsWith("Part 2"));
-        //}
-
         [AsyncTestMethod]
         private async Task QueryTests_Common()
         {

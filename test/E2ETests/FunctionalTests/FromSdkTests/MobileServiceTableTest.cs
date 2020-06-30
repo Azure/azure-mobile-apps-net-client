@@ -3,15 +3,12 @@
 // ----------------------------------------------------------------------------
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.MobileServices.TestFramework;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Microsoft.WindowsAzure.MobileServices;
 
 namespace Microsoft.WindowsAzure.MobileServices.Test
 {
@@ -576,110 +573,6 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
 
             // Delete
             await stringIdTable.DeleteAsync(item);
-        }
-
-        [AsyncTestMethod]
-        [Tag("NodeRuntimeOnly")]
-        public async Task AsyncTableOperationsWithStringIdAgainstIntegerIdTable()
-        {
-            Log("This test fails with the .NET backend since in .NET the DTO always has string-id. In Node, querying an int-id column for a string causes an error.");
-
-            await EnsureEmptyTableAsync<ToDoWithIntId>();
-
-            IMobileServiceTable<ToDoWithIntId> table = GetClient().GetTable<ToDoWithIntId>();
-            List<ToDoWithIntId> integerIdItems = new List<ToDoWithIntId>();
-            for (var i = 0; i < 10; i++)
-            {
-                ToDoWithIntId item = new ToDoWithIntId() { Name = i.ToString() };
-                await table.InsertAsync(item);
-                integerIdItems.Add(item);
-            }
-
-            string[] testIdData = IdTestData.ValidStringIds.ToArray();
-
-            IMobileServiceTable<ToDoWithStringIdAgainstIntIdTable> stringIdTable = GetClient().GetTable<ToDoWithStringIdAgainstIntIdTable>();
-
-            foreach (string testId in testIdData)
-            {
-                // Filter
-                MobileServiceInvalidOperationException exception = null;
-                try
-                {
-                    IEnumerable<ToDoWithStringIdAgainstIntIdTable> results = await stringIdTable.Where(p => p.Id == testId).ToEnumerableAsync();
-                    ToDoWithStringIdAgainstIntIdTable[] items = results.ToArray();
-                }
-                catch (MobileServiceInvalidOperationException e)
-                {
-                    exception = e;
-                }
-
-                Assert.IsNotNull(exception);
-                Assert.Equals(exception.Response.StatusCode, HttpStatusCode.BadRequest);
-
-                // Refresh
-                exception = null;
-                try
-                {
-                    ToDoWithStringIdAgainstIntIdTable item = new ToDoWithStringIdAgainstIntIdTable() { Id = testId, Name = "Hey!" };
-                    await stringIdTable.RefreshAsync(item);
-                }
-                catch (MobileServiceInvalidOperationException e)
-                {
-                    exception = e;
-                }
-
-                Assert.IsNotNull(exception);
-                Assert.Equals(exception.Response.StatusCode, HttpStatusCode.BadRequest);
-
-                // Lookup
-                exception = null;
-                try
-                {
-                    await stringIdTable.LookupAsync(testId);
-                }
-                catch (MobileServiceInvalidOperationException e)
-                {
-                    exception = e;
-                }
-
-                Assert.IsNotNull(exception);
-                Assert.Equals(exception.Response.StatusCode, HttpStatusCode.BadRequest);
-
-                // Update
-                exception = null;
-                try
-                {
-                    ToDoWithStringIdAgainstIntIdTable item = new ToDoWithStringIdAgainstIntIdTable() { Id = testId, Name = "Hey!" };
-                    await stringIdTable.UpdateAsync(item);
-                }
-                catch (MobileServiceInvalidOperationException e)
-                {
-                    exception = e;
-                }
-
-                Assert.IsNotNull(exception);
-                Assert.Equals(exception.Response.StatusCode, HttpStatusCode.BadRequest);
-
-                // Delete
-                exception = null;
-                try
-                {
-                    ToDoWithStringIdAgainstIntIdTable item = new ToDoWithStringIdAgainstIntIdTable() { Id = testId, Name = "Hey!" };
-                    await stringIdTable.DeleteAsync(item);
-                }
-                catch (MobileServiceInvalidOperationException e)
-                {
-                    exception = e;
-                }
-
-                Assert.IsNotNull(exception);
-                Assert.Equals(exception.Response.StatusCode, HttpStatusCode.BadRequest);
-            }
-
-            foreach (ToDoWithIntId integerIdItem in integerIdItems)
-            {
-                await table.DeleteAsync(integerIdItem);
-            }
         }
 
         [AsyncTestMethod]

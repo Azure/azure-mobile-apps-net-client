@@ -96,6 +96,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         }
 
         [AsyncTestMethod]
+        [Tag("adhal")]
         public async Task CreateFilterTestWithMultipleRequests()
         {
             await CreateFilterTestWithMultipleRequests(true);
@@ -617,8 +618,15 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             var uniqueId = Guid.NewGuid().ToString("N");
             if (typed)
             {
-                var item = new RoundTripTableItem { Name = uniqueId };
-                await typedTable.InsertAsync(item);
+                try
+                {
+                    var item = new RoundTripTableItem { Name = uniqueId };
+                    await typedTable.InsertAsync(item);
+                } catch (MobileServiceInvalidOperationException ex)
+                {
+                    Log($"Exception: {ex}");
+                    throw ex;
+                }
             }
             else
             {

@@ -49,8 +49,6 @@ namespace Microsoft.WindowsAzure.Mobile.Android.Test
 
                 StartActivity(testIntent);
             };
-
-            SetProgressBarVisibility(true);
         }
 
         protected override void OnStart()
@@ -58,9 +56,6 @@ namespace Microsoft.WindowsAzure.Mobile.Android.Test
             base.OnStart();
 
             App.Listener.PropertyChanged += OnListenerPropertyChanged;
-
-            SetProgress(App.Listener.Progress);
-
             ShowStatus();
         }
 
@@ -87,9 +82,8 @@ namespace Microsoft.WindowsAzure.Mobile.Android.Test
         {
             RunOnUiThread(() =>
             {
-                SetProgress(App.Listener.Progress);
-
-                this.runStatus.Text = String.Format("Passed: {0}  Failed: {1}", App.Harness.Progress - App.Harness.Failures, App.Harness.Failures);
+                var passed = App.Harness.Progress - App.Harness.Failures;
+                runStatus.Text = $"Completed {App.Harness.Progress}/{App.Harness.Count}: Pass/Fail = {passed}/{App.Harness.Failures}";
             });
         }
 
@@ -107,8 +101,7 @@ namespace Microsoft.WindowsAzure.Mobile.Android.Test
             }
         }
 
-        class TestListAdapter
-            : BaseExpandableListAdapter
+        class TestListAdapter : BaseExpandableListAdapter
         {
             public TestListAdapter(Activity activity, TestListener listener)
             {
@@ -154,7 +147,7 @@ namespace Microsoft.WindowsAzure.Mobile.Android.Test
                 if (!test.Test.Passed)
                     text.SetTextColor(Color.Red);
                 else
-                    text.SetTextColor(Color.White);
+                    text.SetTextColor(Color.Gray);
 
                 return view;
             }
@@ -183,7 +176,7 @@ namespace Microsoft.WindowsAzure.Mobile.Android.Test
                 if (group.HasFailures)
                     text.SetTextColor(Color.Red);
                 else
-                    text.SetTextColor(Color.White);
+                    text.SetTextColor(Color.Gray);
 
                 return view;
             }
