@@ -1,12 +1,16 @@
 # Azure Mobile Apps Managed SDK Change Log
 
+## Version 5.0.0
+
 - **Breaking** Support for .NET Standard 2.0
+- **Breaking** Convenience methods for logging into the service provider are no longer supported.  You must integrate the authentication provider library and pass the appropriate tokens to `LoginAsync(provider, tokens)` as a `JObject`.
 - **Breaking** Removed support for .NET Standard 1.4 and PCL editions
 - **Breaking** Update of Newtonsoft.JSON to v12.0.3 - this causes some changes in how the JSON parser handles overflow conditions.
-- **Breaking** Update of SQLitePCL to v2.0.3 - this updates the version of the SQLite driver and requires a resync of all offline data due to format changes.
 - **Breaking** You can no longer create a `MobileServiceUser` with an invalid or illegal username (such as null or the empty string).
 - **Breaking** Unbundled Xamarin.Auth.
+- Update of SQLitePCL to v2.0.3 
 - Moved all non-live tests to use MSTest v2
+- Push technologies / registration is no longer tested
 - [#511](https://github.com/Azure/azure-mobile-apps-net-client/issues/511) Support for Visual Studio 2019
 - [#415](https://github.com/Azure/azure-mobile-apps-net-client/issues/415) Support for latest Xamarin iOS and Android releases.
 
