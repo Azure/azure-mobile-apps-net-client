@@ -32,7 +32,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
 
             Log("Verifying loaded");
             Assert.AreEqual(248, dataSource.Count);
-            Assert.AreEqual((long)-1, ((ITotalCountProvider)dataSource).TotalCount);
+            Assert.AreEqual((long)-1, dataSource.TotalCount);
             Assert.AreEqual("Yojimbo", dataSource[0].Title);
         }
 
@@ -49,7 +49,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
 
             Log("Verifying loaded");
             Assert.AreEqual(5, dataSource.Count);
-            Assert.AreEqual((long)248, ((ITotalCountProvider)dataSource).TotalCount);
+            Assert.AreEqual((long)248, dataSource.TotalCount);
         }
 
         [AsyncTestMethod]
@@ -76,6 +76,8 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
                 m => ((m.Year - 1900) >= 80) && (m.Year + 10 < 2000) && (m.Duration < 120));
 
             // String functions
+            // The LINQ to OData Driver needs to be updated to support StringComparison.  It only supports ToLower()/ToUpper() right now
+#pragma warning disable RCS1155 // Use StringComparison when comparing strings.
             await CreateQueryTestIntId("String: StartsWith - Movies which starts with 'The'",
                 m => m.Title.StartsWith("The"), 100);
             await CreateQueryTestIntId("String: StartsWith, case insensitive - Movies which start with 'the'",
@@ -109,6 +111,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
                 m => m.Title.Substring(m.Title.Length - 1, 1) == "r");
             await CreateQueryTestStringId("String: Concat - Movies rated 'PG' or 'PG-13' from the 2000s",
                 m => m.Year >= 2000 && string.Concat(m.MpaaRating, "-13").StartsWith("PG-13"));
+#pragma warning restore RCS1155 // Use StringComparison when comparing strings.
 
             // String fields
             await CreateQueryTestIntId("String equals - Movies since 1980 with rating PG-13",
@@ -458,7 +461,9 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
                 }
 
                 long actualTotalCount = -1;
+#pragma warning disable CS0618 // Type or member is obsolete
                 ITotalCountProvider totalCountProvider = (readMovies as ITotalCountProvider) ?? (readProjectedMovies as ITotalCountProvider);
+#pragma warning restore CS0618 // Type or member is obsolete
                 if (totalCountProvider != null)
                 {
                     actualTotalCount = totalCountProvider.TotalCount;

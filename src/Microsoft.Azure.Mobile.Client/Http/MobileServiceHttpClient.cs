@@ -78,7 +78,7 @@ namespace Microsoft.WindowsAzure.MobileServices
 
         /// <summary>
         /// Represents a handler used to process HTTP requests and responses
-        /// associated with the Mobile Service.  
+        /// associated with the Mobile Service.
         /// </summary>
         public HttpMessageHandler httpHandler;
 
@@ -107,12 +107,12 @@ namespace Microsoft.WindowsAzure.MobileServices
         internal static Func<HttpMessageHandler> DefaultHandlerFactory = GetDefaultHttpClientHandler;
 
         /// <summary>
-        /// Instantiates a new <see cref="MobileServiceHttpClient"/>, 
+        /// Instantiates a new <see cref="MobileServiceHttpClient"/>,
         /// which does all the request to a mobile service.
         /// </summary>
         /// <param name="handlers">
-        /// Chain of <see cref="HttpMessageHandler" /> instances. 
-        /// All but the last should be <see cref="DelegatingHandler"/>s. 
+        /// Chain of <see cref="HttpMessageHandler" /> instances.
+        /// All but the last should be <see cref="DelegatingHandler"/>s.
         /// </param>
         /// <param name="applicationUri">
         /// The URI for the Microsoft Azure Mobile Service.
@@ -200,7 +200,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// Value indicating which features of the SDK are being used in this call. Useful for telemetry.
         /// </param>
         /// <param name="cancellationToken">The <see cref="System.Threading.CancellationToken"/> token to observe</param>
-        /// <returns> 
+        /// <returns>
         /// The response.
         /// </returns>
         public Task<MobileServiceHttpResponse> RequestAsync(HttpMethod method,
@@ -218,7 +218,7 @@ namespace Microsoft.WindowsAzure.MobileServices
 
         /// <summary>
         /// Makes an HTTP request that includes the standard Mobile Services
-        /// headers. It will use an HttpClient that optionally has user-defined 
+        /// headers. It will use an HttpClient that optionally has user-defined
         /// http handlers.
         /// </summary>
         /// <param name="UseHandlers">Determines if the HttpClient will use user-defined http handlers</param>
@@ -321,10 +321,10 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// An <see cref="HttpResponseMessage"/>.
         /// </returns>
         public async Task<HttpResponseMessage> RequestAsync(HttpMethod method,
-                                                            string uriPathAndQuery, 
-                                                            MobileServiceUser user, 
-                                                            HttpContent content, 
-                                                            IDictionary<string, string> requestHeaders, 
+                                                            string uriPathAndQuery,
+                                                            MobileServiceUser user,
+                                                            HttpContent content,
+                                                            IDictionary<string, string> requestHeaders,
                                                             MobileServiceFeatures features = MobileServiceFeatures.None,
                                                             CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -387,7 +387,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// Creates an <see cref="HttpContent"/> instance from a string.
         /// </summary>
         /// <param name="content">
-        /// The string content from which to create the <see cref="HttpContent"/> instance. 
+        /// The string content from which to create the <see cref="HttpContent"/> instance.
         /// </param>
         /// <returns>
         /// An <see cref="HttpContent"/> instance or null if the <paramref name="content"/>
@@ -514,7 +514,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         }
 
         /// <summary>
-        /// Creates an <see cref="HttpRequestMessage"/> with all of the 
+        /// Creates an <see cref="HttpRequestMessage"/> with all of the
         /// required Mobile Service headers.
         /// </summary>
         /// <param name="method">
@@ -534,7 +534,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// The object representing the user on behalf of whom the request will be sent.
         /// </param>
         /// <returns>
-        /// An <see cref="HttpRequestMessage"/> with all of the 
+        /// An <see cref="HttpRequestMessage"/> with all of the
         /// required Mobile Service headers.
         /// </returns>
         private HttpRequestMessage CreateHttpRequestMessage(HttpMethod method, string uriPathAndQuery, IDictionary<string, string> requestHeaders, HttpContent content, MobileServiceUser user)
@@ -577,7 +577,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         {
             IEnumerable<string> AcceptEncodingList;
             request.Headers.TryGetValues("Accept-Encoding", out AcceptEncodingList);
-            if (AcceptEncodingList == null) 
+            if (AcceptEncodingList == null)
             {
                 return false;
             }
@@ -637,7 +637,8 @@ namespace Microsoft.WindowsAzure.MobileServices
 
                 if (!decompressionUsed && response.Content != null)
                 {
-                    long? contentLength = response.Content.Headers.ContentLength;
+                    var headers = response.Content.Headers;
+                    long? contentLength = headers.ContentLength;
                     if (contentLength == null || contentLength <= 0)
                     {
                         throw new MobileServiceInvalidOperationException("The server did not provide a response with the expected content.", request, response);
@@ -653,8 +654,8 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// a chain of <see cref="HttpMessageHandler"/>s.
         /// </summary>
         /// <param name="handlers">
-        /// Chain of <see cref="HttpMessageHandler" /> instances. 
-        /// All but the last should be <see cref="DelegatingHandler"/>s. 
+        /// Chain of <see cref="HttpMessageHandler" /> instances.
+        /// All but the last should be <see cref="DelegatingHandler"/>s.
         /// </param>
         /// <returns>A chain of <see cref="HttpMessageHandler"/>s</returns>
         private static HttpMessageHandler CreatePipeline(IEnumerable<HttpMessageHandler> handlers)

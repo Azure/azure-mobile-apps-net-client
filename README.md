@@ -45,7 +45,16 @@ You can run the unit tests using the MSTest test runner.  Ensure you run the uni
 
 ### Running the E2E Tests
 
-> **TODO** Describe how to set up the E2E endpoint and run the live test suite.
+Before running the E2E Test Suites, you must deploy the E2E Test Server, which can be obtained from the [azure/azure-mobile-apps-net-server](https://github.com/azure/azure-mobile-apps-net-server) repository.
+
+* Download the [repository](https://github.com/azure/azure-mobile-apps-net-server)
+* Open the `ServerSDK` solution.
+* Build the `ZumoE2EServerApp` project.
+* Create an Azure App Service, with a connected SQL Azure database.
+* Set the `MS_TableConnectionString` app setting in your Azure App Service to the connection string for the SQL Azure database.
+* Deploy the `ZumoE2EServerApp` to the App Service.
+
+Once complete, switch back to the client project, mark one of the E2ETest projects as the startup project and run it.  If you run the `iOS.E2ETest` project, you will to [connect a Mac to Visual Studio](https://docs.microsoft.com/en-us/xamarin/ios/get-started/installation/windows/connecting-to-mac/).  Run the application, enter the URL of your Azure App Service, then click **Run Tests**.
 
 ## Future of Azure Mobile Apps
 
