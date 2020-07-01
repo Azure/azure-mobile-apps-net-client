@@ -18,7 +18,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestFramework", "test\TestF
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "E2ETests", "test\E2ETests\E2ETests.csproj", "{28EF3021-59E8-4713-A9D0-E59B8FF71C01}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Android.E2ETest", "Android.E2ETest\Android.E2ETest.csproj", "{45DA303C-B30D-4A47-A7BC-6A1E0CB1456F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Android.E2ETest", "test\Android.E2ETest\Android.E2ETest.csproj", "{45DA303C-B30D-4A47-A7BC-6A1E0CB1456F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{72B8DDF7-4FA7-4071-8C44-448D9175EFAB}"
 	ProjectSection(SolutionItems) = preProject

@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -767,25 +768,39 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
                 }
             }
 
-            private static async Task<HttpRequestMessage> CloneRequest(HttpRequestMessage request)
+            private static async Task<HttpRequestMessage> CloneRequestAsync(HttpRequestMessage request)
             {
-                HttpRequestMessage result = new HttpRequestMessage(request.Method, request.RequestUri);
+                var clone = new HttpRequestMessage(request.Method, request.RequestUri);
+
+                // Copy the request's content into the cloned object
                 if (request.Content != null)
                 {
-                    string content = await request.Content.ReadAsStringAsync();
-                    string mediaType = request.Content.Headers.ContentType.MediaType;
-                    result.Content = new StringContent(content, Encoding.UTF8, mediaType);
+                    var content = await request.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+                    clone.Content = new ByteArrayContent(content);
+
+                    // Copy the content headers
+                    if (request.Content.Headers != null)
+                    {
+                        foreach (var h in request.Content.Headers)
+                        {
+                            clone.Content.Headers.Add(h.Key, h.Value);
+                        }
+                    }
+                }
+
+                clone.Version = request.Version;
+
+                foreach (var prop in request.Properties)
+                {
+                    clone.Properties.Add(prop);
                 }
 
                 foreach (var header in request.Headers)
                 {
-                    if (!header.Key.Equals("Content-Type", StringComparison.OrdinalIgnoreCase))
-                    {
-                        result.Headers.Add(header.Key, header.Value);
-                    }
+                    clone.Headers.TryAddWithoutValidation(header.Key, header.Value);
                 }
 
-                return result;
+                return clone;
             }
 
             protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -795,7 +810,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
                 {
                     for (int i = 0; i < this.NumberOfRequests; i++)
                     {
-                        HttpRequestMessage clonedRequest = await CloneRequest(request);
+                        HttpRequestMessage clonedRequest = await CloneRequestAsync(request);
                         response = await base.SendAsync(clonedRequest, cancellationToken);
                         if (i < this.NumberOfRequests - 1)
                         {
