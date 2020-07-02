@@ -573,15 +573,21 @@ namespace Microsoft.WindowsAzure.MobileServices
             return request;
         }
 
-        private static bool IsDecompressionUsed(HttpRequestMessage request)
+        private static bool IsResponseCompressed(HttpResponseMessage response)
         {
-            IEnumerable<string> AcceptEncodingList;
-            request.Headers.TryGetValues("Accept-Encoding", out AcceptEncodingList);
-            if (AcceptEncodingList == null)
+            response.Headers.TryGetValues("Content-Encoding", out IEnumerable<string> EncodingList);
+            if (EncodingList == null)
             {
-                return false;
+                response.Headers.TryGetValues("Vary", out IEnumerable<string> VaryList);
+                if (VaryList == null)
+                {
+                    return false;
+                }
+                string allVaryValues = VaryList.Aggregate((allValues, next) => allValues = allValues + ";" + next);
+                return !string.IsNullOrEmpty(allVaryValues) && allVaryValues.Contains("Accept-Encoding");
             }
-            string allAcceptEncodingValues = AcceptEncodingList.Aggregate((allValues, next) => allValues = allValues + ";" + next);
+
+            string allAcceptEncodingValues = EncodingList.Aggregate((allValues, next) => allValues = allValues + ";" + next);
             return !string.IsNullOrEmpty(allAcceptEncodingValues) &&
                  (allAcceptEncodingValues.Contains("gzip") ||
                  allAcceptEncodingValues.Contains("deflate") ||
@@ -633,12 +639,12 @@ namespace Microsoft.WindowsAzure.MobileServices
             // If there was supposed to be response content and there was not, throw
             if (ensureResponseContent)
             {
-                bool decompressionUsed = IsDecompressionUsed(request);
+                bool responseIsCompressed = IsResponseCompressed(response);
 
-                if (!decompressionUsed && response.Content != null)
+                if (!responseIsCompressed && response.Content != null)
                 {
-                    var headers = response.Content.Headers;
-                    long? contentLength = headers.ContentLength;
+
+                    long? contentLength = response.Content.Headers.ContentLength;
                     if (contentLength == null || contentLength <= 0)
                     {
                         throw new MobileServiceInvalidOperationException("The server did not provide a response with the expected content.", request, response);
