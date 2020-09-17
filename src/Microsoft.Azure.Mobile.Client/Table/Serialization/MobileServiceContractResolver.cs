@@ -98,9 +98,8 @@ namespace Microsoft.WindowsAzure.MobileServices
                     // By default, use the type name itself
                     name = type.Name;
 
-                    DataContractAttribute dataContractAttribute = type.GetTypeInfo().GetCustomAttributes(typeof(DataContractAttribute), true)
-                                                                      .FirstOrDefault() as DataContractAttribute;
-                    if (dataContractAttribute != null)
+                    if (type.GetTypeInfo().GetCustomAttributes(typeof(DataContractAttribute), true)
+                                                                      .FirstOrDefault() is DataContractAttribute dataContractAttribute)
                     {
                         if (!string.IsNullOrWhiteSpace(dataContractAttribute.Name))
                         {
@@ -108,9 +107,8 @@ namespace Microsoft.WindowsAzure.MobileServices
                         }
                     }
 
-                    JsonContainerAttribute jsonContainerAttribute = type.GetTypeInfo().GetCustomAttributes(typeof(JsonContainerAttribute), true)
-                                                                        .FirstOrDefault() as JsonContainerAttribute;
-                    if (jsonContainerAttribute != null)
+                    if (type.GetTypeInfo().GetCustomAttributes(typeof(JsonContainerAttribute), true)
+                                                                        .FirstOrDefault() is JsonContainerAttribute jsonContainerAttribute)
                     {
                         if (!string.IsNullOrWhiteSpace(jsonContainerAttribute.Title))
                         {
@@ -118,9 +116,8 @@ namespace Microsoft.WindowsAzure.MobileServices
                         }
                     }
 
-                    DataTableAttribute dataTableAttribute = type.GetTypeInfo().GetCustomAttributes(typeof(DataTableAttribute), true)
-                                                                .FirstOrDefault() as DataTableAttribute;
-                    if (dataTableAttribute != null)
+                    if (type.GetTypeInfo().GetCustomAttributes(typeof(DataTableAttribute), true)
+                                                                .FirstOrDefault() is DataTableAttribute dataTableAttribute)
                     {
                         if (!string.IsNullOrEmpty(dataTableAttribute.Name))
                         {
@@ -155,8 +152,7 @@ namespace Microsoft.WindowsAzure.MobileServices
 
         internal JsonProperty ResolveIdProperty(Type type, bool throwIfNotFound)
         {
-            JsonProperty property = null;
-            if (!this.idPropertyCache.TryGetValue(type, out property))
+            if (!this.idPropertyCache.TryGetValue(type, out JsonProperty property))
             {
                 ResolveContract(type);
                 this.idPropertyCache.TryGetValue(type, out property);
@@ -185,8 +181,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// </returns>
         public virtual MobileServiceSystemProperties ResolveSystemProperties(Type type)
         {
-            MobileServiceSystemProperties systemProperties = MobileServiceSystemProperties.None;
-            this.systemPropertyCache.TryGetValue(type, out systemProperties);
+            this.systemPropertyCache.TryGetValue(type, out MobileServiceSystemProperties systemProperties);
             return systemProperties;
         }
 
@@ -275,9 +270,8 @@ namespace Microsoft.WindowsAzure.MobileServices
         {
             JsonObjectContract contract = base.CreateObjectContract(objectType);
 
-            DataContractAttribute dataContractAttribute = objectType.GetTypeInfo().GetCustomAttributes(typeof(DataContractAttribute), true)
-                                                              .FirstOrDefault() as DataContractAttribute;
-            if (dataContractAttribute == null)
+            if (!(objectType.GetTypeInfo().GetCustomAttributes(typeof(DataContractAttribute), true)
+                                                              .FirstOrDefault() is DataContractAttribute dataContractAttribute))
             {
                 // Make sure the type does not have a base class with a [DataContract]
                 Type baseTypeWithDataContract = objectType.GetTypeInfo().BaseType;
@@ -308,8 +302,8 @@ namespace Microsoft.WindowsAzure.MobileServices
                 // To ensure types are not serialized differently, an exception must be thrown if this
                 // type is using [DataMember] attributes without a [DataContract] on the type itself.
                 if (objectType.GetRuntimeProperties()
-                         .Where( m => m.GetCustomAttributes(typeof(DataMemberAttribute), true)
-                                       .FirstOrDefault() != null)
+                         .Where(m => m.GetCustomAttributes(typeof(DataMemberAttribute), true)
+                                      .FirstOrDefault() != null)
                          .Any())
                 {
                     throw new NotSupportedException(
@@ -558,8 +552,7 @@ namespace Microsoft.WindowsAzure.MobileServices
 
             foreach (object attribute in member.GetCustomAttributes(true))
             {
-                ISystemPropertyAttribute systemProperty = attribute as ISystemPropertyAttribute;
-                if (systemProperty != null)
+                if (attribute is ISystemPropertyAttribute systemProperty)
                 {
                     if (systemProperties != MobileServiceSystemProperties.None)
                     {

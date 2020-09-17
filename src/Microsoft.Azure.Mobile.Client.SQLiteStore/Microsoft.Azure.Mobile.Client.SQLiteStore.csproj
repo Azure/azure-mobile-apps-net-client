@@ -1,8 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="MSBuild.Sdk.Extras/2.1.2">
   <Import Project="..\..\build\Microsoft.Azure.Mobile.Client.Build.props" />
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
-    <VersionPrefix>5.0.0</VersionPrefix>
+    <TargetFrameworks>netstandard2.0;xamarin.android90;xamarin.ios10</TargetFrameworks>
+    <VersionPrefix>4.2.0</VersionPrefix>
     <PackageTitle>Azure Mobile SQLiteStore</PackageTitle>
     <Title>Azure Mobile SQLiteStore</Title>
     <Authors>Microsoft</Authors>
@@ -25,7 +25,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Azure.Mobile.Client\Microsoft.Azure.Mobile.Client.csproj" />
-    <PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.0.3" />
+    <PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.0.4" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs" AutoGen="True" DesignTime="True" DependentUpon="Resources.resx" />
