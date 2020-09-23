@@ -47,13 +47,13 @@
     <Compile Update="Resources.Designer.cs" DesignTime="true" AutoGen="true" DependentUpon="Resources.resx" />
     <EmbeddedResource Update="Resources.resx" Generator="ResXFileCodeGenerator" LastGenOutput="Resources.Designer.cs" />
   </ItemGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'monoandroid90' ">
+  <PropertyGroup Condition="$(TargetFramework.StartsWith('MonoAndroid'))">
     <DefineConstants>$(DefineConstants);PLATFORM_ANDROID;XAMARIN_AUTH_INTERNAL</DefineConstants>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'xamarin.ios10' ">
+  <PropertyGroup Condition="$(TargetFramework.StartsWith('Xamarin.iOS'))">
     <DefineConstants>$(DefineConstants);PLATFORM_IOS;XAMARIN_AUTH_INTERNAL</DefineConstants>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'uap10.0' ">
+  <PropertyGroup Condition="$(TargetFramework.StartsWith('uap10.0'))">
     <DefineConstants>$(DefineConstants);WINDOWS_UWP;NETFX_CORE</DefineConstants>
     <TargetPlatformVersion>10.0.19041.0</TargetPlatformVersion>
     <TargetPlatformMinVersion>10.0.16299.0</TargetPlatformMinVersion>
@@ -66,21 +66,25 @@
     <Reference Include="System.Security" />
     <Compile Include="Platforms\net461\**\*.cs" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'monoandroid90' ">
+  <ItemGroup Condition="$(TargetFramework.StartsWith('MonoAndroid'))">
     <PackageReference Include="PCLCrypto" Version="2.0.147" />
     <PackageReference Include="Xamarin.Android.Support.CustomTabs" Version="28.0.0.3" />
     <PackageReference Include="Xamarin.Auth" Version="1.7.0" />
     <Reference Include="System.Runtime.Serialization" />
     <Compile Include="Platforms\android\**\*.cs" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'xamarin.ios10' ">
+  <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.iOS'))">
     <PackageReference Include="PCLCrypto" Version="2.0.147" />
     <PackageReference Include="Xamarin.Auth" Version="1.7.0" />
     <Reference Include="System.Runtime.Serialization" />
     <Compile Include="Platforms\ios\**\*.cs" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'uap10.0' ">
+  <ItemGroup Condition="$(TargetFramework.StartsWith('uap10.0'))">
+    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.2.9" PrivateAssets="all" />
     <Compile Include="Platforms\uwp\**\*.cs" />
+    <SDKReference Include="WindowsMobile, Version=10.0.16299.0">
+      <Name>Windows Mobile Extensions for the UWP</Name>
+    </SDKReference>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
