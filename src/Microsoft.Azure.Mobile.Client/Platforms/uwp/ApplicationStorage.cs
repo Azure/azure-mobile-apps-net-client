@@ -3,34 +3,35 @@
 // ----------------------------------------------------------------------------
 
 using System;
-using System.IO;
-using System.IO.IsolatedStorage;
+using Windows.Foundation.Collections;
+using Windows.Storage;
 
 namespace Microsoft.WindowsAzure.MobileServices
 {
     /// <summary>
     /// An implementation of the <see cref="IApplicationStorage"/> interface
-    /// for the .NET Platform that uses .NET
-    /// <see cref="System.Configuration.ApplicationSettingsBase"/> APIs.
+    /// for the Windows Store Platform that uses the Windows Store
+    /// <see cref="ApplicationData"/> APIs.
     /// </summary>
     internal class ApplicationStorage : IApplicationStorage
     {
         /// <summary>
-        /// A singleton instance of the <see cref="ApplicationStorage"/>.
+        /// A singleton instance of the <see cref="IApplicationStorage"/>.
         /// </summary>
         private static readonly IApplicationStorage instance = new ApplicationStorage();
 
-        private ApplicationStorage() : this(string.Empty)
+        private ApplicationStorage()
         {
+            this.Values = ApplicationData.Current.LocalSettings.Values;
         }
 
         internal ApplicationStorage(string name)
         {
-            this.StoragePrefix = name;
+            this.Values = ApplicationData.Current.LocalSettings.CreateContainer(name, ApplicationDataCreateDisposition.Always).Values;
         }
 
         /// <summary>
-        /// A singleton instance of the <see cref="ApplicationStorage"/>.
+        /// A singleton instance of the <see cref="IApplicationStorage"/>.
         /// </summary>
         internal static IApplicationStorage Instance
         {
@@ -40,14 +41,14 @@ namespace Microsoft.WindowsAzure.MobileServices
             }
         }
 
-        private string StoragePrefix { get; set; }
+        public IPropertySet Values { get; set; }
 
         /// <summary>
-        /// Tries to read a setting's value from application storage.
+        /// Tries to read a setting's value from application storage. 
         /// </summary>
         /// <param name="name">The name of the setting to try to read.
         /// </param>
-        /// <param name="value">Upon returning, if the return value was <c>true</c>,
+        /// <param name="value">Upon returning, if the return value was <c>true</c>, 
         /// will be the value of the given setting; will be <c>null</c> otherwise.
         /// </param>
         /// <returns>
@@ -63,22 +64,8 @@ namespace Microsoft.WindowsAzure.MobileServices
                 string message = "An application setting name must be provided. Null, empty or whitespace only names are not allowed.";
                 throw new ArgumentException(message);
             }
-            
-            var filename = string.Concat(StoragePrefix, name);
 
-            try
-            {
-                using var isoStore = IsolatedStorageFile.GetUserStoreForApplication();
-                using var fileStream = isoStore.OpenFile(filename, FileMode.OpenOrCreate, FileAccess.Read);
-                using var reader = new StreamReader(fileStream);
-                value = reader.ReadToEnd();
-                return value != null;
-            }
-            catch
-            {
-                value = Guid.Empty;
-                return true;
-            }
+            return this.Values.TryGetValue(name, out value);
         }
 
         /// <summary>
@@ -102,23 +89,12 @@ namespace Microsoft.WindowsAzure.MobileServices
                 throw new ArgumentException(message);
             }
 
-            var filename = string.Concat(StoragePrefix, name);
-
-            try
-            {
-                using var isoStore = IsolatedStorageFile.GetUserStoreForApplication();
-                using IsolatedStorageFileStream fileStream = isoStore.OpenFile(filename, FileMode.OpenOrCreate, FileAccess.Write);
-                using var writer = new StreamWriter(fileStream);
-                writer.WriteLine(value.ToString());
-            }
-            catch (Exception)
-            {
-            }
+            this.Values[name] = value;
         }
 
         public void Save()
         {
-            // This operation is a no-op in NetFramework
+            // This operation is a no-op on Windows 8
         }
     }
 }

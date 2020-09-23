@@ -63,12 +63,12 @@ namespace Microsoft.WindowsAzure.MobileServices
                 string message = "An application setting name must be provided. Null, empty or whitespace only names are not allowed.";
                 throw new ArgumentException(message);
             }
-            
+
             var filename = string.Concat(StoragePrefix, name);
 
             try
             {
-                using var isoStore = IsolatedStorageFile.GetUserStoreForApplication();
+                using var isoStore = IsolatedStorageFile.GetStore(IsolatedStorageScope.Assembly | IsolatedStorageScope.User, null, null);
                 using var fileStream = isoStore.OpenFile(filename, FileMode.OpenOrCreate, FileAccess.Read);
                 using var reader = new StreamReader(fileStream);
                 value = reader.ReadToEnd();
@@ -103,11 +103,10 @@ namespace Microsoft.WindowsAzure.MobileServices
             }
 
             var filename = string.Concat(StoragePrefix, name);
-
             try
             {
-                using var isoStore = IsolatedStorageFile.GetUserStoreForApplication();
-                using IsolatedStorageFileStream fileStream = isoStore.OpenFile(filename, FileMode.OpenOrCreate, FileAccess.Write);
+                using var isoStore = IsolatedStorageFile.GetStore(IsolatedStorageScope.Assembly | IsolatedStorageScope.User, null, null);
+                using var fileStream = isoStore.OpenFile(filename, FileMode.OpenOrCreate, FileAccess.Write);
                 using var writer = new StreamWriter(fileStream);
                 writer.WriteLine(value.ToString());
             }

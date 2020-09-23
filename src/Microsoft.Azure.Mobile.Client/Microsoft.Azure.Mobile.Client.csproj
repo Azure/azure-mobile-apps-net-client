@@ -1,7 +1,7 @@
 ﻿<Project Sdk="MSBuild.Sdk.Extras/2.1.2">
   <Import Project="..\..\build\Microsoft.Azure.Mobile.Client.Build.props" />
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;xamarin.android90;xamarin.ios10</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net461;monoandroid90;xamarin.ios10;uap10.0</TargetFrameworks>
     <LangVersion>8.0</LangVersion>
     <DefaultLanguage>en-US</DefaultLanguage>
     <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
@@ -11,8 +11,10 @@
     <Authors>Microsoft</Authors>
     <Product>$(AssemblyName) ($(TargetFramework))</Product>
     <PackageLicenseUrl>http://go.microsoft.com/fwlink/?LinkId=286110</PackageLicenseUrl>
-    <PackageProjectUrl>https://github.com/Azure/azure-mobile-apps-net-client</PackageProjectUrl>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <PackageIcon>icon.png</PackageIcon>
     <PackageIconUrl>http://go.microsoft.com/fwlink/?LinkID=288890</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/Azure/azure-mobile-apps-net-client</PackageProjectUrl>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <Description>This library provides features for creating Windows and Xamarin mobile apps that connect to Azure Mobile Apps. Azure Mobile Apps allows you to develop an app with a scalable backed hosted in Azure App Service, with support for mobile authentication, offline sync, and push notifications. To learn more about Azure Mobile, go to http://azure.microsoft.com/mobile. </Description>
     <Summary>Azure Mobile Apps SDK</Summary>
@@ -25,9 +27,18 @@
     <DebugType>full</DebugType>
     <RootNamespace>Microsoft.WindowsAzure.MobileServices</RootNamespace>
     <Company>Microsoft</Company>
+    <NeutralLanguage>en-US</NeutralLanguage>
   </PropertyGroup>
   <ItemGroup>
     <!-- Need this to see the parent refs to Auth -->
+    <None Include="..\..\images\icon.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+    <None Include="..\..\LICENSE.txt">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
     <ProjectCapability Include="ShowFilesOutsideOfProject" />
     <!-- This None is here so the conditinonally included files show up in the Solution Explorer -->
     <None Include="**\*.cs;**\*.xml;**\*.axml" Exclude="obj\**\*.*;bin\**\*.*" />
@@ -36,27 +47,40 @@
     <Compile Update="Resources.Designer.cs" DesignTime="true" AutoGen="true" DependentUpon="Resources.resx" />
     <EmbeddedResource Update="Resources.resx" Generator="ResXFileCodeGenerator" LastGenOutput="Resources.Designer.cs" />
   </ItemGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'MonoAndroid80' ">
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'monoandroid90' ">
     <DefineConstants>$(DefineConstants);PLATFORM_ANDROID;XAMARIN_AUTH_INTERNAL</DefineConstants>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'Xamarin.iOS10' ">
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'xamarin.ios10' ">
     <DefineConstants>$(DefineConstants);PLATFORM_IOS;XAMARIN_AUTH_INTERNAL</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'uap10.0' ">
+    <DefineConstants>$(DefineConstants);WINDOWS_UWP;NETFX_CORE</DefineConstants>
+    <TargetPlatformVersion>10.0.19041.0</TargetPlatformVersion>
+    <TargetPlatformMinVersion>10.0.16299.0</TargetPlatformMinVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <Compile Include="Platforms\netstandard20\**\*.cs" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'Xamarin.Android90' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Security" />
+    <Compile Include="Platforms\net461\**\*.cs" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'monoandroid90' ">
     <PackageReference Include="PCLCrypto" Version="2.0.147" />
     <PackageReference Include="Xamarin.Android.Support.CustomTabs" Version="28.0.0.3" />
     <PackageReference Include="Xamarin.Auth" Version="1.7.0" />
     <Reference Include="System.Runtime.Serialization" />
     <Compile Include="Platforms\android\**\*.cs" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'Xamarin.iOS10' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'xamarin.ios10' ">
     <PackageReference Include="PCLCrypto" Version="2.0.147" />
     <PackageReference Include="Xamarin.Auth" Version="1.7.0" />
     <Reference Include="System.Runtime.Serialization" />
     <Compile Include="Platforms\ios\**\*.cs" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'uap10.0' ">
+    <Compile Include="Platforms\uwp\**\*.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
