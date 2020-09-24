@@ -9,7 +9,7 @@ namespace Microsoft.WindowsAzure.MobileServices
 {
     internal class LinkHeaderValue
     {
-        static Regex pattern = new Regex(@"^(?<uri>.*?);\s*rel\s*=\s*(?<rel>\w+)\s*$");
+        static readonly Regex pattern = new Regex(@"^(?<uri>.*?);\s*rel\s*=\s*(?<rel>\w+)\s*$");
         public Uri Uri { get; private set; }
         public string Relation { get; private set; }
 

@@ -18,7 +18,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
         private static readonly int queryIdKeySize = 255;
 
         private static readonly Regex queryIdRegex = new Regex($"^[^|]{{0,{queryIdKeySize}}}$");
-        private MobileServiceSyncContext syncContext;
+        private readonly MobileServiceSyncContext syncContext;
 
         public MobileServiceClient MobileServiceClient { get; private set; }
 
@@ -146,15 +146,9 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
 
         protected static string EnsureIdIsString(object id)
         {
-            string strId = id as string;
-            if (strId == null)
+            if (!(id is string strId))
             {
-                throw new ArgumentException(
-                     string.Format(
-                        CultureInfo.InvariantCulture,
-                        "The {0} must be of type string.",
-                        MobileServiceSystemColumns.Id),
-                     "instance");
+                throw new ArgumentException($"The {MobileServiceSystemColumns.Id} must be of type string.", nameof(id));
             }
             return strId;
         }

@@ -44,17 +44,17 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <summary>
         /// A regex for validating string ids
         /// </summary>
-        private static Regex stringIdValidationRegex = new Regex(@"([\u0000-\u001F]|[\u007F-\u009F]|[""\+\?\\\/\`]|^\.{1,2}$)");
+        private static readonly Regex stringIdValidationRegex = new Regex(@"([\u0000-\u001F]|[\u007F-\u009F]|[""\+\?\\\/\`]|^\.{1,2}$)");
 
         /// <summary>
         /// The long type.
         /// </summary>
-        private static Type longType = typeof(long);
+        private static readonly Type longType = typeof(long);
 
         /// <summary>
         /// The int type.
         /// </summary>
-        private static Type intType = typeof(int);
+        private static readonly Type intType = typeof(int);
 
         /// <summary>
         /// The max length of valid string ids.
@@ -106,11 +106,9 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// </returns>
         public static bool TryGetId(JObject instance, bool ignoreCase, out object id)
         {
-            bool gotId = false;
-            JToken idToken = null;
-
             id = null;
-
+            JToken idToken;
+            bool gotId;
             if (ignoreCase)
             {
                 gotId = instance.TryGetValue(MobileServiceSystemColumns.Id, StringComparison.OrdinalIgnoreCase, out idToken);
@@ -122,8 +120,7 @@ namespace Microsoft.WindowsAzure.MobileServices
 
             if (gotId)
             {
-                JValue idValue = idToken as JValue;
-                if (idValue == null)
+                if (!(idToken is JValue idValue))
                 {
                     gotId = false;
                 }
@@ -420,10 +417,8 @@ namespace Microsoft.WindowsAzure.MobileServices
         {
             Debug.Assert(instance != null);
 
-            object id = null;
-
-            JObject jobject = instance as JObject;
-            if (jobject != null)
+            object id;
+            if (instance is JObject jobject)
             {
                 id = GetId(jobject, ignoreCase, allowDefault);
             }
@@ -473,7 +468,7 @@ namespace Microsoft.WindowsAzure.MobileServices
             return id == null ||
                    object.Equals(id, 0L) ||
                    object.Equals(id, 0) ||
-                   (id is string && string.IsNullOrEmpty((string)id)) ||
+                   (id is string str && string.IsNullOrEmpty(str)) ||
                    object.Equals(id, 0.0) ||
                    object.Equals(id, 0.0F) ||
                    object.Equals(id, 0.0M);
@@ -489,8 +484,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         {
             Debug.Assert(instance != null);
 
-            JObject jobject = instance as JObject;
-            if (jobject != null)
+            if (instance is JObject jobject)
             {
                 SetIdToDefault(jobject);
             }
@@ -609,7 +603,7 @@ namespace Microsoft.WindowsAzure.MobileServices
 
         private T Deserialize<T>(JToken json, JsonSerializer jsonSerializer)
         {
-            T result = default(T);
+            T result = default;
             TransformSerializationException<T>(() =>
             {
                 result = json.ToObject<T>(jsonSerializer);
@@ -625,8 +619,7 @@ namespace Microsoft.WindowsAzure.MobileServices
             }
             catch (JsonSerializationException ex)
             {
-                var obj = token as JObject;
-                if (obj == null)
+                if (!(token is JObject obj))
                 {
                     throw;
                 }

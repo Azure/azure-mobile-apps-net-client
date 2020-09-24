@@ -14,7 +14,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
 {
     internal class MobileServiceTableQueryProvider
     {
-        private IMobileServiceSyncTable syncTable;
+        private readonly IMobileServiceSyncTable syncTable;
 
         public MobileServiceTableQueryProvider(IMobileServiceSyncTable syncTable = null)
         {
@@ -116,8 +116,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
             JToken result;
             if (this.syncTable == null)
             {
-                var table = query.Table as MobileServiceTable;
-                if (table != null)
+                if (query.Table is MobileServiceTable table)
                 {
                     // Add telemetry information if possible.
                     return await table.ReadAsync(odata, query.Parameters, this.Features | MobileServiceFeatures.TypedTable);

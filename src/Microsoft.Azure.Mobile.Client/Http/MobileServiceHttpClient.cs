@@ -74,7 +74,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <summary>
         /// The user-agent header value to use with all requests.
         /// </summary>
-        private string userAgentHeaderValue;
+        private readonly string userAgentHeaderValue;
 
         /// <summary>
         /// Represents a handler used to process HTTP requests and responses
@@ -210,7 +210,7 @@ namespace Microsoft.WindowsAzure.MobileServices
                                                              bool ensureResponseContent = true,
                                                              IDictionary<string, string> requestHeaders = null,
                                                              MobileServiceFeatures features = MobileServiceFeatures.None,
-                                                             CancellationToken cancellationToken = default(CancellationToken))
+                                                             CancellationToken cancellationToken = default)
         {
             requestHeaders = FeaturesHelper.AddFeaturesHeader(requestHeaders, features);
             return this.RequestAsync(true, method, uriPathAndQuery, user, content, ensureResponseContent, requestHeaders, cancellationToken);
@@ -252,7 +252,7 @@ namespace Microsoft.WindowsAzure.MobileServices
                                                         string content = null,
                                                         bool ensureResponseContent = true,
                                                         IDictionary<string, string> requestHeaders = null,
-                                                        CancellationToken cancellationToken = default(CancellationToken))
+                                                        CancellationToken cancellationToken = default)
         {
             Debug.Assert(method != null);
             Debug.Assert(!string.IsNullOrEmpty(uriPathAndQuery));
@@ -326,7 +326,7 @@ namespace Microsoft.WindowsAzure.MobileServices
                                                             HttpContent content,
                                                             IDictionary<string, string> requestHeaders,
                                                             MobileServiceFeatures features = MobileServiceFeatures.None,
-                                                            CancellationToken cancellationToken = default(CancellationToken))
+                                                            CancellationToken cancellationToken = default)
         {
             Debug.Assert(method != null);
             Debug.Assert(!string.IsNullOrEmpty(uriPathAndQuery));
@@ -542,11 +542,11 @@ namespace Microsoft.WindowsAzure.MobileServices
             Debug.Assert(method != null);
             Debug.Assert(!string.IsNullOrEmpty(uriPathAndQuery));
 
-            HttpRequestMessage request = new HttpRequestMessage();
-
-            // Set the Uri and Http Method
-            request.RequestUri = new Uri(this.applicationUri, uriPathAndQuery);
-            request.Method = method;
+            HttpRequestMessage request = new HttpRequestMessage
+            {
+                RequestUri = new Uri(this.applicationUri, uriPathAndQuery),
+                Method = method
+            };
 
             // Add the user's headers
             if (requestHeaders != null)
@@ -667,8 +667,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         private static HttpMessageHandler CreatePipeline(IEnumerable<HttpMessageHandler> handlers)
         {
             HttpMessageHandler pipeline = handlers.LastOrDefault() ?? DefaultHandlerFactory();
-            DelegatingHandler dHandler = pipeline as DelegatingHandler;
-            if (dHandler != null && dHandler.InnerHandler == null)
+            if (pipeline is DelegatingHandler dHandler && dHandler.InnerHandler == null)
             {
                 dHandler.InnerHandler = DefaultHandlerFactory();
                 pipeline = dHandler;
@@ -773,8 +772,10 @@ namespace Microsoft.WindowsAzure.MobileServices
                 {
                     if (requestHeaders == null || !requestHeaders.ContainsKey(ZumoFeaturesHeader))
                     {
-                        requestHeaders = new Dictionary<string, string>(requestHeaders ?? new Dictionary<string, string>());
-                        requestHeaders.Add(ZumoFeaturesHeader, FeaturesToString(features));
+                        requestHeaders = new Dictionary<string, string>(requestHeaders ?? new Dictionary<string, string>())
+                        {
+                            { ZumoFeaturesHeader, FeaturesToString(features) }
+                        };
                     }
                 }
 

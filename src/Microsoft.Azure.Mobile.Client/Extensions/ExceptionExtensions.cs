@@ -20,10 +20,8 @@ namespace Microsoft.WindowsAzure.MobileServices
         }
 
         public static bool IsAuthenticationError(this Exception ex)
-        {
-            var ioEx = ex as MobileServiceInvalidOperationException;
-            bool result = ioEx != null && ioEx.Response != null && ioEx.Response.StatusCode == HttpStatusCode.Unauthorized;
-            return result;
-        }
+            => ex is MobileServiceInvalidOperationException ioEx 
+                && ioEx.Response != null 
+                && ioEx.Response.StatusCode == HttpStatusCode.Unauthorized;
     }
 }

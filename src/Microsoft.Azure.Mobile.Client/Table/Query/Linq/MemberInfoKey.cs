@@ -17,15 +17,15 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
     /// </summary>
     internal class MemberInfoKey : IEquatable<MemberInfoKey>
     {
-        private static Type[] emptyTypeParameters = new Type[0];
+        private static readonly Type[] emptyTypeParameters = new Type[0];
 
         // Information about the class member
         private MemberInfo memberInfo;
-        private Type type;
-        private String memberName;
-        private bool isMethod;
-        private bool isInstance;
-        private Type[] parameters;
+        private readonly Type type;
+        private readonly String memberName;
+        private readonly bool isMethod;
+        private readonly bool isInstance;
+        private readonly Type[] parameters;
 
         /// <summary>
         /// Instantiates an instance of a <see cref="MemberInfoKey"/> from a
@@ -149,8 +149,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         /// </returns>
         public override bool Equals(object obj)
         {
-            MemberInfoKey other = obj as MemberInfoKey;
-            if (other != null)
+            if (obj is MemberInfoKey other)
             {
                 return this.Equals(other);
             }

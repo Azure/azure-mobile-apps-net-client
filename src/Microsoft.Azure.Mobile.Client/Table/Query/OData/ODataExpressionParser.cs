@@ -10,8 +10,8 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
 {
     internal class ODataExpressionParser
     {
-        private ODataExpressionLexer lexer;
-        private static Dictionary<string, QueryNode> keywords;
+        private readonly ODataExpressionLexer lexer;
+        private static readonly Dictionary<string, QueryNode> keywords;
 
         static ODataExpressionParser()
         {
@@ -395,7 +395,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
             this.ValidateToken(QueryTokenKind.RealLiteral, () => "Expected real literal.");
             string text = this.lexer.Token.Text;
 
-            char last = Char.ToUpper(text[text.Length - 1]);
+            char last = char.ToUpper(text[text.Length - 1]);
             if (last == 'F' || last == 'M' || last == 'D')
             {
                 // so terminating F/f, M/m, D/d have no effect.

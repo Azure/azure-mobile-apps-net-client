@@ -643,8 +643,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// </summary>
         private async Task<JToken> TransformHttpException(Func<Task<JToken>> action)
         {
-            MobileServiceInvalidOperationException error = null;
-
+            MobileServiceInvalidOperationException error;
             try
             {
                 return await action();
@@ -694,8 +693,10 @@ namespace Microsoft.WindowsAzure.MobileServices
             Dictionary<string, string> headers = null;
             if (!String.IsNullOrEmpty(version))
             {
-                headers = new Dictionary<string, string>();
-                headers["If-Match"] = GetEtagFromValue(version);
+                headers = new Dictionary<string, string>
+                {
+                    ["If-Match"] = GetEtagFromValue(version)
+                };
             }
 
             return headers;

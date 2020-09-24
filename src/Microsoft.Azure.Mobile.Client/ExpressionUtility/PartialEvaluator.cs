@@ -99,8 +99,7 @@ namespace Microsoft.WindowsAzure.MobileServices
                             // can't be evaluated by itself. The MemberInitExpression will
                             // determine if the full expression is dependent or not, so 
                             // the NewExpression should simply not be checked for dependency.
-                            NewExpression newExpression = expr as NewExpression;
-                            if (newExpression != null && parentIsMemberInit)
+                            if (expr is NewExpression newExpression && parentIsMemberInit)
                             {
                                 return expr;
                             }

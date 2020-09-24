@@ -181,13 +181,13 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
             }
         }
 
-        private Stack<QueryNode> filterExpression = new Stack<QueryNode>();
+        private readonly Stack<QueryNode> filterExpression = new Stack<QueryNode>();
 
         /// <summary>
         /// The contract resolver used to determine property names from
         /// members used within expressions.
         /// </summary>
-        private MobileServiceContractResolver contractResolver;
+        private readonly MobileServiceContractResolver contractResolver;
 
         /// <summary>
         /// The static constructor for the FilterBuildingExpressionVisitor
@@ -200,8 +200,10 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
             // were not used in the application code and so were removed by the compiler. We search
             // for the methodInfos for Object.ToString() and String.Concat(string, string) via
             // reflection, so we need this code here to ensure that don't get removed by the compiler.
+#pragma warning disable IDE0059 // Unnecessary assignment of a value
             string aString = new Object().ToString();
             aString = String.Concat(aString, "a string");
+#pragma warning restore IDE0059 // Unnecessary assignment of a value
         }
 
         /// <summary>
@@ -267,8 +269,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
 
             // Only parameter references are valid in a query (any other
             // references should have been partially evaluated away)
-            MemberExpression member = expression as MemberExpression;
-            if (member != null &&
+            if (expression is MemberExpression member &&
                 member.Expression != null &&
                 member.Expression.NodeType == ExpressionType.Parameter &&
                 member.Member != null)
@@ -343,7 +344,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
                             string.Format(
                                 CultureInfo.InvariantCulture,
                                 "'{0}' is not supported in a 'Where' Mobile Services query expression.",
-                                node != null ? node.ToString() : null));
+                                node?.ToString()));
                 }
             }
             
@@ -458,7 +459,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
             if (expression != null)
             {
                 // special case for enums, because we send them as strings
-                if (this.CheckEnumExpression(expression, out UnaryExpression enumExpression, out ConstantExpression constantExpression))
+                if (this.CheckEnumExpression(expression, out UnaryExpression enumExpression, out _))
                 {
                     this.Visit(this.RewriteEnumExpression(enumExpression, (ConstantExpression)expression.Right, expression.NodeType));
                 }
@@ -733,7 +734,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
                     CultureInfo.InvariantCulture,
                     "The member '{0}' is not supported in the 'Where' Mobile Services query expression '{1}'.",
                     expression != null && expression.Member != null ? expression.Member.Name : null,
-                    expression != null ? expression.ToString() : null));
+                    expression?.ToString()));
         }
 
         /// <summary>
@@ -837,7 +838,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
                     string.Format(
                         CultureInfo.InvariantCulture,
                         "'{0}' is not supported in a 'Where' Mobile Services query expression.",
-                        expression != null ? expression.ToString() : null));
+                        expression?.ToString()));
             }
         }
 
@@ -859,9 +860,9 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
             // you should do that outside of the query for now
             IEnumerable enumerable = null;
             Expression expr = arguments.FirstOrDefault();
-            if (expr != null && expr is ConstantExpression)
+            if (expr != null && expr is ConstantExpression constExpression)
             {
-                enumerable = ((ConstantExpression)expr).Value as IEnumerable;
+                enumerable = constExpression.Value as IEnumerable;
             }
             Expression comparand = arguments.Skip(1).FirstOrDefault();
             if (enumerable != null && comparand != null)
@@ -883,7 +884,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
                     string.Format(
                         CultureInfo.InvariantCulture,
                         "'{0}' is not supported in a 'Where' Mobile Services query expression.",
-                        expression != null ? expression.ToString() : null));
+                        expression?.ToString()));
             }
         }
 
@@ -900,8 +901,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         private static Expression StripUnaryOperator(Expression expression)
         {
             Debug.Assert(expression != null, "expression cannot be null!");
-            UnaryExpression unary = expression as UnaryExpression;
-            return unary != null ? unary.Operand : expression;
+            return expression is UnaryExpression unary ? unary.Operand : expression;
         }
 
         /// <summary>

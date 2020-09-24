@@ -24,7 +24,7 @@ namespace Microsoft.WindowsAzure.MobileServices
     /// </typeparam>
     internal class MobileServiceTable<T> : MobileServiceTable, IMobileServiceTable<T>
     {
-        private MobileServiceTableQueryProvider queryProvider;
+        private readonly MobileServiceTableQueryProvider queryProvider;
 
         /// <summary>
         /// Initializes a new instance of the MobileServiceTables class.
@@ -582,7 +582,7 @@ namespace Microsoft.WindowsAzure.MobileServices
                     throw;
                 }
 
-                T item = default(T);
+                T item = default;
                 try
                 {
                     item = serializer.Deserialize<T>(ex.Value);
@@ -634,9 +634,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         private static JObject GetSingleValue(QueryResult response)
         {
             // Get the first element in the response
-            JObject jobject = response.Values.FirstOrDefault() as JObject;
-
-            if (jobject == null)
+            if (!(response.Values.FirstOrDefault() is JObject jobject))
             {
                 string responseStr = response != null ? response.ToString() : "null";
                 throw new InvalidOperationException(

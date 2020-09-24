@@ -100,20 +100,17 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         /// </summary>
         /// <returns>The cloned query</returns>
         public MobileServiceTableQueryDescription Clone()
-        {
-            var clone = new MobileServiceTableQueryDescription(this.TableName);
-
-            clone.Filter = this.Filter;
-            clone.Selection = this.Selection.ToList();
-            clone.Ordering = this.Ordering.ToList();
-            clone.Projections = this.Projections.ToList();
-            clone.ProjectionArgumentType = this.ProjectionArgumentType;
-            clone.Skip = this.Skip;
-            clone.Top = this.Top;
-            clone.IncludeTotalCount = this.IncludeTotalCount;
-
-            return clone;
-        }
+            => new MobileServiceTableQueryDescription(this.TableName)
+                {
+                    Filter = this.Filter,
+                    Selection = this.Selection.ToList(),
+                    Ordering = this.Ordering.ToList(),
+                    Projections = this.Projections.ToList(),
+                    ProjectionArgumentType = this.ProjectionArgumentType,
+                    Skip = this.Skip,
+                    Top = this.Top,
+                    IncludeTotalCount = this.IncludeTotalCount
+                };
 
         /// <summary>
         /// Convert the query structure into the standard OData URI protocol
@@ -201,7 +198,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         {
             query ??= String.Empty;
             string uriPath = null;
-            if (HttpUtility.TryParseQueryUri(applicationUri, query, out Uri uri, out bool absolute))
+            if (HttpUtility.TryParseQueryUri(applicationUri, query, out Uri uri, out _))
             {
                 query = uri.Query.Length > 0 ? uri.Query.Substring(1) : String.Empty;
                 uriPath = uri.AbsolutePath;

@@ -39,7 +39,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// data.  We'll evaluate the query once per page while data
         /// virtualizing.
         /// </summary>
-        private IMobileServiceTableQuery<TTable> query = null;
+        private readonly IMobileServiceTableQuery<TTable> query = null;
 
         /// <summary>
         /// A selector function which will be appied to the data when it comes back from the server.
@@ -49,7 +49,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <summary>
         /// Numbers of items that will be retrieved per page. 0 means no paging.
         /// </summary>
-        private int pageSize;
+        private readonly int pageSize;
 
         /// <summary>
         /// Number of items already received from the server.
@@ -72,27 +72,18 @@ namespace Microsoft.WindowsAzure.MobileServices
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors", Justification = "Overridable method is only used for change notifications")]
         public MobileServiceCollection(IMobileServiceTableQuery<TTable> query, Func<IEnumerable<TTable>, IEnumerable<TCollection>> selector, int pageSize = 0)
         {
-            if (query == null)
-            {
-                throw new ArgumentNullException("query");
-            }
-            if (selector == null)
-            {
-                throw new ArgumentNullException("selector");
-            }
             if (pageSize < 0)
             {
                 throw new ArgumentOutOfRangeException("pageSize");
             }
 
-            this.query = query;
-            MobileServiceTableQuery<TTable> tableQuery = query as MobileServiceTableQuery<TTable>;
-            if (tableQuery != null)
+            this.query = query ?? throw new ArgumentNullException("query");
+            if (query is MobileServiceTableQuery<TTable> tableQuery)
             {
                 tableQuery.QueryProvider.Features = MobileServiceFeatures.TableCollection;
             }
 
-            this.selectorFunction = selector;
+            this.selectorFunction = selector ?? throw new ArgumentNullException("selector");
             this.pageSize = pageSize;
 
             this.HasMoreItems = true;
@@ -204,8 +195,7 @@ namespace Microsoft.WindowsAzure.MobileServices
                 this.Add(item);
             }
 
-            var result = items as IQueryResultEnumerable<TTable>;
-            if (result != null)
+            if (items is IQueryResultEnumerable<TTable> result)
             {
                 this.TotalCount = result.TotalCount;
                 this.NextLink = result.NextLink;
@@ -305,9 +295,7 @@ namespace Microsoft.WindowsAzure.MobileServices
 
             busy = true;
 
-            EventHandler loadingItems = LoadingItems;
-            if (loadingItems != null) { loadingItems(this, new EventArgs()); }
-
+            LoadingItems?.Invoke(this, new EventArgs());
             int results = 0;
 
             try
@@ -357,8 +345,7 @@ namespace Microsoft.WindowsAzure.MobileServices
             {
                 busy = false;
 
-                EventHandler<LoadingCompleteEventArgs> loadingComplete = LoadingComplete;
-                if (loadingComplete != null) { loadingComplete(this, new LoadingCompleteEventArgs() { TotalItemsLoaded = results }); }
+                LoadingComplete?.Invoke(this, new LoadingCompleteEventArgs() { TotalItemsLoaded = results });
             }
         }
 

@@ -18,12 +18,12 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
     {
         private MobileServiceSyncSettingsManager settings;
         private TaskCompletionSource<object> initializeTask;
-        private MobileServiceClient client;
+        private readonly MobileServiceClient client;
 
         /// <summary>
         /// Lock to ensure that multiple insert,update,delete operations don't interleave as they are added to queue and storage
         /// </summary>
-        private AsyncReaderWriterLock storeQueueLock = new AsyncReaderWriterLock();
+        private readonly AsyncReaderWriterLock storeQueueLock = new AsyncReaderWriterLock();
 
         /// <summary>
         /// Variable for Store property. Not meant to be accessed directly.
@@ -67,12 +67,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
 
         public MobileServiceSyncContext(MobileServiceClient client)
         {
-            if (client == null)
-            {
-                throw new ArgumentNullException("client");
-            }
-
-            this.client = client;
+            this.client = client ?? throw new ArgumentNullException("client");
         }
 
         public long PendingOperations
@@ -112,13 +107,11 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
                 this.Handler = handler;
                 this.Store = store;
                 this.storeTrackingOptions = trackingOptions;
-
                 this.syncQueue = new ActionBlock();
                 await this.Store.InitializeAsync();
                 this.opQueue = await OperationQueue.LoadAsync(store);
                 this.settings = new MobileServiceSyncSettingsManager(store);
-                this.localOperationsStore = StoreChangeTrackerFactory.CreateTrackedStore(store, StoreOperationSource.Local, trackingOptions, this.client.EventManager, this.settings);
-                
+                this.localOperationsStore = CreateTrackedStore(StoreOperationSource.Local);
                 this.initializeTask.SetResult(null);
             }
         }
@@ -248,12 +241,10 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
             // let us not burden the server to calculate the count when we don't need it for pull
             queryDescription.IncludeTotalCount = false;
 
-            using (var store = StoreChangeTrackerFactory.CreateTrackedStore(this.Store, StoreOperationSource.ServerPull, this.storeTrackingOptions, this.client.EventManager, this.settings))
-            {
-                var action = new PullAction(table, tableKind, this, queryId, queryDescription, parameters, relatedTables,
-                    this.opQueue, this.settings, store, options, pullOptions, reader, cancellationToken);
-                await this.ExecuteSyncAction(action);
-            }
+            using var trackedStore = CreateTrackedStore(StoreOperationSource.ServerPull);
+            var action = new PullAction(table, tableKind, this, queryId, queryDescription, parameters, relatedTables,
+                opQueue, settings, trackedStore, options, pullOptions, reader, cancellationToken);
+            await ExecuteSyncAction(action);
         }
 
         public async Task PurgeAsync(string tableName, MobileServiceTableKind tableKind, string queryId, string query, bool force, CancellationToken cancellationToken)
@@ -263,44 +254,30 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
             var table = await this.GetTable(tableName);
             var queryDescription = MobileServiceTableQueryDescription.Parse(tableName, query);
 
-            using (var trackedStore = StoreChangeTrackerFactory.CreateTrackedStore(this.Store, StoreOperationSource.LocalPurge, this.storeTrackingOptions, this.client.EventManager, this.settings))
-            {
-                var action = new PurgeAction(table, tableKind, queryId, queryDescription, force, this, this.opQueue, this.client.EventManager, this.settings, this.Store, cancellationToken);
-                await this.ExecuteSyncAction(action);
-            }
+            using var trackedStore = CreateTrackedStore(StoreOperationSource.LocalPurge);
+            var action = new PurgeAction(table, tableKind, queryId, queryDescription, force, this, opQueue, 
+                client.EventManager, settings, Store, cancellationToken);
+            await ExecuteSyncAction(action);
         }
 
         public Task PushAsync(CancellationToken cancellationToken)
-        {
-            return PushAsync(cancellationToken, MobileServiceTableKind.Table, new string[0]);
-        }
+            => PushAsync(cancellationToken, MobileServiceTableKind.Table, new string[0]);
 
         public async Task PushAsync(CancellationToken cancellationToken, MobileServiceTableKind tableKind, params string[] tableNames)
         {
-            await this.EnsureInitializedAsync();
+            await EnsureInitializedAsync();
 
             // use empty handler if its not a standard table push
             var handler = tableKind == MobileServiceTableKind.Table ? this.Handler : new MobileServiceSyncHandler();
 
-            using (var trackedStore = StoreChangeTrackerFactory.CreateTrackedStore(this.Store, StoreOperationSource.ServerPush, this.storeTrackingOptions, this.client.EventManager, this.settings))
-            {
-                var action = new PushAction(this.opQueue,
-                                          trackedStore,
-                                          tableKind,
-                                          tableNames,
-                                          handler,
-                                          this.client,
-                                          this,
-                                          cancellationToken);
-                
-                await this.ExecuteSyncAction(action);
-            }
+            using var trackedStore = CreateTrackedStore(StoreOperationSource.ServerPush);
+            var action = new PushAction(opQueue, trackedStore, tableKind, tableNames, handler, client, this, cancellationToken);
+            await ExecuteSyncAction(action);
         }
 
         public async Task ExecuteSyncAction(SyncAction action)
         {
             Task discard = this.syncQueue.Post(action.ExecuteAsync, action.CancellationToken);
-
             await action.CompletionTask;
         }
 
@@ -320,10 +297,8 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
             return this.ExecuteOperationSafeAsync(itemId, error.TableName, async () =>
             {
                 await this.TryCancelOperation(error);
-                using (var trackedStore = StoreChangeTrackerFactory.CreateTrackedStore(this.Store, StoreOperationSource.LocalConflictResolution, this.storeTrackingOptions, this.client.EventManager, this.settings))
-                {
-                    await trackedStore.UpsertAsync(error.TableName, item, fromServer: true);
-                }
+                using var trackedStore = CreateTrackedStore(StoreOperationSource.LocalConflictResolution);
+                await trackedStore.UpsertAsync(error.TableName, item, fromServer: true);
             });
         }
 
@@ -335,10 +310,8 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
                 await this.TryUpdateOperation(error, item);
                 if (error.OperationKind != MobileServiceTableOperationKind.Delete)
                 {
-                    using (var trackedStore = StoreChangeTrackerFactory.CreateTrackedStore(this.Store, StoreOperationSource.LocalConflictResolution, this.storeTrackingOptions, this.client.EventManager, this.settings))
-                    {
-                        await trackedStore.UpsertAsync(error.TableName, item, fromServer: true);
-                    }
+                    using var trackedStore = CreateTrackedStore(StoreOperationSource.LocalConflictResolution);
+                    await trackedStore.UpsertAsync(error.TableName, item, fromServer: true);
                 }
             });
         }
@@ -360,10 +333,8 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
             return this.ExecuteOperationSafeAsync(itemId, error.TableName, async () =>
             {
                 await this.TryCancelOperation(error);
-                using (var trackedStore = StoreChangeTrackerFactory.CreateTrackedStore(this.Store, StoreOperationSource.LocalConflictResolution, this.storeTrackingOptions, this.client.EventManager, this.settings))
-                {
-                    await trackedStore.DeleteAsync(error.TableName, itemId);
-                }
+                using var trackedStore = CreateTrackedStore(StoreOperationSource.LocalConflictResolution);
+                await trackedStore.DeleteAsync(error.TableName, itemId);
             });
         }
 
@@ -392,6 +363,9 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
                 Task discard = this.syncQueue.Post(action.ExecuteAsync, action.CancellationToken);
             }
         }
+
+        private IMobileServiceLocalStore CreateTrackedStore(StoreOperationSource operationSource)
+            => StoreChangeTrackerFactory.CreateTrackedStore(Store, operationSource, storeTrackingOptions, client.EventManager, settings);
 
         private async Task TryCancelOperation(MobileServiceTableOperationError error)
         {

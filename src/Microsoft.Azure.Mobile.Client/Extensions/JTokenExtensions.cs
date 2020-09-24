@@ -21,8 +21,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <returns>True if it is a valid item, False otherwise.</returns>
         public static bool IsValidItem(this JToken item)
         {
-            var obj = item as JObject;
-            return obj != null && HasId(obj);
+            return item is JObject obj && HasId(obj);
         }
 
         /// <summary>
