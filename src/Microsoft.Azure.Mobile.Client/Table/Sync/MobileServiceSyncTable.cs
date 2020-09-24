@@ -107,8 +107,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
         // we want to keep version as it rides on the object until the sync operation happens using classic table.
         internal static JObject RemoveSystemPropertiesKeepVersion(JObject instance)
         {
-            string version;
-            instance = MobileServiceSerializer.RemoveSystemProperties(instance, out version);
+            instance = MobileServiceSerializer.RemoveSystemProperties(instance, out string version);
             if (version != null)
             {
                 instance[MobileServiceSystemColumns.Version] = version;

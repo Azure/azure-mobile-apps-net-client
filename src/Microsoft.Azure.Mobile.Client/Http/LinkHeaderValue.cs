@@ -15,8 +15,7 @@ namespace Microsoft.WindowsAzure.MobileServices
 
         public LinkHeaderValue(string uri, string rel)
         {
-            Uri value;
-            Uri.TryCreate(uri, UriKind.RelativeOrAbsolute, out value);
+            Uri.TryCreate(uri, UriKind.RelativeOrAbsolute, out Uri value);
             this.Uri = value;
             this.Relation = rel;
         }

@@ -156,8 +156,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         {
             Debug.Assert(instance != null);
 
-            object id = null;
-            bool gotID = TryGetId(instance, ignoreCase, out id);
+            bool gotID = TryGetId(instance, ignoreCase, out object id);
 
             // Check that the id is present but incorrectly cased
             if (!gotID && !ignoreCase && TryGetId(instance, true, out id))
@@ -631,9 +630,8 @@ namespace Microsoft.WindowsAzure.MobileServices
                 {
                     throw;
                 }
-              
-                object id;
-                bool idTokenIsString = TryGetId(obj, true, out id) && id.GetType() == typeof(string);
+
+                bool idTokenIsString = TryGetId(obj, true, out object id) && id.GetType() == typeof(string);
 
                 JsonProperty idProperty = this.SerializerSettings.ContractResolver.ResolveIdProperty(typeof(T), throwIfNotFound: false);
                 bool idPropertyIsInteger = idProperty != null && IsIntegerId(idProperty);

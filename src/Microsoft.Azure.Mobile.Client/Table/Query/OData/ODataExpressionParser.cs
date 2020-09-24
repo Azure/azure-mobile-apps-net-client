@@ -376,8 +376,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
             this.ValidateToken(QueryTokenKind.IntegerLiteral, () => "Expected integer literal.");
             var text = this.lexer.Token.Text;
 
-            long value;
-            if (!Int64.TryParse(text, out value))
+            if (!Int64.TryParse(text, out long value))
             {
                 this.ParseError("The specified odata query has invalid real literal '{0}'.".FormatInvariant(text), this.lexer.Token.Position);
             }
@@ -452,8 +451,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         {
             this.ValidateToken(QueryTokenKind.Identifier, () => "Expected identifier.");
 
-            QueryNode value;
-            if (keywords.TryGetValue(this.lexer.Token.Text, out value))
+            if (keywords.TryGetValue(this.lexer.Token.Text, out QueryNode value))
             {
                 // type construction has the format of type'value' e.g. datetime'2001-04-01T00:00:00Z'
                 // therefore if the next character is a single quote then we try to 

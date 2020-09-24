@@ -91,8 +91,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
         {
             using (await this.cacheLock.Acquire(key, CancellationToken.None))
             {
-                string value;
-                if (!this.cache.TryGetValue(key, out value))
+                if (!this.cache.TryGetValue(key, out string value))
                 {
                     JObject setting = await this.store.LookupAsync(MobileServiceLocalSystemTables.Config, key);
                     if (setting == null)

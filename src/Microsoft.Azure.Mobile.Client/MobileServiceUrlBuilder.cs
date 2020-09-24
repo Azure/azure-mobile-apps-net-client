@@ -182,7 +182,7 @@ namespace Microsoft.WindowsAzure.MobileServices
 
             if (!uri.EndsWith(Slash.ToString()))
             {
-                uri = uri + Slash;
+                uri += Slash;
             }
 
             return uri;

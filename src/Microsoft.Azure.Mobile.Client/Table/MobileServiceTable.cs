@@ -136,9 +136,7 @@ namespace Microsoft.WindowsAzure.MobileServices
             features = this.AddRequestFeatures(features, parameters);
 
             string uriPath;
-            Uri uri;
-            bool absolute;
-            if (HttpUtility.TryParseQueryUri(this.MobileServiceClient.MobileAppUri, query, out uri, out absolute))
+            if (HttpUtility.TryParseQueryUri(this.MobileServiceClient.MobileAppUri, query, out Uri uri, out bool absolute))
             {
                 if (absolute)
                 {
@@ -534,7 +532,7 @@ namespace Microsoft.WindowsAzure.MobileServices
             {
                 if (value != null)
                 {
-                    parameters = parameters ?? new Dictionary<string, string>();
+                    parameters ??= new Dictionary<string, string>();
                     parameters.Add(name, value);
                 }
             }
@@ -682,8 +680,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <returns>The header collection with if-match header.</returns>
         private Dictionary<string, string> StripSystemPropertiesAndAddVersionHeader(ref JObject instance, ref IDictionary<string, string> parameters, object id)
         {
-            string version = null;
-            instance = MobileServiceSerializer.RemoveSystemProperties(instance, out version);
+            instance = MobileServiceSerializer.RemoveSystemProperties(instance, out string version);
 
             Dictionary<string, string> headers = AddIfMatchHeader(version);
             return headers;

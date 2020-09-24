@@ -192,18 +192,16 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         /// <returns>An instance of <see cref="MobileServiceTableQueryDescription"/></returns>
         public static MobileServiceTableQueryDescription Parse(string tableName, string query)
         {
-            query = query ?? String.Empty;
+            query ??= String.Empty;
 
             return Parse(tableName, query, null);
         }
 
         internal static MobileServiceTableQueryDescription Parse(Uri applicationUri, string tableName, string query)
         {
-            query = query ?? String.Empty;
+            query ??= String.Empty;
             string uriPath = null;
-            Uri uri;
-            bool absolute;
-            if (HttpUtility.TryParseQueryUri(applicationUri, query, out uri, out absolute))
+            if (HttpUtility.TryParseQueryUri(applicationUri, query, out Uri uri, out bool absolute))
             {
                 query = uri.Query.Length > 0 ? uri.Query.Substring(1) : String.Empty;
                 uriPath = uri.AbsolutePath;

@@ -103,7 +103,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
             {
                 throw new ArgumentNullException("store");
             }
-            handler = handler ?? new MobileServiceSyncHandler();
+            handler ??= new MobileServiceSyncHandler();
 
             this.initializeTask = new TaskCompletionSource<object>();
 

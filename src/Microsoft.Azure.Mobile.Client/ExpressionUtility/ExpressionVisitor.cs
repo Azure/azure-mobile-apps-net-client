@@ -90,19 +90,13 @@ namespace Microsoft.WindowsAzure.MobileServices
         }
 
         protected virtual MemberBinding VisitBinding(MemberBinding binding)
-        {
-            switch (binding.BindingType)
+            => binding.BindingType switch
             {
-                case MemberBindingType.Assignment:
-                    return this.VisitMemberAssignment((MemberAssignment)binding);
-                case MemberBindingType.MemberBinding:
-                    return this.VisitMemberMemberBinding((MemberMemberBinding)binding);
-                case MemberBindingType.ListBinding:
-                    return this.VisitMemberListBinding((MemberListBinding)binding);
-                default:
-                    throw new NotSupportedException(string.Format("Unhandled binding type '{0}'", binding.BindingType));
-            }
-        }
+                MemberBindingType.Assignment => this.VisitMemberAssignment((MemberAssignment)binding),
+                MemberBindingType.MemberBinding => this.VisitMemberMemberBinding((MemberMemberBinding)binding),
+                MemberBindingType.ListBinding => this.VisitMemberListBinding((MemberListBinding)binding),
+                _ => throw new NotSupportedException(string.Format("Unhandled binding type '{0}'", binding.BindingType)),
+            };
 
         protected virtual ElementInit VisitElementInitializer(ElementInit initializer)
         {

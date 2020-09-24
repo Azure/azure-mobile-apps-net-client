@@ -435,8 +435,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
                 }
 
                 // Check to see if the types can be implicitly converted            
-                Type[] conversions = null;
-                if (ImplicitConversions.TryGetValue(fromType, out conversions))
+                if (ImplicitConversions.TryGetValue(fromType, out Type[] conversions))
                 {
                     return Array.IndexOf(conversions, toType) >= 0;
                 }
@@ -459,12 +458,9 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
             if (expression != null)
             {
                 // special case for enums, because we send them as strings
-                UnaryExpression enumExpression = null;
-                ConstantExpression constantExpression = null;
-                BinaryExpression stringCompareExpression = null;
-                if (this.CheckEnumExpression(expression, out enumExpression, out constantExpression))
+                if (this.CheckEnumExpression(expression, out UnaryExpression enumExpression, out ConstantExpression constantExpression))
                 {
-                    this.Visit(this.RewriteEnumExpression(enumExpression, (ConstantExpression)expression.Right, expression.NodeType));            
+                    this.Visit(this.RewriteEnumExpression(enumExpression, (ConstantExpression)expression.Right, expression.NodeType));
                 }
                 // special case concat as it's OData function isn't infix
                 else if (expression.NodeType == ExpressionType.Add &&
@@ -475,7 +471,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
                     this.Visit(this.RewriteStringAddition(expression));
                 }
                 // special case for string comparisons emitted by the VB compiler
-                else if (this.CheckVBStringCompareExpression(expression, out stringCompareExpression))
+                else if (this.CheckVBStringCompareExpression(expression, out BinaryExpression stringCompareExpression))
                 {
                     this.Visit(stringCompareExpression);
                 }
@@ -532,7 +528,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
                                     "The operator '{0}' is not supported in the 'Where' Mobile Services query expression '{1}'.",
                                     expression.NodeType,
                                     expression.ToString()));
-                    }                    
+                    }
 
                     var node = new BinaryOperatorNode(operatorKind, null, null);
                     this.filterExpression.Push(node);
@@ -715,12 +711,11 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
                 this.filterExpression.Push(new MemberAccessNode(null, memberName));
                 return expression;
             }
-            
+
             // Check if this member is actually a function that looks like a
             // property (like string.Length, etc.)
-            string methodName = null;
             MemberInfoKey memberInfoKey = new MemberInfoKey(expression.Member);
-            if (InstanceProperties.TryGetValue(memberInfoKey, out methodName))
+            if (InstanceProperties.TryGetValue(memberInfoKey, out string methodName))
             {
                 var fnCallNode = new FunctionCallNode(methodName, null);
                 this.filterExpression.Push(fnCallNode);
@@ -753,9 +748,8 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         private Expression VisitMethodCall(MethodCallExpression expression)
         {
             // Look for either an instance or static method
-            string methodName = null;
             MemberInfoKey methodInfoKey = new MemberInfoKey(expression.Method);
-            if (InstanceMethods.TryGetValue(methodInfoKey, out methodName))
+            if (InstanceMethods.TryGetValue(methodInfoKey, out string methodName))
             {
                 this.VisitODataMethodCall(expression, methodName, false);
             }

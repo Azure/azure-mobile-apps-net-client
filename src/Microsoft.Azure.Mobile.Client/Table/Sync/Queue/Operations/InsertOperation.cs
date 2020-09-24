@@ -23,9 +23,8 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
 
         protected override Task<JToken> OnExecuteAsync()
         {
-            string version;
             // for insert operations version should not be sent so strip it out
-            JObject item = MobileServiceSerializer.RemoveSystemProperties(this.Item, out version);
+            JObject item = MobileServiceSerializer.RemoveSystemProperties(this.Item, out string version);
             return this.Table.InsertAsync(item);
         }
 

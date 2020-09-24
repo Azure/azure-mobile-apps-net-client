@@ -135,9 +135,8 @@ namespace Microsoft.WindowsAzure.MobileServices
 
             MobileServiceSerializer serializer = this.MobileServiceClient.Serializer;
             JObject value = serializer.Serialize(instance) as JObject;
-            
-            string unused;
-            value = MobileServiceSerializer.RemoveSystemProperties(value, out unused);
+
+            value = MobileServiceSerializer.RemoveSystemProperties(value, out string unused);
 
             JToken insertedValue = await TransformHttpException(serializer, () => this.InsertAsync(value, parameters, MobileServiceFeatures.TypedTable));
 
