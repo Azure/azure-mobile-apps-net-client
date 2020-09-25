@@ -28,7 +28,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <summary>
         /// A singleton instance of the <see cref="IApplicationStorage"/>.
         /// </summary>
-        internal static IApplicationStorage Instance { get; } => new ApplicationStorage();
+        internal static IApplicationStorage Instance { get; } = new ApplicationStorage();
 
         public IPropertySet Values { get; set; }
 

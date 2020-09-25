@@ -32,7 +32,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// Returns a platform-specific implementation of a utility class
         /// that provides functionality for platform-specifc push capabilities.
         /// </summary>
-        public IPushUtility PushUtility => MobileServices.PushUtility.Instance;
+        public IPushUtility PushUtility => null;
 
         /// <summary>
         /// Returns a platform-specific path for storing offline databases

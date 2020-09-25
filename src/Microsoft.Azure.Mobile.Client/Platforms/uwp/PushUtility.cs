@@ -11,12 +11,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <summary>
         /// A singleton instance of the <see cref="PushUtility"/>.
         /// </summary>
-        private static readonly IPushUtility instance = new PushUtility();
-
-        /// <summary>
-        /// A singleton instance of the <see cref="PushUtility"/>.
-        /// </summary>
-        public static IPushUtility GetInstance() => instance;
+        public static IPushUtility Instance { get; } = new PushUtility();
 
         public string GetPlatform() => "wns";
     }

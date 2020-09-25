@@ -25,7 +25,7 @@ namespace Microsoft.WindowsAzure.MobileServices
 
         internal void OnResponseReceived(Uri uri)
         {
-            if (!isValidUrl(uri))
+            if (!IsValidUrl(uri))
             {
                 Error?.Invoke(this, new AuthenticatorErrorEventArgs("Invalid redirect url returned by the server"));
                 return;
@@ -33,10 +33,10 @@ namespace Microsoft.WindowsAzure.MobileServices
 
             try
             {
-                var fragments = decodeResponse(uri.Fragment);
+                var fragments = DecodeResponse(uri.Fragment);
                 Completed?.Invoke(this, new AuthenticatorCompletedEventArgs(fragments["authorization_code"]));
             }
-            catch (KeyNotFoundException e)
+            catch (KeyNotFoundException)
             {
                 Error?.Invoke(this, new AuthenticatorErrorEventArgs("authorization_code not found in server response"));
             }
@@ -46,7 +46,7 @@ namespace Microsoft.WindowsAzure.MobileServices
             }
         }
 
-        private bool isValidUrl(Uri uri)
+        private bool IsValidUrl(Uri uri)
         {
             if (uri != null && uri.Scheme != null && uri.Host != null && uri.Host == EasyAuthCallbackUrlSegment)
             {
@@ -55,7 +55,7 @@ namespace Microsoft.WindowsAzure.MobileServices
             return false;
         }
 
-        private Dictionary<string, string> decodeResponse(string encodedString)
+        private Dictionary<string, string> DecodeResponse(string encodedString)
         {
             var inputs = new Dictionary<string, string>();
 
