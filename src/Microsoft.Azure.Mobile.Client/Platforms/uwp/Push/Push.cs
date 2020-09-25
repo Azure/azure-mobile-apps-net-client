@@ -30,10 +30,7 @@ namespace Microsoft.WindowsAzure.MobileServices
 
         private Push(IMobileServiceClient client, string tileId, SecondaryTilesList tiles)
         {
-            if (client == null)
-            {
-                throw new ArgumentNullException(nameof(client));
-            }
+            Arguments.IsNotNull(client, nameof(client));
 
             this.Client = client;
             this.TileId = tileId;
@@ -65,13 +62,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <summary>
         /// Installation Id used to register the device with Notification Hubs
         /// </summary>
-        public string InstallationId
-        {
-            get
-            {
-                return this.Client.InstallationId;
-            }
-        }
+        public string InstallationId => this.Client.InstallationId;
 
         private IMobileServiceClient Client { get; set; }
 
@@ -80,10 +71,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// </summary>
         /// <param name="channelUri">The channelUri to register</param>
         /// <returns>Task that completes when registration is complete</returns>
-        public Task RegisterAsync(string channelUri)
-        {
-            return this.RegisterAsync(channelUri, null, null);
-        }
+        public Task RegisterAsync(string channelUri) => RegisterAsync(channelUri, null, null);
 
         /// <summary>
         /// Register an Installation with particular channelUri and templates
@@ -91,10 +79,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <param name="channelUri">The channelUri to register</param>
         /// <param name="templates">JSON with one more templates to register</param>
         /// <returns>Task that completes when registration is complete</returns>
-        public Task RegisterAsync(string channelUri, JObject templates)
-        {
-            return this.RegisterAsync(channelUri, templates, null);
-        }
+        public Task RegisterAsync(string channelUri, JObject templates) => RegisterAsync(channelUri, templates, null);
 
         /// <summary>
         /// Register an Installation with particular channelUri, templates and secondaryTiles
@@ -105,10 +90,8 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <returns>Task that completes when registration is complete</returns>
         public Task RegisterAsync(string channelUri, JObject templates, JObject secondaryTiles)
         {
-            if (string.IsNullOrWhiteSpace(channelUri))
-            {
-                throw new ArgumentNullException(nameof(channelUri));
-            }
+            Arguments.IsNotNullOrWhiteSpace(channelUri, nameof(channelUri));
+
             JObject installation = new JObject();
             installation[PushInstallationProperties.PUSHCHANNEL] = channelUri;
             installation[PushInstallationProperties.PLATFORM] = Platform.Instance.PushUtility.GetPlatform();
@@ -174,16 +157,12 @@ namespace Microsoft.WindowsAzure.MobileServices
             {
                 get
                 {
-                    if (string.IsNullOrWhiteSpace(tileId))
-                    {
-                        throw new ArgumentNullException(nameof(tileId));
-                    }
+                    Arguments.IsNotNullOrWhiteSpace(tileId, nameof(tileId));
 
                     if (this.hubForTiles.ContainsKey(tileId))
                     {
                         return this.hubForTiles[tileId];
                     }
-
                     var hubForTile = new Push(this.parent.Client, tileId, this);
                     return this.hubForTiles.GetOrAdd(tileId, hubForTile);
                 }
@@ -206,8 +185,7 @@ namespace Microsoft.WindowsAzure.MobileServices
 
             public bool Remove(string tileId)
             {
-                Push hub;
-                return this.hubForTiles.TryRemove(tileId, out hub);
+                return this.hubForTiles.TryRemove(tileId, out Push hub);
             }
 
             public bool TryGetValue(string tileId, out Push value)

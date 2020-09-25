@@ -72,7 +72,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         /// </param>
         public static QueryResult Parse(MobileServiceHttpResponse httpResponse, JsonSerializerSettings serializerSettings, bool validate)
         {
-            Debug.Assert(httpResponse != null);
+            Arguments.IsNotNull(httpResponse, nameof(httpResponse));
 
             JToken response = httpResponse.Content.ParseToJToken(serializerSettings);
 
@@ -97,9 +97,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
                 if (result.Values == null && validate)
                 {
                     string responseStr = response != null ? response.ToString() : "null";
-                    throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture,
-                                                                      "Could not get an array from response {0}.",
-                                                                      responseStr));
+                    throw new InvalidOperationException($"Could not get an array from response {responseStr}.");
                 }
                 else if (result.Values == null)
                 {

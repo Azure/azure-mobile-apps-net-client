@@ -21,12 +21,14 @@ namespace Microsoft.WindowsAzure.MobileServices
 
         public Task DeleteInstallationAsync()
         {
-            return this.client.HttpClient.RequestAsync(HttpMethod.Delete, string.Format("push/installations/{0}", Uri.EscapeUriString(this.client.InstallationId)), this.client.CurrentUser, ensureResponseContent: false);
+            return client.HttpClient.RequestAsync(HttpMethod.Delete, GetUriPath(), client.CurrentUser, ensureResponseContent: false);
         }
 
-        public Task CreateOrUpdateInstallationAsync(JObject installation, CancellationToken cancellationToken = default(CancellationToken))
+        public Task CreateOrUpdateInstallationAsync(JObject installation, CancellationToken cancellationToken = default)
         {
-            return this.client.HttpClient.RequestAsync(HttpMethod.Put, string.Format("push/installations/{0}", Uri.EscapeUriString(this.client.InstallationId)), this.client.CurrentUser, content: installation.ToString(), ensureResponseContent: false, cancellationToken: cancellationToken);
+            return client.HttpClient.RequestAsync(HttpMethod.Put, GetUriPath(), client.CurrentUser, content: installation.ToString(), ensureResponseContent: false, cancellationToken: cancellationToken);
         }
+
+        private string GetUriPath() => string.Format("push/installations/{0}", Uri.EscapeUriString(client.InstallationId));
     }
 }

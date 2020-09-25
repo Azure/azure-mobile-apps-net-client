@@ -2,21 +2,16 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
 
-using System;
-using System.Globalization;
-using System.IO;
-using Microsoft.WindowsAzure.MobileServices;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Globalization;
 
 namespace System
 {
     internal static class StringExtensions
     {
         public static string FormatInvariant(this string format, params object[] args)
-        {
-            return string.Format(CultureInfo.InvariantCulture, format, args);
-        }
+            => string.Format(CultureInfo.InvariantCulture, format, args);
 
         /// <summary>
         /// Parses the content into a JToken.
@@ -26,13 +21,7 @@ namespace System
         /// <param name="settings">The serializer settings used for parsing the content.</param>
         /// <returns>A JToken containing the content or null.</returns>
         public static JToken ParseToJToken(this string content, JsonSerializerSettings settings)
-        {
-            if (String.IsNullOrEmpty(content))
-            {
-                return null;
-            }
-            return JsonConvert.DeserializeObject<JToken>(content, settings);            
-        }
+            => string.IsNullOrEmpty(content) ? null : JsonConvert.DeserializeObject<JToken>(content, settings);            
     }
 }
 

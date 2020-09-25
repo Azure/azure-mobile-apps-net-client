@@ -2,6 +2,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
 
+using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,8 +11,6 @@ using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
-using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.WindowsAzure.MobileServices.Query
 {
@@ -217,8 +216,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         private FilterBuildingExpressionVisitor(MobileServiceContractResolver contractResolver)
             : base()
         {
-            Debug.Assert(contractResolver != null);
-
+            Arguments.IsNotNull(contractResolver, nameof(contractResolver));
             this.contractResolver = contractResolver;
         }
 
@@ -237,8 +235,8 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         /// </returns>
         public static QueryNode Compile(Expression expression, MobileServiceContractResolver contractResolver)
         {
-            Debug.Assert(expression != null);
-            Debug.Assert(contractResolver != null);
+            Arguments.IsNotNull(expression, nameof(expression));
+            Arguments.IsNotNull(contractResolver, nameof(contractResolver));
                     
             // Walk the expression tree and build the filter.
             FilterBuildingExpressionVisitor visitor = new FilterBuildingExpressionVisitor(contractResolver);
@@ -264,8 +262,8 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         public static string GetTableMemberName(Expression expression,
                                                   MobileServiceContractResolver contractResolver)
         {
-            Debug.Assert(expression != null);
-            Debug.Assert(contractResolver != null);
+            Arguments.IsNotNull(expression, nameof(expression));
+            Arguments.IsNotNull(contractResolver, nameof(contractResolver));
 
             // Only parameter references are valid in a query (any other
             // references should have been partially evaluated away)
@@ -414,9 +412,9 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         /// </returns>
         private bool IsConversionImplicit(UnaryExpression expression, Type from, Type to)
         {
-            Debug.Assert(expression != null, "expression cannot be null!");
-            Debug.Assert(from != null, "from cannot be null!");
-            Debug.Assert(to != null, "to cannot be null!");
+            Arguments.IsNotNull(expression, nameof(expression));
+            Arguments.IsNotNull(from, nameof(from));
+            Arguments.IsNotNull(to, nameof(to));
 
             // We're only interested in conversions on table members
             if (GetTableMemberName(expression.Operand, this.contractResolver) != null)
@@ -620,22 +618,24 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         /// <param name="unaryExp">The expression which is the enum.</param>
         /// <param name="constExp">The expression containing the enum value.</param>
         /// <returns>True if an enum expression is found, otherwise false.</returns>
-        private bool CheckEnumExpression(BinaryExpression expression, out UnaryExpression unaryExp, out ConstantExpression constExp)
+        private bool CheckEnumExpression(BinaryExpression expression, out UnaryExpression unaryExp, out ConstantExpression constExpression)
         {
             // we handle two cases because the enum part can be on both sides
-            constExp = null;
+            constExpression = null;
+
             // case 1: enum on left side
             unaryExp = expression.Left as UnaryExpression;
-            if (unaryExp != null && unaryExp.NodeType == ExpressionType.Convert && unaryExp.Operand.Type.GetTypeInfo().IsEnum && expression.Right is ConstantExpression)
+            if (unaryExp != null && unaryExp.NodeType == ExpressionType.Convert && unaryExp.Operand.Type.GetTypeInfo().IsEnum && expression.Right is ConstantExpression leftExpr)
             {
-                constExp = (ConstantExpression)expression.Right;
+                constExpression = leftExpr;
                 return true;
             }
+
             // case 2: enum on right side
             unaryExp = expression.Right as UnaryExpression;
-            if (unaryExp != null && unaryExp.NodeType == ExpressionType.Convert && unaryExp.Operand.Type.GetTypeInfo().IsEnum && expression.Left is ConstantExpression)
+            if (unaryExp != null && unaryExp.NodeType == ExpressionType.Convert && unaryExp.Operand.Type.GetTypeInfo().IsEnum && expression.Left is ConstantExpression rightExpr)
             {
-                constExp = (ConstantExpression)expression.Left;
+                constExpression = rightExpr;
                 return true;
             }
             return false;
@@ -791,14 +791,13 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         /// </returns>
         private void VisitODataMethodCall(MethodCallExpression expression, string methodName, bool isStatic)
         {
-            Debug.Assert(expression != null, "expression cannot be null!");
-            Debug.Assert(methodName != null, "methodName cannot be null!");
+            Arguments.IsNotNull(expression, nameof(expression));
+            Arguments.IsNotNull(methodName, nameof(methodName));
             
             var fnCallNode = new FunctionCallNode(methodName, null);
 
             // adding node as a marker for start of arguments
             this.filterExpression.Push(fnCallNode);
-
             foreach (Expression argument in GetFilterMethodArguments(expression, methodName, isStatic))
             {
                 this.Visit(argument);
@@ -834,11 +833,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
             }
             else
             {
-                throw new NotSupportedException(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "'{0}' is not supported in a 'Where' Mobile Services query expression.",
-                        expression?.ToString()));
+                throw new NotSupportedException($"'{expression?.ToString()}' is not supported in a 'Where' Mobile Services query expression.");
             }
         }
 
@@ -880,11 +875,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
             }
             else
             {
-                throw new NotSupportedException(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "'{0}' is not supported in a 'Where' Mobile Services query expression.",
-                        expression?.ToString()));
+                throw new NotSupportedException($"'{expression?.ToString()}' is not supported in a 'Where' Mobile Services query expression.");
             }
         }
 
@@ -900,7 +891,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         /// </returns>
         private static Expression StripUnaryOperator(Expression expression)
         {
-            Debug.Assert(expression != null, "expression cannot be null!");
+            Arguments.IsNotNull(expression, nameof(expression));
             return expression is UnaryExpression unary ? unary.Operand : expression;
         }
 

@@ -3,16 +3,13 @@
 // ----------------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Reflection;
 
 namespace Microsoft.WindowsAzure.MobileServices
 {
     internal static class TypeExtensions
     {
-        private static Type nullableType = typeof(Nullable<>);
+        private static readonly Type nullableType = typeof(Nullable<>);
 
         /// <summary>
         /// Returns the underlying type in case of a Nullable.
@@ -22,10 +19,8 @@ namespace Microsoft.WindowsAzure.MobileServices
         public static Type UnwrapNullable(this Type thisType)
         {
             return thisType.GetTypeInfo().IsGenericType && thisType.GetGenericTypeDefinition() == nullableType
-                ?
-                Nullable.GetUnderlyingType(thisType)
-                :
-                thisType;
+                ? Nullable.GetUnderlyingType(thisType)
+                : thisType;
         }
     }
 }

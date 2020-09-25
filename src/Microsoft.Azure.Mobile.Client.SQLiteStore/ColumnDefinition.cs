@@ -33,8 +33,7 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore
 
         public override bool Equals(object obj)
         {
-            var other = obj as ColumnDefinition;
-            if (other == null)
+            if (!(obj is ColumnDefinition other))
             {
                 return base.Equals(obj);
             }

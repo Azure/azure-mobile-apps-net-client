@@ -4,8 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Text;
 
@@ -31,7 +29,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         /// </summary>
         public MobileServiceTableQueryDescription(string tableName)
         {
-            Debug.Assert(tableName != null, "tableName cannot be null");
+            Arguments.IsNotNull(tableName, nameof(tableName));
 
             this.TableName = tableName;
             this.Selection = new List<string>();
@@ -128,7 +126,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
             if (this.Filter != null)
             {
                 string filterStr = ODataExpressionVisitor.ToODataString(this.Filter);
-                text.AppendFormat(CultureInfo.InvariantCulture, "{0}{1}={2}", separator, ODataOptions.Filter, filterStr);
+                text.AppendFormat($"{separator}{ODataOptions.Filter}={filterStr}");
                 separator = '&';
             }
 
@@ -146,35 +144,35 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
                                                         return result;
                                                     });
 
-                text.AppendFormat(CultureInfo.InvariantCulture, "{0}{1}={2}", separator, ODataOptions.OrderBy, string.Join(",", orderings));
+                text.AppendFormat($"{separator}{ODataOptions.OrderBy}={string.Join(",", orderings)}");
                 separator = '&';
             }
 
             // Skip any elements
             if (this.Skip.HasValue && this.Skip >= 0)
             {
-                text.AppendFormat(CultureInfo.InvariantCulture, "{0}{1}={2}", separator, ODataOptions.Skip, this.Skip);
+                text.AppendFormat($"{separator}{ODataOptions.Skip}={Skip}");
                 separator = '&';
             }
 
             // Take the desired number of elements
             if (this.Top.HasValue && this.Top >= 0)
             {
-                text.AppendFormat(CultureInfo.InvariantCulture, "{0}{1}={2}", separator, ODataOptions.Top, this.Top);
+                text.AppendFormat($"{separator}{ODataOptions.Top}={Top}");
                 separator = '&';
             }
 
             // Add the selection
             if (this.Selection.Count > 0)
             {
-                text.AppendFormat(CultureInfo.InvariantCulture, "{0}{1}={2}", separator, ODataOptions.Select, string.Join(",", this.Selection.Select(Uri.EscapeDataString)));
+                text.AppendFormat($"{separator}{ODataOptions.Select}={string.Join(",", this.Selection.Select(Uri.EscapeDataString))}");
                 separator = '&';
             }
 
             // Add the total count
             if (this.IncludeTotalCount)
             {
-                text.AppendFormat(CultureInfo.InvariantCulture, "{0}{1}=allpages", separator, ODataOptions.InlineCount);
+                text.AppendFormat($"{separator}{ODataOptions.InlineCount}=allpages");
                 separator = '&';
             }
 
@@ -252,7 +250,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
                         includeTotalCount = "allpages".Equals(value);
                         break;
                     default:
-                        throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "Unrecognized query parameter '{0}'.", key), "query");
+                        throw new ArgumentException($"Unrecognized query parameter '{key}'.", nameof(query));
                 }
             }
 

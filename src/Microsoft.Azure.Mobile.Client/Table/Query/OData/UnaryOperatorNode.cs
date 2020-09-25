@@ -4,10 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Microsoft.WindowsAzure.MobileServices.Query
 {
@@ -19,10 +15,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         /// <summary>
         /// Gets the operator represented by this node.
         /// </summary>
-        public override QueryNodeKind Kind
-        {
-            get { return QueryNodeKind.UnaryOperator; }
-        }
+        public override QueryNodeKind Kind => QueryNodeKind.UnaryOperator;
 
         /// <summary>
         /// The operand of the unary operator.
@@ -36,7 +29,10 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
 
         internal override void SetChildren(IList<QueryNode> children)
         {
-            Debug.Assert(children.Count >= 1);
+            if (children.Count == 0)
+            {
+                throw new ArgumentException("'children' should not be empty", nameof(children));
+            }
             this.Operand = children[0];
         }
 

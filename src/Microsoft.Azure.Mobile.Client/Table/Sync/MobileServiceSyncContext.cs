@@ -2,15 +2,14 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
 
+using Microsoft.WindowsAzure.MobileServices.Query;
+using Microsoft.WindowsAzure.MobileServices.Threading;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.WindowsAzure.MobileServices.Eventing;
-using Microsoft.WindowsAzure.MobileServices.Query;
-using Microsoft.WindowsAzure.MobileServices.Threading;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.WindowsAzure.MobileServices.Sync
 {
@@ -39,9 +38,6 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
         /// Queue for pending operations (insert,delete,update) against remote table 
         /// </summary>
         private OperationQueue opQueue;
-
-        private StoreTrackingOptions storeTrackingOptions; 
-        
         private IMobileServiceLocalStore localOperationsStore;
         
         public IMobileServiceSyncHandler Handler { get; private set; }
@@ -67,46 +63,28 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
 
         public MobileServiceSyncContext(MobileServiceClient client)
         {
-            this.client = client ?? throw new ArgumentNullException("client");
+            Arguments.IsNotNull(client, nameof(client));
+            this.client = client;
         }
 
-        public long PendingOperations
-        {
-            get
-            {
-                if (!this.IsInitialized)
-                {
-                    return 0;
-                }
-                return this.opQueue.PendingOperations;
-            }
-        }
+        public long PendingOperations { get => IsInitialized ? opQueue.PendingOperations : 0; }
 
-        public StoreTrackingOptions StoreTrackingOptions
-        {
-            get { return this.storeTrackingOptions; }
-        }
+        public StoreTrackingOptions StoreTrackingOptions { get; private set; }
 
         public Task InitializeAsync(IMobileServiceLocalStore store, IMobileServiceSyncHandler handler)
-        {
-            return InitializeAsync(store, handler, StoreTrackingOptions.None);
-        }
+            => InitializeAsync(store, handler, StoreTrackingOptions.None);
 
         public async Task InitializeAsync(IMobileServiceLocalStore store, IMobileServiceSyncHandler handler, StoreTrackingOptions trackingOptions)
         {
-            if (store == null)
-            {
-                throw new ArgumentNullException("store");
-            }
+            Arguments.IsNotNull(store, nameof(store));
+
             handler ??= new MobileServiceSyncHandler();
-
             this.initializeTask = new TaskCompletionSource<object>();
-
             using (await this.storeQueueLock.WriterLockAsync())
             {
                 this.Handler = handler;
                 this.Store = store;
-                this.storeTrackingOptions = trackingOptions;
+                this.StoreTrackingOptions = trackingOptions;
                 this.syncQueue = new ActionBlock();
                 await this.Store.InitializeAsync();
                 this.opQueue = await OperationQueue.LoadAsync(store);
@@ -210,7 +188,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
                 throw new ArgumentException("Pull query with select clause is not supported.", "query");
             }
 
-            bool isIncrementalSync = !String.IsNullOrEmpty(queryId);
+            bool isIncrementalSync = !string.IsNullOrEmpty(queryId);
             if (isIncrementalSync)
             {
                 if (queryDescription.Ordering.Any())
@@ -365,7 +343,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
         }
 
         private IMobileServiceLocalStore CreateTrackedStore(StoreOperationSource operationSource)
-            => StoreChangeTrackerFactory.CreateTrackedStore(Store, operationSource, storeTrackingOptions, client.EventManager, settings);
+            => StoreChangeTrackerFactory.CreateTrackedStore(Store, operationSource, StoreTrackingOptions, client.EventManager, settings);
 
         private async Task TryCancelOperation(MobileServiceTableOperationError error)
         {

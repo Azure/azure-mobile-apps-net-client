@@ -23,7 +23,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <summary>
         /// The actual sequence of elements to enumerate.
         /// </summary>
-        private IEnumerable<T> sequence;
+        private readonly IEnumerable<T> sequence;
 
         /// <summary>
         /// Initializes a new instance of the QueryResultEnumerable{T} class.
@@ -43,7 +43,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         {
             this.sequence = sequence ?? new T[0];
             this.TotalCount = totalCount;
-            this.NextLink = link == null ? null : link.ToString();
+            this.NextLink = link?.ToString();
         }
 
         /// <summary>

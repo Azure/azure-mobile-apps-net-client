@@ -60,7 +60,7 @@ namespace Microsoft.WindowsAzure.MobileServices
             char[] separator = new[] { '=' };
             var parameters = query.Split('&')
                                   .Select(part => part.Split(separator, 2))
-                                  .ToDictionary(x => Uri.UnescapeDataString(x[0]), x => x.Length > 1 ? Uri.UnescapeDataString(x[1]) : String.Empty);
+                                  .ToDictionary(x => Uri.UnescapeDataString(x[0]), x => x.Length > 1 ? Uri.UnescapeDataString(x[1]) : string.Empty);
 
             return parameters;
         }

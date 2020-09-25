@@ -14,9 +14,9 @@ namespace Microsoft.WindowsAzure.MobileServices
 
         public MobileServiceHttpResponse(string content, string etag, LinkHeaderValue link)
         {
-            this.Content = content;
-            this.Etag = etag;
-            this.Link = link;
+            Content = content;
+            Etag = etag;
+            Link = link;
         }
     }
 }

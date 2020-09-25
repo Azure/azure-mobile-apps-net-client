@@ -3,17 +3,13 @@
 // ----------------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Microsoft.WindowsAzure.MobileServices.Threading
 {
     internal struct DisposeAction: IDisposable
     {
         bool isDisposed;
-        private Action action;
+        private readonly Action action;
 
         public DisposeAction(Action action)
         {

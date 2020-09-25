@@ -12,48 +12,16 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <summary>
         /// A singleton instance of the <see cref="PlatformInformation"/>.
         /// </summary>
-        private static readonly IPlatformInformation instance = new PlatformInformation();
+        public static IPlatformInformation Instance { get; } = new PlatformInformation();
 
-        /// <summary>
-        /// A singleton instance of the <see cref="PlatformInformation"/>.
-        /// </summary>
-        public static IPlatformInformation Instance
-        {
-            get
-            {
-                return instance;
-            }
-        }
+        public string OperatingSystemArchitecture => PlatformID.MacOSX.ToString();
 
-        public string OperatingSystemArchitecture
-        {
-            get { return PlatformID.MacOSX.ToString(); }
-        }
+        public string OperatingSystemName => "iOS";
 
-        public string OperatingSystemName
-        {
-            get { return "iOS"; }
-        }
+        public string OperatingSystemVersion => UIDevice.CurrentDevice.SystemVersion;
 
-        public string OperatingSystemVersion
-        {
-            get { return UIDevice.CurrentDevice.SystemVersion; }
-        }
+        public bool IsEmulator => (UIDevice.CurrentDevice.Model.ToLower().Contains("simulator"));
 
-        public bool IsEmulator
-        {
-            get
-            {
-                return (UIDevice.CurrentDevice.Model.ToLower().Contains("simulator"));
-            }
-        }
-
-        public string Version
-        {
-            get
-            {
-                return this.GetVersionFromAssemblyFileVersion();
-            }
-        }
+        public string Version => this.GetVersionFromAssemblyFileVersion();
     }
 }

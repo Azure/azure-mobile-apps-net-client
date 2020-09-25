@@ -20,8 +20,9 @@ namespace Microsoft.WindowsAzure.MobileServices
 
         internal Push(IMobileServiceClient client)
         {
-            this.Client = client ?? throw new ArgumentNullException(nameof(client));
+            Arguments.IsNotNull(client, nameof(client));
 
+            Client = client;
             if (!(client is MobileServiceClient internalClient))
             {
                 throw new ArgumentException("Client must be a MobileServiceClient object");
@@ -32,23 +33,14 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <summary>
         /// Installation Id used to register the device with Notification Hubs
         /// </summary>
-        public string InstallationId
-        {
-            get
-            {
-                return this.Client.InstallationId;
-            }
-        }
+        public string InstallationId => Client.InstallationId;
 
         /// <summary>
         /// Register an Installation with particular deviceToken
         /// </summary>
         /// <param name="deviceToken">The deviceToken to register</param>
         /// <returns>Task that completes when registration is complete</returns>
-        public Task RegisterAsync(NSData deviceToken)
-        {
-            return this.RegisterAsync(deviceToken, null);
-        }
+        public Task RegisterAsync(NSData deviceToken) => RegisterAsync(deviceToken, null);
 
         /// <summary>
         /// Register an Installation with particular deviceToken and templates
@@ -78,17 +70,14 @@ namespace Microsoft.WindowsAzure.MobileServices
                 }
                 installation[PushInstallationProperties.TEMPLATES] = templatesWithStringBody;
             }
-            return this.PushHttpClient.CreateOrUpdateInstallationAsync(installation);
+            return PushHttpClient.CreateOrUpdateInstallationAsync(installation);
         }
 
         /// <summary>
         /// Unregister any installations for a particular app
         /// </summary>
         /// <returns>Task that completes when unregister is complete</returns>
-        public Task UnregisterAsync()
-        {
-            return this.PushHttpClient.DeleteInstallationAsync();
-        }
+        public Task UnregisterAsync() => PushHttpClient.DeleteInstallationAsync();
 
         internal static string ParseDeviceToken(NSData deviceToken)
         {

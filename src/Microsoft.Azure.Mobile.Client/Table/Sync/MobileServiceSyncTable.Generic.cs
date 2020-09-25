@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
@@ -17,8 +16,8 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
 {
     internal class MobileServiceSyncTable<T> : MobileServiceSyncTable, IMobileServiceSyncTable<T>
     {
-        private MobileServiceTableQueryProvider queryProvider;
-        private IMobileServiceTable<T> remoteTable;
+        private readonly MobileServiceTableQueryProvider queryProvider;
+        private readonly IMobileServiceTable<T> remoteTable;
 
         public MobileServiceSyncTable(string tableName, MobileServiceTableKind kind, MobileServiceClient client)
             : base(tableName, kind, client)
@@ -32,23 +31,17 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
             return ReadAsync(CreateQuery());
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "It does not appear nested when used via the async pattern.")]
         public Task<IEnumerable<U>> ReadAsync<U>(IMobileServiceTableQuery<U> query)
         {
-            if (query == null)
-            {
-                throw new ArgumentNullException("query");
-            }
+            Arguments.IsNotNull(query, nameof(query));
 
             return this.queryProvider.Execute(query);
         }
 
         public Task PullAsync<U>(string queryId, IMobileServiceTableQuery<U> query, bool pushOtherTables, CancellationToken cancellationToken, PullOptions pullOptions)
         {
-            if (query == null)
-            {
-                throw new ArgumentNullException("query");
-            }
+            Arguments.IsNotNull(query, nameof(query));
+
             string queryString = this.queryProvider.ToODataString(query);
 
             return this.PullAsync(queryId, queryString, query.Parameters, pushOtherTables, cancellationToken, pullOptions);
@@ -61,21 +54,14 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
 
         public Task PurgeAsync<U>(string queryId, IMobileServiceTableQuery<U> query, bool force, CancellationToken cancellationToken)
         {
-            if (query == null)
-            {
-                throw new ArgumentNullException("query");
-            }
-            string queryString = this.queryProvider.ToODataString(query);
+            Arguments.IsNotNull(query, nameof(query));
 
-            return this.PurgeAsync(queryId, queryString, force, cancellationToken);
+            return this.PurgeAsync(queryId, queryProvider.ToODataString(query), force, cancellationToken);
         }
 
         public async Task RefreshAsync(T instance)
         {
-            if (instance == null)
-            {
-                throw new ArgumentNullException("instance");
-            }
+            Arguments.IsNotNull(instance, nameof(instance));
 
             MobileServiceSerializer serializer = this.MobileServiceClient.Serializer;
             object objId = serializer.GetId(instance, ignoreCase: false, allowDefault: true);
@@ -91,10 +77,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
 
             if (refreshed == null)
             {
-                throw new InvalidOperationException(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "Item not found in local store."));
+                throw new InvalidOperationException("Item not found in local store.");
             }
 
             // Deserialize that value back into the current instance
@@ -103,27 +86,19 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
 
         public async Task InsertAsync(T instance)
         {
-            if (instance == null)
-            {
-                throw new ArgumentNullException("instance");
-            }
+            Arguments.IsNotNull(instance, nameof(instance));
 
             MobileServiceSerializer serializer = this.MobileServiceClient.Serializer;
             var value = serializer.Serialize(instance) as JObject;
             // remove system properties since the jtoken insert overload doesn't remove them
             value = RemoveSystemPropertiesKeepVersion(value);
-
             JObject inserted = await base.InsertAsync(value);
-
             serializer.Deserialize(inserted, instance);
         }
 
         public Task UpdateAsync(T instance)
         {
-            if (instance == null)
-            {
-                throw new ArgumentNullException("instance");
-            }
+            Arguments.IsNotNull(instance, nameof(instance));
 
             MobileServiceSerializer serializer = this.MobileServiceClient.Serializer;
             var value = serializer.Serialize(instance) as JObject;
@@ -132,10 +107,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
 
         public Task DeleteAsync(T instance)
         {
-            if (instance == null)
-            {
-                throw new ArgumentNullException("instance");
-            }
+            Arguments.IsNotNull(instance, nameof(instance));
 
             MobileServiceSerializer serializer = this.MobileServiceClient.Serializer;
             var value = serializer.Serialize(instance) as JObject;
@@ -145,11 +117,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
         public async new Task<T> LookupAsync(string id)
         {
             JToken value = await base.LookupAsync(id);
-            if (value == null)
-            {
-                return default(T);
-            }
-            return this.MobileServiceClient.Serializer.Deserialize<T>(value);
+            return value == null ? default : MobileServiceClient.Serializer.Deserialize<T>(value);
         }
 
         public IMobileServiceTableQuery<T> CreateQuery()
@@ -162,32 +130,26 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
             return CreateQuery().Where(predicate);
         }
 
-        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "U", Justification = "Standard for LINQ")]
-        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "Part of the LINQ query pattern.")]
         public IMobileServiceTableQuery<U> Select<U>(Expression<Func<T, U>> selector)
         {
             return CreateQuery().Select(selector);
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "Part of the LINQ query pattern.")]
         public IMobileServiceTableQuery<T> OrderBy<TKey>(Expression<Func<T, TKey>> keySelector)
         {
             return CreateQuery().OrderBy(keySelector);
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "Part of the LINQ query pattern.")]
         public IMobileServiceTableQuery<T> OrderByDescending<TKey>(Expression<Func<T, TKey>> keySelector)
         {
             return CreateQuery().OrderByDescending(keySelector);
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "Part of the LINQ query pattern.")]
         public IMobileServiceTableQuery<T> ThenBy<TKey>(Expression<Func<T, TKey>> keySelector)
         {
             return CreateQuery().ThenBy(keySelector);
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "Part of the LINQ query pattern.")]
         public IMobileServiceTableQuery<T> ThenByDescending<TKey>(Expression<Func<T, TKey>> keySelector)
         {
             return CreateQuery().ThenByDescending(keySelector);

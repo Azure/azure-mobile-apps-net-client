@@ -37,12 +37,12 @@ namespace Microsoft.WindowsAzure.MobileServices
         {
             get
             {
-                return this.ContractResolver.CamelCasePropertyNames;
+                return ContractResolver.CamelCasePropertyNames;
             }
 
             set
             {
-                this.ContractResolver.CamelCasePropertyNames = value;
+                ContractResolver.CamelCasePropertyNames = value;
             }
         }
 
@@ -58,9 +58,7 @@ namespace Microsoft.WindowsAzure.MobileServices
                 // set to an instance of IContractResolver that is not a 
                 // MobileServiceContractResolver. Therefore, we must check for 
                 // this condition and throw an exception as needed.
-                MobileServiceContractResolver contractResolver =
-                    base.ContractResolver as MobileServiceContractResolver;
-                if (contractResolver == null)
+                if (!(base.ContractResolver is MobileServiceContractResolver contractResolver))
                 {
                     throw new InvalidOperationException(
                         string.Format(
@@ -75,17 +73,12 @@ namespace Microsoft.WindowsAzure.MobileServices
 
             set
             {
-                if (value == null)
-                {
-                    throw new InvalidOperationException(
+                base.ContractResolver = value ?? throw new InvalidOperationException(
                         string.Format(
                             CultureInfo.InvariantCulture,
                             "The member '{0}.ContractResolver' must be set to an instance of the '{1}' class or a class that inherits from the '{1}' class.",
                             this.GetType().FullName,
                             typeof(MobileServiceContractResolver).FullName));
-                }
-
-                base.ContractResolver = value;
             }
         }
 

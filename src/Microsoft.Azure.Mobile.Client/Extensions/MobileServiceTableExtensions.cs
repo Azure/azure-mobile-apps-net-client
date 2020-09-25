@@ -30,8 +30,6 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// A task that will return with results when the query finishes.
         /// </returns>
         public static Task<JToken> ReadAsync(this IMobileServiceTable table, string query, IDictionary<string, string> parameters)
-        {
-            return table.ReadAsync(query, parameters, wrapResult: false);
-        }
+           => table.ReadAsync(query, parameters, wrapResult: false);
     }
 }

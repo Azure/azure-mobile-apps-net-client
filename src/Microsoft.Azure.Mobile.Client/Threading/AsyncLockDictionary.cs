@@ -4,8 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -24,7 +22,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Threading
             }
         }
 
-        Dictionary<string, LockEntry> locks = new Dictionary<string, LockEntry>();
+        readonly Dictionary<string, LockEntry> locks = new Dictionary<string, LockEntry>();
 
         public async Task<IDisposable> Acquire(string key, CancellationToken cancellationToken)
         {

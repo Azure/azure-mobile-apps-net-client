@@ -23,18 +23,16 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <param name="sequence">
         /// The sequence whose elements comprise the list.
         /// </param>
-        public QueryResultList(IEnumerable<T> sequence)
-            : base(sequence)
+        public QueryResultList(IEnumerable<T> sequence) : base(sequence)
         {
-            this.TotalCount = -1;
+            TotalCount = -1;
 
             // Forward along the total count from our sequence if it was
             // provided
-            var provider = sequence as IQueryResultEnumerable<T>;
-            if (provider != null)
+            if (sequence is IQueryResultEnumerable<T> provider)
             {
-                this.TotalCount = provider.TotalCount;
-                this.NextLink = provider.NextLink;
+                TotalCount = provider.TotalCount;
+                NextLink = provider.NextLink;
             }
         }
 

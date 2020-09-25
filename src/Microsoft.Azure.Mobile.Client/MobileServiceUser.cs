@@ -2,9 +2,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
 
-using System;
-using System.Net.Http.Headers;
-
 namespace Microsoft.WindowsAzure.MobileServices
 {
     /// <summary>
@@ -23,14 +20,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// </param>
         public MobileServiceUser(string userId)
         {
-            if (userId == null)
-            {
-                throw new ArgumentNullException(nameof(userId));
-            }
-            if (string.IsNullOrWhiteSpace(userId))
-            {
-                throw new ArgumentException("Cannot be empty", nameof(userId));
-            }
+            Arguments.IsNotNullOrWhiteSpace(userId, nameof(userId));
             this.userId = userId;
         }
 

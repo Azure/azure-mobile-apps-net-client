@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 
 namespace Microsoft.WindowsAzure.MobileServices
@@ -53,12 +52,7 @@ namespace Microsoft.WindowsAzure.MobileServices
                 {
                     if (useTableAPIRules && parameter.Key.StartsWith("$"))
                     {
-                        throw new ArgumentException(
-                            string.Format(
-                                CultureInfo.InvariantCulture,
-                                "{0} is an invalid user-defined query string parameter. User-defined query string parameters must not begin with a \'$\'.",
-                                parameter.Key),
-                            "parameters");
+                        throw new ArgumentException($"{parameter.Key} is an invalid user-defined query string parameter.", nameof(parameters));
                     }
 
                     string escapedKey = Uri.EscapeDataString(parameter.Key);
@@ -88,7 +82,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// </returns>
         public static string CombinePathAndQuery(string path, string queryString)
         {
-            Debug.Assert(!string.IsNullOrEmpty(path));
+            Arguments.IsNotNullOrEmpty(path, nameof(path));
 
             if (!string.IsNullOrEmpty(queryString))
             {
@@ -144,14 +138,8 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// </returns>
         public static string CombileSchemeAndPath(string scheme, string path)
         {
-            if (string.IsNullOrEmpty(scheme))
-            {
-                throw new ArgumentException("scheme");
-            }
-            if (string.IsNullOrEmpty(path))
-            {
-                throw new ArgumentException("path");
-            }
+            Arguments.IsNotNullOrEmpty(scheme, nameof(scheme));
+            Arguments.IsNotNullOrEmpty(path, nameof(path));
 
             return string.Format(CultureInfo.InvariantCulture,
                                  "{0}{1}{2}",
@@ -175,10 +163,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// </remarks>
         public static string AddTrailingSlash(string uri)
         {
-            if (uri == null)
-            {
-                throw new ArgumentNullException(nameof(uri));
-            }
+            Arguments.IsNotNull(uri, nameof(uri));
 
             if (!uri.EndsWith(Slash.ToString()))
             {
@@ -203,10 +188,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// </remarks>
         public static string AddLeadingSlash(string uri)
         {
-            if (uri == null)
-            {
-                throw new ArgumentNullException(nameof(uri));
-            }
+            Arguments.IsNotNull(uri, nameof(uri));
 
             if (!uri.StartsWith(Slash.ToString()))
             {

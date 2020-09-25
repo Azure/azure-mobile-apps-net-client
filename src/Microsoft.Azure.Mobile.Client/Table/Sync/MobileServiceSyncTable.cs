@@ -118,10 +118,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
         // we don't support int id tables for offline. therefore id must be of type string
         private static string EnsureIdIsString(JObject instance)
         {
-            if (instance == null)
-            {
-                throw new ArgumentNullException("instance");
-            }
+            Arguments.IsNotNull(instance, nameof(instance));
 
             object id = MobileServiceSerializer.GetId(instance, ignoreCase: false, allowDefault: false);
             return EnsureIdIsString(id);
@@ -140,7 +137,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
                         string.Format(
                             CultureInfo.InvariantCulture,
                             $"The query id must not contain pipe character and should be less than {queryIdKeySize} characters in length."),
-                            "queryId");
+                            nameof(queryId));
             }
         }
 

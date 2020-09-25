@@ -28,8 +28,7 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore
         public static void DefineTable<T>(this MobileServiceSQLiteStore store, MobileServiceJsonSerializerSettings settings)
         {
             string tableName = settings.ContractResolver.ResolveTableName(typeof(T));
-            var contract = settings.ContractResolver.ResolveContract(typeof(T)) as JsonObjectContract;
-            if (contract == null)
+            if (!(settings.ContractResolver.ResolveContract(typeof(T)) is JsonObjectContract contract))
             {
                 throw new ArgumentException("The generic type T is not an object.");
             }

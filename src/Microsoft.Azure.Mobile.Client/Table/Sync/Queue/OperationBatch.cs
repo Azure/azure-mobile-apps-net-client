@@ -2,15 +2,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
 
+using Microsoft.WindowsAzure.MobileServices.Query;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Microsoft.WindowsAzure.MobileServices.Query;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.WindowsAzure.MobileServices.Sync
 {
@@ -19,7 +16,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
     /// </summary>
     internal class OperationBatch
     {
-        private MobileServiceSyncContext context;
+        private readonly MobileServiceSyncContext context;
 
         /// <summary>
         /// Errors while interacting with store or calling push complete on handler
@@ -55,7 +52,10 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
         /// <param name="reason">Status value that respresents the reason of abort.</param>
         public void Abort(MobileServicePushStatus reason)
         {
-            Debug.Assert(reason != MobileServicePushStatus.Complete);
+            if (reason == MobileServicePushStatus.Complete)
+            {
+                throw new ArgumentException("Push Status is complete", nameof(reason));
+            }
 
             this.AbortReason = reason;
         }
@@ -108,21 +108,13 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
         /// </summary>
         public async Task DeleteErrorsAsync()
         {
-            MobileServiceLocalStoreException toThrow = null;
-
             try
             {
-                await this.Store.DeleteAsync(new MobileServiceTableQueryDescription(MobileServiceLocalSystemTables.SyncErrors));
+                await Store.DeleteAsync(new MobileServiceTableQueryDescription(MobileServiceLocalSystemTables.SyncErrors));
             }
             catch (Exception ex)
             {
-
-                toThrow = new MobileServiceLocalStoreException("Failed to delete error from the local store.", ex);
-            }
-
-            if (toThrow != null)
-            {
-                throw toThrow;
+                throw new MobileServiceLocalStoreException("Failed to delete error from the local store.", ex);
             }
         }
     }

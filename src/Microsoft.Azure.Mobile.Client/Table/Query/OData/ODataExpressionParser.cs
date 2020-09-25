@@ -35,9 +35,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         public QueryNode ParseFilter()
         {
             QueryNode expr = this.ParseExpression();
-
             this.ValidateToken(QueryTokenKind.End, () => "The specified odata query has syntax errors.");
-
             return expr;
         }
 
@@ -68,10 +66,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
             return orderings;
         }
 
-        private QueryNode ParseExpression()
-        {
-            return this.ParseLogicalOr();
-        }
+        private QueryNode ParseExpression() => ParseLogicalOr();
 
         private QueryNode ParseLogicalOr()
         {

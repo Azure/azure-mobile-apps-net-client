@@ -3,9 +3,7 @@
 // ----------------------------------------------------------------------------
 
 using System;
-using System.Diagnostics;
 using System.Linq;
-using System.Collections.Generic;
 using System.Reflection;
 
 namespace Microsoft.WindowsAzure.MobileServices.Query
@@ -22,7 +20,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         // Information about the class member
         private MemberInfo memberInfo;
         private readonly Type type;
-        private readonly String memberName;
+        private readonly string memberName;
         private readonly bool isMethod;
         private readonly bool isInstance;
         private readonly Type[] parameters;
@@ -44,19 +42,21 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
             MethodInfo asMethod = memberInfo as MethodInfo;
             if (asMethod != null)
             {
-                this.isMethod = true;
-                
-                this.isInstance = !asMethod.IsStatic;
-                this.parameters = asMethod.GetParameters().Select(p => p.ParameterType).ToArray();
+                isMethod = true;               
+                isInstance = !asMethod.IsStatic;
+                parameters = asMethod.GetParameters().Select(p => p.ParameterType).ToArray();
             }
             else
             {
                 PropertyInfo asProperty = memberInfo as PropertyInfo;
-                Debug.Assert(asProperty != null, "All MemberInfoKey instances must be either methods or properties.");
+                if (asProperty == null)
+                {
+                    throw new ArgumentException("All MemberInfoKey instances must be either methods or properties.", nameof(memberInfo));
+                }
 
-                this.isMethod = false;
-                this.isInstance = true;
-                this.parameters = emptyTypeParameters;
+                isMethod = false;
+                isInstance = true;
+                parameters = emptyTypeParameters;
             }
         }
 
@@ -109,15 +109,15 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
             // If both instances refer to an actual MemberInfo instance, just
             // check those for equivalence.
             if (other.memberInfo != null &&
-                this.memberInfo != null)
+                memberInfo != null)
             {
-                areEqual = MemberInfo.Equals(other.memberInfo, this.memberInfo);
+                areEqual = MemberInfo.Equals(other.memberInfo, memberInfo);
             }
-            else if (string.Equals(other.memberName, this.memberName, StringComparison.Ordinal) &&
-                other.type == this.type &&
-                other.isMethod == this.isMethod &&
-                other.isInstance == this.isInstance &&
-                this.parameters.SequenceEqual(other.parameters))
+            else if (string.Equals(other.memberName, memberName, StringComparison.Ordinal) &&
+                other.type == type &&
+                other.isMethod == isMethod &&
+                other.isInstance == isInstance &&
+                parameters.SequenceEqual(other.parameters))
             {
                 areEqual = true;
 
@@ -125,11 +125,11 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
                 // other instance to speed up future equivalence checks.
                 if (other.memberInfo == null)
                 {
-                    other.memberInfo = this.memberInfo;
+                    other.memberInfo = memberInfo;
                 }
                 else
                 {
-                    this.memberInfo = other.memberInfo;
+                    memberInfo = other.memberInfo;
                 }
             }
 
@@ -151,7 +151,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         {
             if (obj is MemberInfoKey other)
             {
-                return this.Equals(other);
+                return Equals(other);
             }
 
             return false;
@@ -167,7 +167,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         /// </returns>
         public override int GetHashCode()
         {
-            return this.memberName.GetHashCode() | this.type.GetHashCode();
+            return memberName.GetHashCode() | type.GetHashCode();
         }
     }
 }

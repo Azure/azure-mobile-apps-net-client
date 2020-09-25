@@ -16,17 +16,17 @@ namespace Microsoft.WindowsAzure.MobileServices
         public LinkHeaderValue(string uri, string rel)
         {
             Uri.TryCreate(uri, UriKind.RelativeOrAbsolute, out Uri value);
-            this.Uri = value;
-            this.Relation = rel;
+            Uri = value;
+            Relation = rel;
         }
 
         public static LinkHeaderValue Parse(string value)
         {
             string uri = null, rel = null;
 
-            if (!String.IsNullOrEmpty(value))
+            if (!string.IsNullOrEmpty(value))
             {
-                Match result = pattern.Match(value ?? String.Empty);
+                Match result = pattern.Match(value ?? string.Empty);
                 uri = result.Groups["uri"].Value;
                 rel = result.Groups["rel"].Value;
             }

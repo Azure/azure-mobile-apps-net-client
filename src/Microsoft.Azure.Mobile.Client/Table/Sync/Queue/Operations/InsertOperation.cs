@@ -3,7 +3,6 @@
 // ----------------------------------------------------------------------------
 
 using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
@@ -30,7 +29,10 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
 
         public override void Validate(MobileServiceTableOperation newOperation)
         {
-            Debug.Assert(newOperation.ItemId == this.ItemId);
+            if (newOperation.ItemId != ItemId)
+            {
+                throw new ArgumentException("ItemId does not match", nameof(newOperation));
+            }
 
             if (newOperation is InsertOperation)
             {
@@ -46,7 +48,10 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
 
         public override void Collapse(MobileServiceTableOperation newOperation)
         {
-            Debug.Assert(newOperation.ItemId == this.ItemId);
+            if (newOperation.ItemId != ItemId)
+            {
+                throw new ArgumentException("ItemId does not match", nameof(newOperation));
+            }
 
             if (newOperation is DeleteOperation)
             {

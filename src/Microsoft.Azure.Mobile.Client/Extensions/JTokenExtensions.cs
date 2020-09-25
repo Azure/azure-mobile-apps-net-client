@@ -2,12 +2,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.WindowsAzure.MobileServices
@@ -20,9 +14,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <param name="item">The jtoken to check.</param>
         /// <returns>True if it is a valid item, False otherwise.</returns>
         public static bool IsValidItem(this JToken item)
-        {
-            return item is JObject obj && HasId(obj);
-        }
+            => item is JObject obj && HasId(obj);
 
         /// <summary>
         /// If specified JToken is a valid item then returns it otherwise returns null
@@ -30,16 +22,12 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <param name="item">The jtoken to check.</param>
         /// <returns><paramref name="item"/> as JObject if it is valid, othewise null.</returns>
         public static JObject ValidItemOrNull(this JToken item)
-        {
-            return IsValidItem(item) ? (JObject)item : null;
-        }
+            => IsValidItem(item) ? (JObject)item : null;
 
         private static bool HasId(JObject obj)
         {
-            Debug.Assert(obj != null);
-
-            var id = obj.Value<string>(MobileServiceSystemColumns.Id);
-            return id != null;
+            Arguments.IsNotNull(obj, nameof(obj));
+            return obj.Value<string>(MobileServiceSystemColumns.Id) != null;
         }
     }
 }

@@ -16,7 +16,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Threading
     /// </summary>
     internal class ActionBlock: IDisposable
     {
-        AsyncLock theLock;
+        readonly AsyncLock theLock;
 
         public ActionBlock()
         {

@@ -28,6 +28,15 @@ namespace Microsoft.WindowsAzure.MobileServices
             }
         }
 
+        public static void IsNotNullOrEmpty(string param, string paramName)
+        {
+            IsNotNull(param, paramName);
+            if (string.IsNullOrEmpty(param))
+            {
+                throw new ArgumentException($"'{param}' cannot have whitespace", paramName);
+            }
+        }
+
         public static void IsPositiveInteger(int param, string paramName)
         {
             if (param < 0)

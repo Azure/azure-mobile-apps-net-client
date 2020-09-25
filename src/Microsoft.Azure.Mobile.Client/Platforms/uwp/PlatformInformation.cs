@@ -17,69 +17,28 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <summary>
         /// A singleton instance of the <see cref="IPlatformInformation"/>.
         /// </summary>
-        private static readonly IPlatformInformation instance = new PlatformInformation();
-
-        /// <summary>
-        /// A singleton instance of the <see cref="IPlatformInformation"/>.
-        /// </summary>
-        public static IPlatformInformation Instance
-        {
-            get
-            {
-                return instance;
-            }
-        }
+        public static IPlatformInformation Instance { get; } = new PlatformInformation();
 
         /// <summary>
         /// The architecture of the platform.
         /// </summary>
-        public string OperatingSystemArchitecture
-        {
-            get
-            {
-                return Package.Current.Id.Architecture.ToString();
-            }
-        }
+        public string OperatingSystemArchitecture => Package.Current.Id.Architecture.ToString();
 
         /// <summary>
         /// The name of the operating system of the platform.
         /// </summary>
-        public string OperatingSystemName
-        {
-            get
-            {
-                return "Windows Store";
-            }
-        }
+        public string OperatingSystemName => "Windows Store";
 
         /// <summary>
         /// The version of the operating system of the platform.
         /// </summary>
-        public string OperatingSystemVersion
-        {
-            get
-            {
-                return Platform.UnknownValueString;
-            }
-        }
+        public string OperatingSystemVersion => Platform.UnknownValueString;
 
         /// <summary>
         /// Indicated whether the device is an emulator or not
         /// </summary>
-        public bool IsEmulator
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public bool IsEmulator => false;
 
-        public string Version
-        {
-            get
-            {
-                return this.GetVersionFromAssemblyFileVersion();
-            }
-        }
+        public string Version => this.GetVersionFromAssemblyFileVersion();
     }
 }

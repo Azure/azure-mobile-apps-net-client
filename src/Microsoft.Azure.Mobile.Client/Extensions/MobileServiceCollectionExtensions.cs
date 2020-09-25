@@ -2,12 +2,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.WindowsAzure.MobileServices.Sync;
+using System.Threading.Tasks;
 
 namespace Microsoft.WindowsAzure.MobileServices
 {
@@ -45,9 +41,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// </param>
         /// <returns>The collection.</returns>
         public static Task<MobileServiceCollection<TTable, TTable>> ToCollectionAsync<TTable>(this IMobileServiceTable<TTable> table, int pageSize = 0)
-        {
-            return table.CreateQuery().ToCollectionAsync(pageSize);
-        }
+            => table.CreateQuery().ToCollectionAsync(pageSize);
 
         /// <summary>
         /// Create a new collection based on the local table.
@@ -60,8 +54,6 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// </param>
         /// <returns>The collection.</returns>
         public static Task<MobileServiceCollection<TTable, TTable>> ToCollectionAsync<TTable>(this IMobileServiceSyncTable<TTable> table, int pageSize = 0)
-        {
-            return table.CreateQuery().ToCollectionAsync(pageSize);
-        }
+            => table.CreateQuery().ToCollectionAsync(pageSize);
     }
 }

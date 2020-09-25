@@ -104,10 +104,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
         /// <returns>Task that completes when operation is cancelled.</returns>
         public async Task CancelAndUpdateItemAsync(JObject item)
         {
-            if (item == null)
-            {
-                throw new ArgumentNullException("item");
-            }
+            Arguments.IsNotNull(item, nameof(item));
 
             await this.Context.CancelAndUpdateItemAsync(this, item);
             this.Handled = true;
@@ -121,10 +118,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
         /// <returns>Task that completes when operation is updated.</returns>
         public async Task UpdateOperationAsync(JObject item)
         {
-            if (item == null)
-            {
-                throw new ArgumentNullException("item");
-            }
+            Arguments.IsNotNull(item, nameof(item));
 
             await this.Context.UpdateOperationAsync(this, item);
             this.Handled = true;

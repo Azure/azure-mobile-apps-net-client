@@ -57,10 +57,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
             return MobileServiceTableOperation.Deserialize(op);
         }
 
-        public long PendingOperations
-        {
-            get { return pendingOperations; }
-        }
+        public long PendingOperations => pendingOperations;
 
         internal void UpdateOperationCount(long delta)
         {

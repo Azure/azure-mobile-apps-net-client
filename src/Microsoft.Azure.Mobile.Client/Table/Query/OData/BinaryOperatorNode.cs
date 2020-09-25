@@ -2,12 +2,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Microsoft.WindowsAzure.MobileServices.Query
 {
@@ -19,10 +15,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         /// <summary>
         /// Gets the kind of the query node.
         /// </summary>
-        public override QueryNodeKind Kind
-        {
-            get { return QueryNodeKind.BinaryOperator; }
-        }
+        public override QueryNodeKind Kind => QueryNodeKind.BinaryOperator;
 
         /// <summary>
         /// The operator represented by this node.

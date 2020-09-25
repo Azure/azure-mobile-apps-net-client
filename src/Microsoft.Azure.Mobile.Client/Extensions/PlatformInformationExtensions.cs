@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// ----------------------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// ----------------------------------------------------------------------------
+
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Microsoft.WindowsAzure.MobileServices
 {
@@ -16,10 +16,9 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <param name="platformInformation"></param>
         /// <returns>The version set in the </returns>
         internal static string GetVersionFromAssemblyFileVersion(this IPlatformInformation platformInformation)
-        {
-            var attribute = platformInformation.GetType().GetTypeInfo().Assembly
-                .GetCustomAttributes(typeof(AssemblyFileVersionAttribute)).FirstOrDefault() as AssemblyFileVersionAttribute;
-            return attribute != null ? attribute.Version : string.Empty;
-        }
+            => platformInformation.GetType()
+                .GetTypeInfo().Assembly
+                .GetCustomAttributes(typeof(AssemblyFileVersionAttribute))
+                .FirstOrDefault() is AssemblyFileVersionAttribute attribute ? attribute.Version : string.Empty;
     }
 }

@@ -3,10 +3,6 @@
 // ----------------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Microsoft.WindowsAzure.MobileServices.Sync
 {
@@ -22,21 +18,15 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
 
         public PurgeCompletedEvent(string tableName)
         {
-            if (tableName == null)
-            {
-                throw new ArgumentNullException("tableName");
-            }
+            Arguments.IsNotNull(tableName, nameof(tableName));
 
             TableName = tableName;
         }
-        
+
         /// <summary>
         /// Gets the event name.
         /// </summary>
-        public override string Name
-        {
-            get { return EventName; }
-        }
+        public override string Name => EventName;
 
         /// <summary>
         /// Gets the name of the table that was the target of the purge operation.

@@ -4,12 +4,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Microsoft.WindowsAzure.MobileServices.Query;
 
 namespace Microsoft.WindowsAzure.MobileServices.Query
 {
@@ -54,10 +51,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
                                          IDictionary<string, string> parameters,
                                          bool includeTotalCount)
         {
-            if (table == null)
-            {
-                throw new ArgumentNullException("table");
-            }
+            Arguments.IsNotNull(table, nameof(table));
 
             this.Table = table;
             this.RequestTotalCount = includeTotalCount;
@@ -102,15 +96,10 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         /// <returns>
         /// The composed query.
         /// </returns>
-        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "Part of the LINQ query pattern.")]
         public IMobileServiceTableQuery<T> Where(Expression<Func<T, bool>> predicate)
         {
-            if (predicate == null)
-            {
-                throw new ArgumentNullException("predicate");
-            }
-
-            return this.QueryProvider.Create<T>(this.Table, Queryable.Where(this.Query, predicate), this.Parameters, this.RequestTotalCount);
+            Arguments.IsNotNull(predicate, nameof(predicate));
+            return QueryProvider.Create(Table, Queryable.Where(Query, predicate), Parameters, RequestTotalCount);
         }
 
         /// <summary>
@@ -125,29 +114,17 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         /// <returns>
         /// The composed query.
         /// </returns>
-        [SuppressMessage("Microsoft.Naming", "CA1715:IdentifiersShouldHaveCorrectPrefix", MessageId = "T", Justification = "Part of the LINQ query pattern.")]
-        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "U", Justification = "Standard for LINQ")]
-        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "Part of the LINQ query pattern.")]
         public IMobileServiceTableQuery<U> Select<U>(Expression<Func<T, U>> selector)
         {
-            if (selector == null)
-            {
-                throw new ArgumentNullException("selector");
-            }
+            Arguments.IsNotNull(selector, nameof(selector));
 
             // Create a new table with the same name/client but
             // pretending to be of a different type since the query needs to
             // have the same type as the table.  This won't cause any issues
             // since we're only going to use it to evaluate the query and it'll
             // never leak to users.
-            MobileServiceTable<U> table = new MobileServiceTable<U>(
-                this.Table.TableName,
-                this.Table.MobileServiceClient);
-
-            return this.QueryProvider.Create(table,
-                                             Queryable.Select(this.Query, selector),
-                                             this.Parameters,
-                                             this.RequestTotalCount);
+            MobileServiceTable<U> table = new MobileServiceTable<U>(Table.TableName, Table.MobileServiceClient);
+            return QueryProvider.Create(table, Queryable.Select(this.Query, selector), Parameters, RequestTotalCount);
         }
 
         /// <summary>
@@ -162,15 +139,10 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         /// <returns>
         /// The composed query.
         /// </returns>
-        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "Part of the LINQ query pattern.")]
         public IMobileServiceTableQuery<T> OrderBy<TKey>(Expression<Func<T, TKey>> keySelector)
         {
-            if (keySelector == null)
-            {
-                throw new ArgumentNullException("keySelector");
-            }
-
-            return this.QueryProvider.Create(this.Table, Queryable.OrderBy(this.Query, keySelector), this.Parameters, this.RequestTotalCount);
+            Arguments.IsNotNull(keySelector, nameof(keySelector));
+            return QueryProvider.Create(Table, Queryable.OrderBy(Query, keySelector), Parameters, RequestTotalCount);
         }
 
         /// <summary>
@@ -185,15 +157,10 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         /// <returns>
         /// The composed query.
         /// </returns>
-        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "Part of the LINQ query pattern.")]
         public IMobileServiceTableQuery<T> OrderByDescending<TKey>(Expression<Func<T, TKey>> keySelector)
         {
-            if (keySelector == null)
-            {
-                throw new ArgumentNullException("keySelector");
-            }
-
-            return this.QueryProvider.Create(this.Table, Queryable.OrderByDescending(this.Query, keySelector), this.Parameters, this.RequestTotalCount);
+            Arguments.IsNotNull(keySelector, nameof(keySelector));
+            return QueryProvider.Create(Table, Queryable.OrderByDescending(Query, keySelector), Parameters, RequestTotalCount);
         }
 
         /// <summary>
@@ -208,15 +175,10 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         /// <returns>
         /// The composed query.
         /// </returns>
-        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "Part of the LINQ query pattern.")]
         public IMobileServiceTableQuery<T> ThenBy<TKey>(Expression<Func<T, TKey>> keySelector)
         {
-            if (keySelector == null)
-            {
-                throw new ArgumentNullException("keySelector");
-            }
-
-            return this.QueryProvider.Create(this.Table, Queryable.ThenBy((IOrderedQueryable<T>)this.Query, keySelector), this.Parameters, this.RequestTotalCount);
+            Arguments.IsNotNull(keySelector, nameof(keySelector));
+            return QueryProvider.Create(Table, Queryable.ThenBy((IOrderedQueryable<T>)Query, keySelector), Parameters, RequestTotalCount);
         }
 
         /// <summary>
@@ -231,15 +193,10 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         /// <returns>
         /// The composed query.
         /// </returns>
-        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "Part of the LINQ query pattern.")]
         public IMobileServiceTableQuery<T> ThenByDescending<TKey>(Expression<Func<T, TKey>> keySelector)
         {
-            if (keySelector == null)
-            {
-                throw new ArgumentNullException("keySelector");
-            }
-
-            return this.QueryProvider.Create(this.Table, Queryable.ThenByDescending((IOrderedQueryable<T>)this.Query, keySelector), this.Parameters, this.RequestTotalCount);
+            Arguments.IsNotNull(keySelector, nameof(keySelector));
+            return QueryProvider.Create(Table, Queryable.ThenByDescending((IOrderedQueryable<T>)Query, keySelector), Parameters, RequestTotalCount);
         }
 
         /// <summary>
@@ -253,7 +210,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         /// </returns>
         public IMobileServiceTableQuery<T> Skip(int count)
         {
-            return this.QueryProvider.Create(this.Table, Queryable.Skip(this.Query, count), this.Parameters, this.RequestTotalCount);
+            return QueryProvider.Create(Table, Queryable.Skip(Query, count), Parameters, RequestTotalCount);
         }
 
         /// <summary>
@@ -267,7 +224,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         /// </returns>
         public IMobileServiceTableQuery<T> Take(int count)
         {
-            return this.QueryProvider.Create(this.Table, Queryable.Take(this.Query, count), this.Parameters, this.RequestTotalCount);
+            return QueryProvider.Create(Table, Queryable.Take(Query, count), Parameters, RequestTotalCount);
         }
 
         /// <summary>
@@ -292,7 +249,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
                 }
             }
 
-            return this.QueryProvider.Create(this.Table, this.Query, this.Parameters, this.RequestTotalCount);
+            return QueryProvider.Create(Table, Query, Parameters, RequestTotalCount);
         }
 
         /// <summary>
@@ -305,7 +262,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         /// </returns>
         public IMobileServiceTableQuery<T> IncludeTotalCount()
         {
-            return this.QueryProvider.Create(this.Table, this.Query, this.Parameters, includeTotalCount: true);
+            return QueryProvider.Create(Table, Query, Parameters, includeTotalCount: true);
         }
 
         /// <summary>
@@ -316,7 +273,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         /// </returns>
         public IMobileServiceTableQuery<T> IncludeDeleted()
         {
-            return this.QueryProvider.Create(this.Table, this.Query, MobileServiceTable.IncludeDeleted(this.Parameters), includeTotalCount: true);
+            return QueryProvider.Create(Table, Query, MobileServiceTable.IncludeDeleted(Parameters), includeTotalCount: true);
         }
 
         /// <summary>
@@ -325,10 +282,9 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         /// <returns>
         /// The evaluated query results.
         /// </returns>
-        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "Not nested when used via async pattern.")]
         public Task<IEnumerable<T>> ToEnumerableAsync()
         {
-            return this.QueryProvider.Execute(this);
+            return QueryProvider.Execute(this);
         }
 
         /// <summary>
@@ -338,10 +294,9 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         /// <returns>
         /// The evaluated query results as a List.
         /// </returns>
-        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "Not nested when used via async pattern.")]
         public async Task<List<T>> ToListAsync()
         {
-            IEnumerable<T> items = await this.QueryProvider.Execute(this);
+            IEnumerable<T> items = await QueryProvider.Execute(this);
             return new QueryResultList<T>(items);
         }
     }

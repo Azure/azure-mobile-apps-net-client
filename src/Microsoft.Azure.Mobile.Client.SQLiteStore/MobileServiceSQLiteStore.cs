@@ -28,8 +28,8 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore
         /// </summary>
         private const int MaxParametersPerQuery = 800;
 
-        private Dictionary<string, TableDefinition> tableMap = new Dictionary<string, TableDefinition>(StringComparer.OrdinalIgnoreCase);
-        private sqlite3 connection;
+        private readonly Dictionary<string, TableDefinition> tableMap = new Dictionary<string, TableDefinition>(StringComparer.OrdinalIgnoreCase);
+        private readonly sqlite3 connection;
         private readonly SemaphoreSlim operationSemaphore = new SemaphoreSlim(1, 1);
 
         protected MobileServiceSQLiteStore() { }
@@ -77,8 +77,7 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore
             }
 
             // add id if it is not defined
-            JToken ignored;
-            if (!item.TryGetValue(MobileServiceSystemColumns.Id, StringComparison.OrdinalIgnoreCase, out ignored))
+            if (!item.TryGetValue(MobileServiceSystemColumns.Id, StringComparison.OrdinalIgnoreCase, out JToken ignored))
             {
                 item[MobileServiceSystemColumns.Id] = String.Empty;
             }
@@ -187,11 +186,10 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore
             var columns = new List<ColumnDefinition>();
             foreach (var prop in first.Properties())
             {
-                ColumnDefinition column;
 
                 // If the column is coming from the server we can just ignore it,
                 // otherwise, throw to alert the caller that they have passed an invalid column
-                if (!table.TryGetValue(prop.Name, out column) && !ignoreMissingColumns)
+                if (!table.TryGetValue(prop.Name, out ColumnDefinition column) && !ignoreMissingColumns)
                 {
                     throw new InvalidOperationException(string.Format("Column with name '{0}' is not defined on the local table '{1}'.", prop.Name, tableName));
                 }
@@ -349,8 +347,7 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore
 
         private TableDefinition GetTable(string tableName)
         {
-            TableDefinition table;
-            if (!this.tableMap.TryGetValue(tableName, out table))
+            if (!this.tableMap.TryGetValue(tableName, out TableDefinition table))
             {
                 throw new InvalidOperationException(string.Format("Table with name '{0}' is not defined.", tableName));
             }
@@ -550,8 +547,7 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore
         {
             parameters = parameters ?? new Dictionary<string, object>();
 
-            sqlite3_stmt stmt;
-            int rc = raw.sqlite3_prepare_v2(connection, sql, out stmt);
+            int rc = raw.sqlite3_prepare_v2(connection, sql, out sqlite3_stmt stmt);
             SQLitePCLRawHelpers.VerifySQLiteResponse(rc, raw.SQLITE_OK, connection);
             using (stmt)
             {
@@ -656,8 +652,7 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore
                 string name = raw.sqlite3_column_name(statement, i).utf8_to_string();
                 object value = SQLitePCLRawHelpers.GetValue(statement, i);
 
-                ColumnDefinition column;
-                if (table.TryGetValue(name, out column))
+                if (table.TryGetValue(name, out ColumnDefinition column))
                 {
                     JToken jVal = SqlHelpers.DeserializeValue(value, column.StoreType, column.JsonType);
                     row[name] = jVal;
@@ -676,19 +671,19 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore
 
             if (item[MobileServiceSystemColumns.Version] != null)
             {
-                sysProperties = sysProperties | MobileServiceSystemProperties.Version;
+                sysProperties |= MobileServiceSystemProperties.Version;
             }
             if (item[MobileServiceSystemColumns.CreatedAt] != null)
             {
-                sysProperties = sysProperties | MobileServiceSystemProperties.CreatedAt;
+                sysProperties |= MobileServiceSystemProperties.CreatedAt;
             }
             if (item[MobileServiceSystemColumns.UpdatedAt] != null)
             {
-                sysProperties = sysProperties | MobileServiceSystemProperties.UpdatedAt;
+                sysProperties |= MobileServiceSystemProperties.UpdatedAt;
             }
             if (item[MobileServiceSystemColumns.Deleted] != null)
             {
-                sysProperties = sysProperties | MobileServiceSystemProperties.Deleted;
+                sysProperties |= MobileServiceSystemProperties.Deleted;
             }
             return sysProperties;
         }

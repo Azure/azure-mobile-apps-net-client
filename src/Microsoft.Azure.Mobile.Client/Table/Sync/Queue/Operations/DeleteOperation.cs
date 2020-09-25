@@ -12,20 +12,11 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
 {
     internal class DeleteOperation : MobileServiceTableOperation
     {
-        public override MobileServiceTableOperationKind Kind
-        {
-            get { return MobileServiceTableOperationKind.Delete; }
-        }
+        public override MobileServiceTableOperationKind Kind => MobileServiceTableOperationKind.Delete;
 
-        public override bool CanWriteResultToStore
-        {
-            get { return false; } // delete result should not be written to store, otherwise we're adding back the item that user deleted
-        }
+        public override bool CanWriteResultToStore => false;
 
-        protected override bool SerializeItemToQueue
-        {
-            get { return true; } // delete should save the item in queue since store copy is deleted right away with delete operation
-        }
+        protected override bool SerializeItemToQueue => true;
 
         public DeleteOperation(string tableName, MobileServiceTableKind tableKind, string itemId)
             : base(tableName, tableKind, itemId)
@@ -51,7 +42,10 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
 
         public override void Validate(MobileServiceTableOperation newOperation)
         {
-            Debug.Assert(newOperation.ItemId == this.ItemId);
+            if (newOperation.ItemId != ItemId)
+            {
+                throw new ArgumentException("ItemId does not match", nameof(newOperation));
+            }
 
             // we don't allow any more operations on object that has already been deleted
             throw new InvalidOperationException("A delete operation on the item is already in the queue.");

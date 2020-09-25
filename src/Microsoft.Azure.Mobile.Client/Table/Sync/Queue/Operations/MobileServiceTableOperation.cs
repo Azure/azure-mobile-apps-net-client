@@ -24,25 +24,16 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
         public long Version { get; set; }
 
         // --- Non persisted properties -- //
-        IMobileServiceTable IMobileServiceTableOperation.Table
-        {
-            get { return this.Table; }
-        }
+        IMobileServiceTable IMobileServiceTableOperation.Table => this.Table;
 
         public MobileServiceTable Table { get; set; }
 
         public bool IsCancelled { get; private set; }
         public bool IsUpdated { get; private set; }
 
-        public virtual bool CanWriteResultToStore
-        {
-            get { return true; }
-        }
+        public virtual bool CanWriteResultToStore => true;
 
-        protected virtual bool SerializeItemToQueue
-        {
-            get { return false; }
-        }
+        protected virtual bool SerializeItemToQueue => false;
 
         protected MobileServiceTableOperation(string tableName, MobileServiceTableKind tableKind, string itemId)
         {
@@ -54,10 +45,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
             this.Version = 1;
         }
 
-        public void AbortPush()
-        {
-            throw new MobileServicePushAbortException();
-        }
+        public void AbortPush() => throw new MobileServicePushAbortException();
 
         public async Task<JObject> ExecuteAsync()
         {

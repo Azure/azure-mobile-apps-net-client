@@ -2,17 +2,15 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
 
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.WindowsAzure.MobileServices.Eventing;
 using Microsoft.WindowsAzure.MobileServices.Query;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.WindowsAzure.MobileServices.Sync
 {
@@ -30,28 +28,12 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
 
         public LocalStoreChangeTracker(IMobileServiceLocalStore store, StoreTrackingContext trackingContext, IMobileServiceEventManager eventManager, MobileServiceSyncSettingsManager settings)
         {
-            if (store == null)
-            {
-                throw new ArgumentNullException("store");
-            }
-
-            if (trackingContext == null)
-            {
-                throw new ArgumentNullException("trackingContext");
-            }
-
-            if (eventManager == null)
-            {
-                throw new ArgumentNullException("eventManager");
-            }
-
-            if (settings == null)
-            {
-                throw new ArgumentNullException("settings");
-            }
+            Arguments.IsNotNull(store, nameof(store));
+            Arguments.IsNotNull(trackingContext, nameof(trackingContext));
+            Arguments.IsNotNull(eventManager, nameof(eventManager));
+            Arguments.IsNotNull(settings, nameof(settings));
 
             this.objectReader = new MobileServiceObjectReader();
-
             this.store = store;
             this.trackingContext = trackingContext;
             this.eventManager = eventManager;
@@ -80,60 +62,42 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
 
         private bool IsBatchTrackingEnabled()
         {
-            bool result = false;
-
-            switch (this.trackingContext.Source)
+            switch (trackingContext.Source)
             {
                 case StoreOperationSource.Local:
                 case StoreOperationSource.LocalPurge:
                 case StoreOperationSource.LocalConflictResolution:
-                    // No batch notifications for local operations
-                    break;
+                    return false;
                 case StoreOperationSource.ServerPull:
-                    result = this.trackingContext.TrackingOptions.HasFlag(StoreTrackingOptions.NotifyServerPullBatch);
-                    break;
+                    return trackingContext.TrackingOptions.HasFlag(StoreTrackingOptions.NotifyServerPullBatch);
                 case StoreOperationSource.ServerPush:
-                    result = this.trackingContext.TrackingOptions.HasFlag(StoreTrackingOptions.NotifyServerPushBatch);
-                    break;
+                    return trackingContext.TrackingOptions.HasFlag(StoreTrackingOptions.NotifyServerPushBatch);
                 default:
                     throw new InvalidOperationException("Unknown tracking source");
             }
-
-            return result;
         }
 
         private bool IsRecordTrackingEnabled()
         {
-            bool result = false;
-
-            switch (this.trackingContext.Source)
+            switch (trackingContext.Source)
             {
                 case StoreOperationSource.Local:
                 case StoreOperationSource.LocalPurge:
-                    result = this.trackingContext.TrackingOptions.HasFlag(StoreTrackingOptions.NotifyLocalOperations);
-                    break;
+                    return trackingContext.TrackingOptions.HasFlag(StoreTrackingOptions.NotifyLocalOperations);
                 case StoreOperationSource.LocalConflictResolution:
-                    result = this.trackingContext.TrackingOptions.HasFlag(StoreTrackingOptions.NotifyLocalConflictResolutionOperations);
-                    break;
+                    return trackingContext.TrackingOptions.HasFlag(StoreTrackingOptions.NotifyLocalConflictResolutionOperations);
                 case StoreOperationSource.ServerPull:
-                    result = this.trackingContext.TrackingOptions.HasFlag(StoreTrackingOptions.NotifyServerPullOperations);
-                    break;
+                    return trackingContext.TrackingOptions.HasFlag(StoreTrackingOptions.NotifyServerPullOperations);
                 case StoreOperationSource.ServerPush:
-                    result = this.trackingContext.TrackingOptions.HasFlag(StoreTrackingOptions.NotifyServerPushOperations);
-                    break;
+                    return trackingContext.TrackingOptions.HasFlag(StoreTrackingOptions.NotifyServerPushOperations);
                 default:
                     throw new InvalidOperationException("Unknown tracking source");
             }
-
-            return result;
         }
 
         public async Task DeleteAsync(MobileServiceTableQueryDescription query)
         {
-            if (query == null)
-            {
-                throw new ArgumentNullException("query");
-            }
+            Arguments.IsNotNull(query, nameof(query));
 
             string[] recordIds = null;
 
@@ -156,15 +120,8 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
 
         public async Task DeleteAsync(string tableName, IEnumerable<string> ids)
         {
-            if (tableName == null)
-            {
-                throw new ArgumentNullException("tableName");
-            }
-
-            if (ids == null)
-            {
-                throw new ArgumentNullException("ids");
-            }
+            Arguments.IsNotNull(tableName, nameof(tableName));
+            Arguments.IsNotNull(ids, nameof(ids));
 
             if (!tableName.StartsWith(MobileServiceLocalSystemTables.Prefix))
             {
@@ -191,40 +148,22 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
 
         public Task<JObject> LookupAsync(string tableName, string id)
         {
-            if (tableName == null)
-            {
-                throw new ArgumentNullException("tableName");
-            }
-
-            if (id == null)
-            {
-                throw new ArgumentNullException("id");
-            }
-
+            Arguments.IsNotNull(tableName, nameof(tableName));
+            Arguments.IsNotNull(id, nameof(id));
             return this.store.LookupAsync(tableName, id);
         }
 
         public Task<JToken> ReadAsync(MobileServiceTableQueryDescription query)
         {
-            if (query == null)
-            {
-                throw new ArgumentNullException("query");
-            }
+            Arguments.IsNotNull(query, nameof(query));
 
             return this.store.ReadAsync(query);
         }
 
         public async Task UpsertAsync(string tableName, IEnumerable<JObject> items, bool ignoreMissingColumns)
         {
-            if (tableName == null)
-            {
-                throw new ArgumentNullException("tableName");
-            }
-
-            if (items == null)
-            {
-                throw new ArgumentNullException("items");
-            }
+            Arguments.IsNotNull(tableName, nameof(tableName));
+            Arguments.IsNotNull(items, nameof(items));
 
             if (!tableName.StartsWith(MobileServiceLocalSystemTables.Prefix))
             {

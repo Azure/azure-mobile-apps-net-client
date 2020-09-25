@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,7 +24,6 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
         /// <remarks>
         /// This call will not handle paging, etc., for you.
         /// </remarks>
-        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "It does not appear nested when used via the async pattern.")]
         Task<IEnumerable<T>> ReadAsync();
 
         /// <summary>
@@ -40,7 +38,6 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
         /// <returns>
         /// Instances from the table.
         /// </returns>
-        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "It does not appear nested when used via the async pattern.")]
         Task<IEnumerable<U>> ReadAsync<U>(IMobileServiceTableQuery<U> query);
 
         /// <summary>
@@ -154,7 +151,6 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
         /// <returns>
         /// A query against the table.
         /// </returns>
-        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "Part of the LINQ query pattern.")]
         IMobileServiceTableQuery<T> CreateQuery();
 
         /// <summary>
@@ -176,7 +172,6 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
         /// <returns>
         /// A query against the table.
         /// </returns>
-        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "Part of the LINQ query pattern.")]
         IMobileServiceTableQuery<T> Where(Expression<Func<T, bool>> predicate);
 
         /// <summary>
@@ -191,10 +186,6 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
         /// <returns>
         /// A query against the table.
         /// </returns>
-        [SuppressMessage("Microsoft.Naming", "CA1715:IdentifiersShouldHaveCorrectPrefix", MessageId = "T", Justification = "Standard for LINQ")]
-        [SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", MessageId = "Select", Justification = "Part of the LINQ query pattern.")]
-        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "U", Justification = "Standard for LINQ")]
-        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "Part of the LINQ query pattern.")]
         IMobileServiceTableQuery<U> Select<U>(Expression<Func<T, U>> selector);
 
         /// <summary>
@@ -209,7 +200,6 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
         /// <returns>
         /// A query against the table.
         /// </returns>
-        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "Part of the LINQ query pattern.")]
         IMobileServiceTableQuery<T> OrderBy<TKey>(Expression<Func<T, TKey>> keySelector);
 
         /// <summary>
@@ -224,7 +214,6 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
         /// <returns>
         /// A query against the table.
         /// </returns>
-        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "Part of the LINQ query pattern.")]
         IMobileServiceTableQuery<T> OrderByDescending<TKey>(Expression<Func<T, TKey>> keySelector);
 
         /// <summary>
@@ -239,7 +228,6 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
         /// <returns>
         /// A query against the table.
         /// </returns>
-        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "Part of the LINQ query pattern.")]
         IMobileServiceTableQuery<T> ThenBy<TKey>(Expression<Func<T, TKey>> keySelector);
 
         /// <summary>
@@ -254,7 +242,6 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
         /// <returns>
         /// A query against the table.
         /// </returns>
-        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "Part of the LINQ query pattern.")]
         IMobileServiceTableQuery<T> ThenByDescending<TKey>(Expression<Func<T, TKey>> keySelector);
 
         /// <summary>
@@ -285,7 +272,6 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
         /// <returns>
         /// The table elements results as a sequence.
         /// </returns>
-        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "Not nested when used via async pattern.")]
         Task<IEnumerable<T>> ToEnumerableAsync();
 
         /// <summary>
@@ -295,7 +281,6 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
         /// <returns>
         /// The table elements results as a List.
         /// </returns>
-        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "Not nested when used via async pattern.")]
         Task<List<T>> ToListAsync();
     }
 }

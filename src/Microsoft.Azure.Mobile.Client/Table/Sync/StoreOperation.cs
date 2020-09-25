@@ -2,12 +2,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Microsoft.WindowsAzure.MobileServices.Sync
 {
     /// <summary>
@@ -25,18 +19,9 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
         /// <param name="batchId">The id of the batch this operation belongs to.</param>
         public StoreOperation(string tableName, string recordId, LocalStoreOperationKind kind, StoreOperationSource source, string batchId)
         {
-            if (tableName == null)
-            {
-                throw new ArgumentNullException("tableName");
-            }
-            if (recordId == null)
-            {
-                throw new ArgumentNullException("recordId");
-            }
-            if(batchId == null)
-            {
-                throw new ArgumentNullException("batchId");
-            }
+            Arguments.IsNotNull(tableName, nameof(tableName));
+            Arguments.IsNotNull(recordId, nameof(recordId));
+            Arguments.IsNotNull(batchId, nameof(batchId));
             
             this.TableName = tableName;
             this.RecordId = recordId;

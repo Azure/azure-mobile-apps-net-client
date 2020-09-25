@@ -15,11 +15,6 @@ namespace Microsoft.WindowsAzure.MobileServices
     /// </summary>
     internal class ApplicationStorage : IApplicationStorage
     {
-        /// <summary>
-        /// A singleton instance of the <see cref="ApplicationStorage"/>.
-        /// </summary>
-        private static readonly IApplicationStorage instance = new ApplicationStorage();
-
         private ApplicationStorage() : this(string.Empty)
         {
         }
@@ -32,13 +27,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <summary>
         /// A singleton instance of the <see cref="ApplicationStorage"/>.
         /// </summary>
-        internal static IApplicationStorage Instance
-        {
-            get
-            {
-                return instance;
-            }
-        }
+        internal static IApplicationStorage Instance { get; } = new ApplicationStorage();
 
         private string StoragePrefix { get; set; }
 
@@ -58,14 +47,9 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// </exception>
         bool IApplicationStorage.TryReadSetting(string name, out object value)
         {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                string message = "An application setting name must be provided. Null, empty or whitespace only names are not allowed.";
-                throw new ArgumentException(message);
-            }
+            Arguments.IsNotNullOrWhiteSpace(name, nameof(name));
             
             var filename = string.Concat(StoragePrefix, name);
-
             try
             {
                 using var isoStore = IsolatedStorageFile.GetUserStoreForApplication();
@@ -96,14 +80,9 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// </exception>
         void IApplicationStorage.WriteSetting(string name, object value)
         {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                string message = "An application setting name must be provided. Null, empty or whitespace only names are not allowed.";
-                throw new ArgumentException(message);
-            }
+            Arguments.IsNotNullOrWhiteSpace(name, nameof(name));
 
             var filename = string.Concat(StoragePrefix, name);
-
             try
             {
                 using var isoStore = IsolatedStorageFile.GetUserStoreForApplication();

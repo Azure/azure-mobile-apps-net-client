@@ -2,15 +2,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
 
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.WindowsAzure.MobileServices.Query
 {
@@ -29,12 +26,12 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         /// <summary>
         /// The compiled query description generated from the expression tree.
         /// </summary>
-        private MobileServiceTableQueryDescription queryDescription;
+        private readonly MobileServiceTableQueryDescription queryDescription;
 
         /// <summary>
         /// The query which is being translated.
         /// </summary>
-        private IMobileServiceTableQuery<T> query;
+        private readonly IMobileServiceTableQuery<T> query;
 
         /// <summary>
         /// Initializes a new instance of the MobileServiceTableQueryTranslator
@@ -46,10 +43,9 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         /// </param>
         internal MobileServiceTableQueryTranslator(IMobileServiceTableQuery<T> query)
         {
-            Debug.Assert(query != null);
+            Arguments.IsNotNull(query, nameof(query));
 
             this.query = query;
-
             this.queryDescription = new MobileServiceTableQueryDescription(query.Table.TableName)
             { 
                 IncludeTotalCount = query.RequestTotalCount,
@@ -60,13 +56,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         /// The contract resolver to use to determine property 
         /// names from members used within expressions.
         /// </summary>
-        private MobileServiceContractResolver ContractResolver
-        {
-            get
-            {
-                return this.query.Table.MobileServiceClient.SerializerSettings.ContractResolver;
-            }
-        }
+        private MobileServiceContractResolver ContractResolver => query.Table.MobileServiceClient.SerializerSettings.ContractResolver;
 
         /// <summary>
         /// Translate an expression tree into a compiled query description that
@@ -108,8 +98,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         /// </param>
         private void Visit(Expression expression)
         {
-            MethodCallExpression methodCallExpression = expression as MethodCallExpression;
-            if (methodCallExpression != null)
+            if (expression is MethodCallExpression methodCallExpression)
             {
                 VisitMethodCall(methodCallExpression);
             }
@@ -193,8 +182,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         {
             if (expression != null && expression.Arguments.Count >= 2)
             {
-                LambdaExpression lambda = StripQuote(expression.Arguments[1]) as LambdaExpression;
-                if (lambda != null)
+                if (StripQuote(expression.Arguments[1]) is LambdaExpression lambda)
                 {
                     QueryNode filter = FilterBuildingExpressionVisitor.Compile(lambda.Body, this.ContractResolver);
                     if (this.queryDescription.Filter != null)
@@ -227,8 +215,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
             // will throw a NotSupportException.
             if (expression != null && expression.Arguments.Count == 2)
             {
-                LambdaExpression projection = StripQuote(expression.Arguments[1]) as LambdaExpression;
-                if (projection != null && projection.Parameters.Count == 1)
+                if (StripQuote(expression.Arguments[1]) is LambdaExpression projection && projection.Parameters.Count == 1)
                 {
                     // Compile the projection into a function that we can apply
                     // to the deserialized value to transform it accordingly.
@@ -260,11 +247,10 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
                         //Make sure we also include all the members that would be
                         //required for deserialization
                         JsonContract contract = this.ContractResolver.ResolveContract(this.queryDescription.ProjectionArgumentType);
-                        JsonObjectContract objectContract = contract as JsonObjectContract;
-                        if (objectContract != null)
+                        if (contract is JsonObjectContract objectContract)
                         {
                             foreach (string propertyName in objectContract.Properties
-                                                                          .Where(p => p.Required == Required.Always || 
+                                                                          .Where(p => p.Required == Required.Always ||
                                                                                       p.Required == Required.AllowNull)
                                                                           .Select(p => p.PropertyName))
                             {
@@ -305,14 +291,12 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
             // will result in a NotSupportedException.
             if (expression != null && expression.Arguments.Count >= 2)
             {
-                LambdaExpression lambda = StripQuote(expression.Arguments[1]) as LambdaExpression;
-                if (lambda != null)
+                if (StripQuote(expression.Arguments[1]) is LambdaExpression lambda)
                 {
                     deepest = lambda.Body ?? lambda;
 
                     // Find the name of the member being ordered
-                    MemberExpression memberAccess = lambda.Body as MemberExpression;
-                    if (memberAccess != null) 
+                    if (lambda.Body is MemberExpression memberAccess)
                     {
                         string memberName = FilterBuildingExpressionVisitor.GetTableMemberName(memberAccess, this.ContractResolver);
                         if (memberName != null)
@@ -320,13 +304,13 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
                             OrderByDirection direction = ascending ? OrderByDirection.Ascending : OrderByDirection.Descending;
                             var node = new OrderByNode(new MemberAccessNode(null, memberName), direction);
                             // Add the ordering
-                            if(prepend)
+                            if (prepend)
                             {
                                 this.queryDescription.Ordering.Insert(0, node);
-                            } 
-                            else 
+                            }
+                            else
                             {
-                                this.queryDescription.Ordering.Add(node);                            
+                                this.queryDescription.Ordering.Add(node);
                             }
 
                             return;
@@ -340,7 +324,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
                     CultureInfo.InvariantCulture,
                     "'{0}' Mobile Services query expressions must consist of members only, not '{1}'.",
                     expression != null && expression.Method != null ? expression.Method.Name : null,
-                    deepest != null ? deepest.ToString() : null));
+                    deepest?.ToString()));
         }
 
         /// <summary>
@@ -350,10 +334,8 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         /// <returns>An unquoted expression.</returns>
         private static Expression StripQuote(Expression expression)
         {
-            Debug.Assert(expression != null, "expression cannot be null!");
-            return expression.NodeType == ExpressionType.Quote ?
-                ((UnaryExpression)expression).Operand :
-                expression;
+            Arguments.IsNotNull(expression, nameof(expression));
+            return expression.NodeType == ExpressionType.Quote ? ((UnaryExpression)expression).Operand : expression;
         }
 
         /// <summary>
@@ -369,8 +351,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
             Expression deepest = expression;
             if (expression != null && expression.Arguments.Count >= 2)
             {
-                LambdaExpression lambda = StripQuote(expression.Arguments[1]) as LambdaExpression;
-                if (lambda != null)
+                if (StripQuote(expression.Arguments[1]) is LambdaExpression lambda)
                 {
                     deepest = lambda.Body ?? lambda;
                 }
@@ -381,7 +362,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
                     CultureInfo.InvariantCulture,
                     "Expression '{1}' is not a supported '{0}' Mobile Services query expression.",
                     expression != null && expression.Method != null ? expression.Method : null,
-                    deepest != null ? deepest.ToString() : null));
+                    deepest?.ToString()));
         }
 
         /// <summary>
@@ -403,13 +384,12 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
             // a NotSupportedException.
             if (expression != null && expression.Arguments.Count >= 2)
             {
-                ConstantExpression constant = expression.Arguments[1] as ConstantExpression;
-                if (constant != null)
+                if (expression.Arguments[1] is ConstantExpression constant)
                 {
                     deepest = constant;
-                    if (constant.Value is int)
+                    if (constant.Value is int @int)
                     {
-                        return (int)constant.Value;
+                        return @int;
                     }
                 }
             }
@@ -419,7 +399,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
                     CultureInfo.InvariantCulture,
                     "'{0}' Mobile Services query expressions must consist of a single integer, not '{1}'.",
                     expression != null && expression.Method != null ? expression.Method.Name : null,
-                    deepest != null ? deepest.ToString() : null));
+                    deepest?.ToString()));
         }
     }
 }

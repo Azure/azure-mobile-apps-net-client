@@ -3,7 +3,6 @@
 // ----------------------------------------------------------------------------
 
 using System;
-using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 
@@ -24,7 +23,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         {
             if (filter == null)
             {
-                return String.Empty;
+                return string.Empty;
             }
             var visitor = new ODataExpressionVisitor();
             filter.Accept(visitor);
@@ -54,11 +53,8 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
                 _ => throw new NotSupportedException($"'{nodeIn.OperatorKind}' is not supported in a 'Where' Mobile Services query expression.")
             };
             this.Expression.Append(odataOperator);
-
             nodeIn.RightOperand.Accept(this);
-
             this.Expression.Append(")");
-
             return nodeIn;
         }
 
@@ -68,36 +64,32 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
             this.Expression.Append("(");
 
             string separator = null;
-
             foreach (QueryNode arg in nodeIn.Arguments)
             {
                 this.Expression.Append(separator);
                 arg.Accept(this);
                 separator = ",";
             }
-
             this.Expression.Append(")");
-
             return nodeIn;
         }
 
         public override QueryNode Visit(MemberAccessNode nodeIn)
         {
             this.Expression.Append(nodeIn.MemberName);
-
             return nodeIn;
         }
 
         public override QueryNode Visit(UnaryOperatorNode nodeIn)
         {
-            Debug.Assert(nodeIn.OperatorKind == UnaryOperatorKind.Not);
+            if (nodeIn.OperatorKind != UnaryOperatorKind.Not)
+            {
+                throw new ArgumentException("Expected node to be not", nameof(nodeIn));
+            }
 
             this.Expression.Append("not(");
-
             nodeIn.Operand.Accept(this);
-
             this.Expression.Append(")");
-
             return nodeIn;
         }
 

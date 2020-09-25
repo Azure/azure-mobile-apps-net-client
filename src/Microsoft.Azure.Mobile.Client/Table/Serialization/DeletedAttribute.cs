@@ -23,12 +23,6 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <summary>
         /// Gets the system property the attribute represents.
         /// </summary>
-        MobileServiceSystemProperties ISystemPropertyAttribute.SystemProperty
-        {
-            get 
-            {
-                return MobileServiceSystemProperties.Deleted;
-            }
-        }
+        MobileServiceSystemProperties ISystemPropertyAttribute.SystemProperty => MobileServiceSystemProperties.Deleted;
     }
 }

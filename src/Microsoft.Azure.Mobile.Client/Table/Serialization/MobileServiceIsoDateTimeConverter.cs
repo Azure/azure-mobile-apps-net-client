@@ -2,13 +2,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using System;
+using System.Globalization;
 
 namespace Microsoft.WindowsAzure.MobileServices
 {
@@ -41,9 +38,9 @@ namespace Microsoft.WindowsAzure.MobileServices
 
             if(datetimeObject != null)
             {
-                if(datetimeObject is DateTime)
+                if(datetimeObject is DateTime time)
                 {
-                    return ((DateTime)datetimeObject).ToLocalTime();
+                    return time.ToLocalTime();
                 }
                 else if(datetimeObject is DateTimeOffset)
                 {
@@ -63,9 +60,9 @@ namespace Microsoft.WindowsAzure.MobileServices
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
             DateTime dateTime;
-            if (value is DateTime)
+            if (value is DateTime time)
             {
-                dateTime = ((DateTime)value).ToUniversalTime();
+                dateTime = time.ToUniversalTime();
             }
             else
             {

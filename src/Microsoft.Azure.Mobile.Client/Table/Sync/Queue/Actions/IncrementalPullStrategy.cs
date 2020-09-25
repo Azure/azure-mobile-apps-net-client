@@ -14,7 +14,6 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
         private static readonly OrderByNode orderByUpdatedAtNode = new OrderByNode(updatedAtNode, OrderByDirection.Ascending);
 
         private readonly QueryNode originalFilter; // filter before the delta token was applied
-        private readonly MobileServiceTable table;
         private readonly string queryId;
         private readonly MobileServiceSyncSettingsManager settings;
         private readonly bool ordered;
@@ -31,12 +30,14 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
                                        PullOptions pullOptions)
             : base(query, cursor, options, pullOptions)
         {
-            this.table = table;
+            this.Table = table;
             this.originalFilter = query.Filter;
             this.queryId = queryId;
             this.settings = settings;
             this.ordered = options.HasFlag(MobileServiceRemoteTableOptions.OrderBy);
         }
+
+        public MobileServiceTable Table { get; private set; }
 
 
         public override async Task InitializeAsync()
@@ -85,10 +86,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
         }
 
 
-        public override Task PullCompleteAsync()
-        {
-            return this.SaveMaxUpdatedAtAsync();
-        }
+        public override Task PullCompleteAsync() => SaveMaxUpdatedAtAsync();
 
         private async Task SaveMaxUpdatedAtAsync()
         {

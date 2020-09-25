@@ -33,9 +33,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// Thrown when <paramref name="queryId"/>does not match the regular expression <value>[a-zA-Z][a-zA-Z0-9_-]{1,255}</value>.
         /// </exception>
         public static Task PullAsync(this IMobileServiceSyncTable table, string queryId, string query)
-        {
-            return table.PullAsync(queryId, query, null, CancellationToken.None, pullOptions: null);
-        }
+           => table.PullAsync(queryId, query, null, CancellationToken.None, pullOptions: null);
 
         /// <summary>
         /// Pulls all items that match the given query from the associated remote table. Supports incremental sync.
@@ -59,10 +57,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// Thrown when <paramref name="queryId"/> does not match the regular expression <value>[a-zA-Z][a-zA-Z0-9_-]{1,255}</value>.
         /// </exception>
         public static Task PullAsync(this IMobileServiceSyncTable table, string queryId, string query, PullOptions pullOptions)
-        {
-            return table.PullAsync(queryId, query, null, CancellationToken.None, pullOptions);
-        }
-
+            => table.PullAsync(queryId, query, null, CancellationToken.None, pullOptions);
 
         /// <summary>
         /// Pulls all items that match the given query from the associated remote table. Supports incremental sync.
@@ -88,9 +83,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// Thrown when <paramref name="queryId"/> does not match the regular expression <value>[a-zA-Z][a-zA-Z0-9_-]{1,255}</value>.
         /// </exception>
         public static Task PullAsync(this IMobileServiceSyncTable table, string queryId, string query, IDictionary<string, string> parameters, CancellationToken cancellationToken)
-        {
-            return table.PullAsync(queryId, query, parameters, true, cancellationToken: cancellationToken, pullOptions: null);
-        }
+            => table.PullAsync(queryId, query, parameters, true, cancellationToken: cancellationToken, pullOptions: null);
 
         /// <summary>
         /// Pulls all items that match the given query from the associated remote table. Supports incremental sync.
@@ -118,9 +111,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// Thrown when <paramref name="queryId"/> does not match the regular expression <value>[a-zA-Z][a-zA-Z0-9_-]{1,255}</value>.
         /// </exception>
         public static Task PullAsync(this IMobileServiceSyncTable table, string queryId, string query, IDictionary<string, string> parameters, CancellationToken cancellationToken, PullOptions pullOptions)
-        {
-            return table.PullAsync(queryId, query, parameters, true, cancellationToken: cancellationToken, pullOptions: pullOptions);
-        }
+            => table.PullAsync(queryId, query, parameters, true, cancellationToken: cancellationToken, pullOptions: pullOptions);
 
         /// <summary>
         /// Pulls all items that match the given query from the associated remote table. Supports incremental sync.
@@ -150,9 +141,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// </exception>
         public static Task PullAsync(this IMobileServiceSyncTable table, string queryId, string query,
             IDictionary<string, string> parameters, bool pushOtherTables, CancellationToken cancellationToken)
-        {
-            return table.PullAsync(queryId, query, parameters, pushOtherTables, cancellationToken, pullOptions:null);
-        }
+            => table.PullAsync(queryId, query, parameters, pushOtherTables, cancellationToken, pullOptions:null);
 
         /// <summary>
         /// Pulls all items that match the given query from the associated remote table.
@@ -176,9 +165,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// Thrown when <paramref name="queryId"/> does not match the regular expression <value>[a-zA-Z][a-zA-Z0-9_-]{1,255}</value>.
         /// </exception>
         public static Task PullAsync<T, U>(this IMobileServiceSyncTable<T> table, string queryId, IMobileServiceTableQuery<U> query, CancellationToken cancellationToken)
-        {
-            return table.PullAsync(queryId, query, pushOtherTables: true, cancellationToken: cancellationToken, pullOptions: null);
-        }
+            => table.PullAsync(queryId, query, pushOtherTables: true, cancellationToken: cancellationToken, pullOptions: null);
 
         /// <summary>
         /// Pulls all items that match the given query from the associated remote table.
@@ -205,9 +192,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// Thrown when <paramref name="queryId"/> does not match the regular expression <value>[a-zA-Z][a-zA-Z0-9_-]{1,255}</value>.
         /// </exception>
         public static Task PullAsync<T, U>(this IMobileServiceSyncTable<T> table, string queryId, IMobileServiceTableQuery<U> query, CancellationToken cancellationToken, PullOptions pullOptions)
-        {
-            return table.PullAsync(queryId, query, pushOtherTables: true, cancellationToken: cancellationToken, pullOptions: pullOptions);
-        }
+            => table.PullAsync(queryId, query, pushOtherTables: true, cancellationToken: cancellationToken, pullOptions: pullOptions);
 
         /// <summary>
         /// Pulls all items that match the given query
@@ -230,9 +215,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// Thrown when <paramref name="queryId"/> does not match the regular expression <value>[a-zA-Z][a-zA-Z0-9_-]{1,255}</value>.
         /// </exception>
         public static Task PullAsync<T, U>(this IMobileServiceSyncTable<T> table, string queryId, IMobileServiceTableQuery<U> query)
-        {
-            return table.PullAsync(queryId, query, cancellationToken: CancellationToken.None, pullOptions: null);
-        }
+            => table.PullAsync(queryId, query, cancellationToken: CancellationToken.None, pullOptions: null);
 
         /// <summary>
         /// Pulls all items that match the given query
@@ -258,9 +241,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// Thrown when <paramref name="queryId"/> does not match the regular expression <value>[a-zA-Z][a-zA-Z0-9_-]{1,255}</value>.
         /// </exception>
         public static Task PullAsync<T, U>(this IMobileServiceSyncTable<T> table, string queryId, IMobileServiceTableQuery<U> query, PullOptions pullOptions)
-        {
-            return table.PullAsync(queryId, query, cancellationToken: CancellationToken.None, pullOptions: pullOptions);
-        }
+            => table.PullAsync(queryId, query, cancellationToken: CancellationToken.None, pullOptions: pullOptions);
 
         /// <summary>
         /// Pulls all items that match the given query from the associated remote table.
@@ -287,9 +268,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// </exception>
         public static Task PullAsync<T, U>(this IMobileServiceSyncTable<T> table, string queryId,
             IMobileServiceTableQuery<U> query, bool pushOtherTables, CancellationToken cancellationToken)
-        {
-            return table.PullAsync(queryId, query, pushOtherTables, cancellationToken, pullOptions: null);
-        }
+            => table.PullAsync(queryId, query, pushOtherTables, cancellationToken, pullOptions: null);
 
         /// <summary>
         /// Deletes all the items in local table
@@ -297,9 +276,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <param name="table">The instance of table to execute purge on.</param>
         /// <returns>A task that completes when purge operation has finished.</returns>
         public static Task PurgeAsync(this IMobileServiceSyncTable table)
-        {
-            return table.PurgeAsync(null, null, false, CancellationToken.None);
-        }
+            => table.PurgeAsync(null, null, false, CancellationToken.None);
 
         /// <summary>
         /// Deletes all the items in local table
@@ -308,9 +285,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <param name="force">Force the purge by discarding the pending operations.</param>
         /// <returns>A task that completes when purge operation has finished.</returns>
         public static Task PurgeAsync(this IMobileServiceSyncTable table, bool force)
-        {
-            return table.PurgeAsync(null, null, force, CancellationToken.None);
-        }
+            => table.PurgeAsync(null, null, force, CancellationToken.None);
 
         /// <summary>
         /// Deletes all the items in local table that match the query.
@@ -319,10 +294,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <param name="query">An OData query that determines which items to delete.</param>
         /// <returns>A task that completes when purge operation has finished.</returns>
         public static Task PurgeAsync(this IMobileServiceSyncTable table, string query)
-        {
-            return table.PurgeAsync(null, query, false, CancellationToken.None);
-        }
-
+            => table.PurgeAsync(null, query, false, CancellationToken.None);
 
         /// <summary>
         /// Deletes all the items in local table that match the query.
@@ -331,8 +303,6 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <param name="query">An OData query that determines which items to delete.</param>
         /// <returns>A task that completes when purge operation has finished.</returns>
         public static Task PurgeAsync<T, U>(this IMobileServiceSyncTable<T> table, IMobileServiceTableQuery<U> query)
-        {
-            return table.PurgeAsync(null, query, CancellationToken.None);
-        }
+            => table.PurgeAsync(null, query, CancellationToken.None);
     }
 }

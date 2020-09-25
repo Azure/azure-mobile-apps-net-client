@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// ----------------------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// ----------------------------------------------------------------------------
+
 using Microsoft.WindowsAzure.MobileServices.Eventing;
+using System;
 
 namespace Microsoft.WindowsAzure.MobileServices.Sync
 {
@@ -26,28 +26,20 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
 
         private static bool IsTrackingEnabled(StoreTrackingOptions trackingOptions, StoreOperationSource source)
         {
-            bool result = false;
-
             switch (source)
             {
                 case StoreOperationSource.Local:
                 case StoreOperationSource.LocalPurge:
-                    result = trackingOptions.HasFlag(StoreTrackingOptions.NotifyLocalOperations);
-                    break;
+                    return trackingOptions.HasFlag(StoreTrackingOptions.NotifyLocalOperations);
                 case StoreOperationSource.LocalConflictResolution:
-                    result = trackingOptions.HasFlag(StoreTrackingOptions.NotifyLocalConflictResolutionOperations);
-                    break;
+                    return trackingOptions.HasFlag(StoreTrackingOptions.NotifyLocalConflictResolutionOperations);
                 case StoreOperationSource.ServerPull:
-                    result = (trackingOptions & (StoreTrackingOptions.NotifyServerPullBatch | StoreTrackingOptions.NotifyServerPullOperations)) != StoreTrackingOptions.None;
-                    break;
+                    return (trackingOptions & (StoreTrackingOptions.NotifyServerPullBatch | StoreTrackingOptions.NotifyServerPullOperations)) != StoreTrackingOptions.None;
                 case StoreOperationSource.ServerPush:
-                    result = (trackingOptions & (StoreTrackingOptions.NotifyServerPushBatch | StoreTrackingOptions.NotifyServerPushOperations)) != StoreTrackingOptions.None;
-                    break;
+                    return (trackingOptions & (StoreTrackingOptions.NotifyServerPushBatch | StoreTrackingOptions.NotifyServerPushOperations)) != StoreTrackingOptions.None;
                 default:
                     throw new InvalidOperationException("Unknown store operation source.");
             }
-
-            return result;
         }
     }
 }

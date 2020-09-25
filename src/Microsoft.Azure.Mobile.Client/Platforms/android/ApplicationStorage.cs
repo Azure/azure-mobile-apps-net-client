@@ -11,19 +11,13 @@ namespace Microsoft.WindowsAzure.MobileServices
 {
     internal class ApplicationStorage : IApplicationStorage
     {
-        /// <summary>
-        /// A singleton instance of the <see cref="ApplicationStorage"/>.
-        /// </summary>
-        private static readonly IApplicationStorage instance = new ApplicationStorage();
-
-        private ApplicationStorage()
-            : this(string.Empty)
+        private ApplicationStorage() : this(string.Empty)
         {
         }
 
         internal ApplicationStorage(string name)
         {
-            this.StoragePrefix = name;
+            StoragePrefix = name;
         }
 
         private string StoragePrefix { get; set; }
@@ -31,21 +25,11 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <summary>
         /// A singleton instance of the <see cref="ApplicationStorage"/>.
         /// </summary>
-        internal static IApplicationStorage Instance
-        {
-            get
-            {
-                return instance;
-            }
-        }
+        internal static IApplicationStorage Instance { get; } = new ApplicationStorage();
 
         public bool TryReadSetting(string name, out object value)
         {
-            if (String.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentException("An application setting name must be provided. Null, empty or whitespace only names are not allowed.", "name");
-            }
-
+            Arguments.IsNotNullOrWhiteSpace(name, nameof(name));
             value = null;
 
             using ISharedPreferences prefs = PreferenceManager.GetDefaultSharedPreferences(Application.Context);
@@ -72,10 +56,7 @@ namespace Microsoft.WindowsAzure.MobileServices
 
         public void WriteSetting(string name, object value)
         {
-            if (String.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentException("An application setting name must be provided. Null, empty or whitespace only names are not allowed.", "name");
-            }
+            Arguments.IsNotNullOrWhiteSpace(name, nameof(name));
 
             using ISharedPreferences prefs = PreferenceManager.GetDefaultSharedPreferences(Application.Context);
             using ISharedPreferencesEditor editor = prefs.Edit();
@@ -85,7 +66,7 @@ namespace Microsoft.WindowsAzure.MobileServices
                 TypeCode type = Type.GetTypeCode(value.GetType());
                 if (type == TypeCode.Object || type == TypeCode.DBNull)
                 {
-                    throw new ArgumentException("Settings of type " + type + " are not supported");
+                    throw new ArgumentException("Settings of type " + type + " are not supported", nameof(value));
                 }
 
                 svalue = value.ToString();

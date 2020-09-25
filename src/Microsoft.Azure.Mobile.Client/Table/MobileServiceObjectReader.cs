@@ -17,16 +17,16 @@ namespace Microsoft.WindowsAzure.MobileServices
 
         public MobileServiceObjectReader()
         {
-            this.VersionPropertyName = MobileServiceSystemColumns.Version;
-            this.DeletedPropertyName = MobileServiceSystemColumns.Deleted;
-            this.UpdatedAtPropertyName = MobileServiceSystemColumns.UpdatedAt;
-            this.IdPropertyName = MobileServiceSystemColumns.Id;
-            this.CreatedAtPropertyName = MobileServiceSystemColumns.CreatedAt;
+            VersionPropertyName = MobileServiceSystemColumns.Version;
+            DeletedPropertyName = MobileServiceSystemColumns.Deleted;
+            UpdatedAtPropertyName = MobileServiceSystemColumns.UpdatedAt;
+            IdPropertyName = MobileServiceSystemColumns.Id;
+            CreatedAtPropertyName = MobileServiceSystemColumns.CreatedAt;
         }
 
         public string GetVersion(JObject item)
         {
-            return (string)item[this.VersionPropertyName];
+            return (string)item[VersionPropertyName];
         }
 
         public string GetId(JObject item)

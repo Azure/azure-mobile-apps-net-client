@@ -32,11 +32,12 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <returns>
         /// Task that will complete when the user has finished authentication.
         /// </returns>
-        [SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", MessageId = "Login", Justification = "Login is preferred by design")]
         public static Task<MobileServiceUser> LoginWithMicrosoftAccountAsync(this MobileServiceClient thisClient, string authenticationToken)
         {
-            JObject token = new JObject();
-            token[MicrosoftAccountLoginAsyncAuthenticationTokenKey] = authenticationToken;
+            JObject token = new JObject
+            {
+                [MicrosoftAccountLoginAsyncAuthenticationTokenKey] = authenticationToken
+            };
             MobileServiceTokenAuthentication tokenAuth = new MobileServiceTokenAuthentication(thisClient,
                 MobileServiceAuthenticationProvider.MicrosoftAccount.ToString(),
                 token, parameters: null);

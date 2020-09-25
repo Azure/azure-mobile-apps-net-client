@@ -13,7 +13,7 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore
 {
     internal class SqlQueryFormatter : QueryNodeVisitor<QueryNode>
     {
-        private MobileServiceTableQueryDescription query;
+        private readonly MobileServiceTableQueryDescription query;
         private StringBuilder sql;
 
         public IDictionary<string, object> Parameters { get; private set; }
@@ -173,8 +173,7 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore
                 left = left.Accept(this);
             }
 
-            var rightConstant = right as ConstantNode;
-            if (rightConstant != null && rightConstant.Value == null)
+            if (right is ConstantNode rightConstant && rightConstant.Value == null)
             {
                 // inequality expressions against a null literal have a special
                 // translation in SQL

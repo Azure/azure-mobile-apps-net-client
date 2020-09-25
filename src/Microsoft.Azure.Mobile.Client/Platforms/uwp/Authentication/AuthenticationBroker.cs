@@ -52,9 +52,7 @@ namespace Microsoft.WindowsAzure.MobileServices
                 }
                 else
                 {
-                    message = string.Format(CultureInfo.InvariantCulture, 
-                                            "Authentication failed with HTTP response code {0}.", 
-                                            result.ResponseErrorDetail); 
+                    message = $"Authentication failed with HTTP response code {result.ResponseErrorDetail}.";
                 }
 
                 throw new InvalidOperationException(message);
@@ -86,8 +84,8 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// </returns>
         private async Task<WebAuthenticationResult> AuthenticateWithBroker(Uri startUrl, Uri endUrl, bool useSingleSignOn)
         {
-            Debug.Assert(startUrl != null);
-            Debug.Assert(endUrl != null);
+            Arguments.IsNotNull(startUrl, nameof(startUrl));
+            Arguments.IsNotNull(endUrl, nameof(endUrl));
 
             WebAuthenticationResult result = null;
             if (useSingleSignOn)
@@ -118,8 +116,11 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// </exception>
         private string GetTokenStringFromResult(WebAuthenticationResult result)
         {
-            Debug.Assert(result != null);
-            Debug.Assert(result.ResponseStatus == WebAuthenticationStatus.Success);
+            Arguments.IsNotNull(result, nameof(result));
+            if (result.ResponseStatus != WebAuthenticationStatus.Success)
+            {
+                throw new ArgumentException("Successful Web Authentication required", nameof(result));
+            }
 
             string tokenString = null;
 
@@ -158,11 +159,10 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// </returns>
         private string GetSubStringAfterMatch(string stringToSearch, string matchString)
         {
-            Debug.Assert(stringToSearch != null);
-            Debug.Assert(matchString != null);
+            Arguments.IsNotNull(stringToSearch, nameof(stringToSearch));
+            Arguments.IsNotNull(matchString, nameof(matchString));
 
             string value = null;
-
             int index = stringToSearch.IndexOf(matchString);
             if (index > 0)
             {
@@ -191,18 +191,9 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// </returns>
         internal Uri GetUrlWithQueryStringParameter(Uri url, string queryParameter, string queryValue)
         {
-            if (url == null)
-            {
-                throw new ArgumentNullException(nameof(url));
-            }
-            if (queryParameter == null)
-            {
-                throw new ArgumentNullException(nameof(queryParameter));
-            }
-            if (queryValue == null)
-            {
-                throw new ArgumentNullException(nameof(queryValue));
-            }
+            Arguments.IsNotNull(url, nameof(url));
+            Arguments.IsNotNull(queryParameter, nameof(queryParameter));
+            Arguments.IsNotNull(queryValue, nameof(queryValue));
 
             string queryParameterEscaped = Uri.EscapeDataString(queryParameter);
             string queryValueEscaped = Uri.EscapeDataString(queryValue);

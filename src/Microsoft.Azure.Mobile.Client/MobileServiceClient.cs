@@ -2,17 +2,16 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
 
+using Microsoft.WindowsAzure.MobileServices.Eventing;
+using Microsoft.WindowsAzure.MobileServices.Sync;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.WindowsAzure.MobileServices.Eventing;
-using Microsoft.WindowsAzure.MobileServices.Sync;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.WindowsAzure.MobileServices
 {
@@ -191,8 +190,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// Chain of <see cref="HttpMessageHandler" /> instances.
         /// All but the last should be <see cref="DelegatingHandler"/>s.
         /// </param>
-        public MobileServiceClient(string mobileAppUri,
-            params HttpMessageHandler[] handlers)
+        public MobileServiceClient(string mobileAppUri, params HttpMessageHandler[] handlers)
             : this(new Uri(mobileAppUri, UriKind.Absolute), handlers)
         {
         }
@@ -209,10 +207,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// </param>
         public MobileServiceClient(Uri mobileAppUri, params HttpMessageHandler[] handlers)
         {
-            if (mobileAppUri == null)
-            {
-                throw new ArgumentNullException(nameof(mobileAppUri));
-            }
+            Arguments.IsNotNull(mobileAppUri, nameof(mobileAppUri));
 
             if (mobileAppUri.IsAbsoluteUri)
             {
@@ -221,9 +216,7 @@ namespace Microsoft.WindowsAzure.MobileServices
             }
             else
             {
-                throw new ArgumentException(
-                    string.Format(CultureInfo.InvariantCulture, Resources.MobileServiceClient_NotAnAbsoluteURI, mobileAppUri),
-                    nameof(mobileAppUri));
+                throw new ArgumentException($"'{mobileAppUri}' is not an absolute Uri", nameof(mobileAppUri));
             }
 
             this.InstallationId = GetApplicationInstallationId();
@@ -341,14 +334,12 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <returns>
         /// Task that will complete when the user has finished authentication.
         /// </returns>
-        [SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", MessageId = "Login", Justification = "Login is more appropriate than LogOn for our usage.")]
         public Task<MobileServiceUser> LoginAsync(MobileServiceAuthenticationProvider provider, JObject token)
         {
             if (!Enum.IsDefined(typeof(MobileServiceAuthenticationProvider), provider))
             {
-                throw new ArgumentOutOfRangeException("provider");
+                throw new ArgumentOutOfRangeException(nameof(provider));
             }
-
             return this.LoginAsync(provider.ToString(), token);
         }
 
@@ -384,10 +375,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// </returns>
         public Task<MobileServiceUser> LoginAsync(string provider, JObject token)
         {
-            if (token == null)
-            {
-                throw new ArgumentNullException(nameof(token));
-            }
+            Arguments.IsNotNull(token, nameof(token));
 
             MobileServiceTokenAuthentication auth = new MobileServiceTokenAuthentication(this, provider, token, parameters: null);
             return auth.LoginAsync();
@@ -511,10 +499,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <returns>The response content from the custom api invocation.</returns>
         public async Task<U> InvokeApiAsync<T, U>(string apiName, T body, HttpMethod method, IDictionary<string, string> parameters, CancellationToken cancellationToken = default)
         {
-            if (string.IsNullOrWhiteSpace(apiName))
-            {
-                throw new ArgumentNullException(nameof(apiName));
-            }
+            Arguments.IsNotNullOrWhiteSpace(apiName, nameof(apiName));
 
             MobileServiceSerializer serializer = this.Serializer;
             string content = null;
@@ -585,10 +570,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <returns>The response content from the custom api invocation.</returns>
         public async Task<JToken> InvokeApiAsync(string apiName, JToken body, HttpMethod method, IDictionary<string, string> parameters, CancellationToken cancellationToken = default)
         {
-            if (string.IsNullOrWhiteSpace(apiName))
-            {
-                throw new ArgumentNullException(nameof(apiName));
-            }
+            Arguments.IsNotNullOrWhiteSpace(apiName, nameof(apiName));
 
             string content = null;
             if (body != null)
@@ -661,9 +643,8 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <returns></returns>
         private string CreateAPIUriString(string apiName, IDictionary<string, string> parameters = null)
         {
-            string uriFragment = apiName.StartsWith("/") ? apiName : string.Format(CultureInfo.InvariantCulture, "api/{0}", apiName);
+            string uriFragment = apiName.StartsWith("/") ? apiName : $"api/{apiName}";
             string queryString = MobileServiceUrlBuilder.GetQueryString(parameters, useTableAPIRules: false);
-
             return MobileServiceUrlBuilder.CombinePathAndQuery(uriFragment, queryString);
         }
 
@@ -717,15 +698,7 @@ namespace Microsoft.WindowsAzure.MobileServices
 
         private static void ValidateTableName(string tableName)
         {
-            if (tableName == null)
-            {
-                throw new ArgumentNullException(nameof(tableName));
-            }
-
-            if (string.IsNullOrWhiteSpace(tableName))
-            {
-                throw new ArgumentException($"{nameof(tableName)} cannot be null, empty or only whitespace.");
-            }
+            Arguments.IsNotNullOrWhiteSpace(tableName, nameof(tableName));
         }
 
         /// <summary>

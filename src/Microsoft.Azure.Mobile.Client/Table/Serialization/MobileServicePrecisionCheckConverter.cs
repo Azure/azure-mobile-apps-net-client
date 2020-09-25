@@ -2,12 +2,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
 using Newtonsoft.Json;
+using System;
+using System.Globalization;
 
 namespace Microsoft.WindowsAzure.MobileServices
 {
@@ -47,22 +44,12 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <param name="objectType">The type to check.</param>
         /// <returns>A bool indicating if this converter can convert the type.</returns>
         public override bool CanConvert(Type objectType)
-        {
-            return (objectType == typeof(decimal) ||
-                     objectType == typeof(long) ||
-                     objectType == typeof(ulong));
-        }
+            => (objectType == typeof(decimal) || objectType == typeof(long) || objectType == typeof(ulong));
 
         /// <summary>
         /// Indicates this <see cref="JsonConverter"/> should not be used during deserialization.
         /// </summary>
-        public override bool CanRead
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool CanRead => false;
 
         /// <summary>
         /// Reading is not supported for this converter.
@@ -74,10 +61,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <returns></returns>
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            throw new NotSupportedException(
-                string.Format(CultureInfo.InvariantCulture,
-                            "The {0} does not support reading JSON.",
-                            typeof(MobileServicePrecisionCheckConverter).Name));
+            throw new NotSupportedException($"The {typeof(MobileServicePrecisionCheckConverter).Name} does not support reading JSON.");
         }
 
         /// <summary>
@@ -98,19 +82,16 @@ namespace Microsoft.WindowsAzure.MobileServices
         {
             bool isOutOfRange = false;
 
-            if (value is long)
+            if (value is long asLong)
             {
-                long asLong = (long)value;
                 isOutOfRange = asLong > maxLongMagnitude || asLong < -maxLongMagnitude;
             }
-            else if (value is ulong)
+            else if (value is ulong asUlong)
             {
-                ulong asUlong = (ulong)value;
                 isOutOfRange = asUlong > maxUnsignedLongMagnitude;
             }
-            else if (value is decimal)
+            else if (value is decimal asDecimal)
             {
-                decimal asDecimal = (decimal)value;
                 // Retrieve a binary representation of the Decimal. The return value is an 
                 // integer array with four elements. Elements 0, 1, and 2 contain the low,
                 // middle, and high 32 bits of the 96-bit integer part of the Decimal.
@@ -120,7 +101,7 @@ namespace Microsoft.WindowsAzure.MobileServices
                 // produce the Decimal value; bits 24-30 are unused; and finally bit 31 
                 // indicates the sign of the Decimal value, 0 meaning positive and 1 
                 // meaning negative.
-                int[] bits = Decimal.GetBits(asDecimal);
+                int[] bits = decimal.GetBits(asDecimal);
                 //create number out of the first 64 bits
                 ulong number = (ulong)((uint)bits[1]) << 32 | (uint)bits[0];
                 // check if decimal actually presents a whole number
@@ -136,11 +117,7 @@ namespace Microsoft.WindowsAzure.MobileServices
 
             if (isOutOfRange)
             {
-                throw new InvalidOperationException(
-                    string.Format(CultureInfo.InvariantCulture,
-                                  "The value {0} for member {1} is outside the valid range for numeric columns.",
-                                  value,
-                                  writer.Path));
+                throw new InvalidOperationException($"The value {value} for member {writer.Path} is outside the valid range for numeric columns.");
             }
 
             //write the value to the stream.
