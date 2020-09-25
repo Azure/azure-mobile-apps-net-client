@@ -69,23 +69,20 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <param name="pageSize">
         /// The number of items requested per request.
         /// </param>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors", Justification = "Overridable method is only used for change notifications")]
         public MobileServiceCollection(IMobileServiceTableQuery<TTable> query, Func<IEnumerable<TTable>, IEnumerable<TCollection>> selector, int pageSize = 0)
         {
-            if (pageSize < 0)
-            {
-                throw new ArgumentOutOfRangeException("pageSize");
-            }
+            Arguments.IsPositiveInteger(pageSize, nameof(pageSize));
+            Arguments.IsNotNull(query, nameof(query));
+            Arguments.IsNotNull(selector, nameof(selector));
 
-            this.query = query ?? throw new ArgumentNullException("query");
+
+            this.query = query;
             if (query is MobileServiceTableQuery<TTable> tableQuery)
             {
                 tableQuery.QueryProvider.Features = MobileServiceFeatures.TableCollection;
             }
-
-            this.selectorFunction = selector ?? throw new ArgumentNullException("selector");
+            this.selectorFunction = selector;
             this.pageSize = pageSize;
-
             this.HasMoreItems = true;
         }
 
@@ -121,10 +118,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <summary>
         /// The page size specified in the constructor.
         /// </summary>
-        public int PageSize
-        {
-            get { return this.pageSize; }
-        }
+        public int PageSize => pageSize;
 
         /// <summary>
         /// The total count for all the records that would have been
@@ -140,13 +134,13 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// </summary>
         public long TotalCount
         {
-            get { return this.totalCount; }
+            get => totalCount;
             private set
             {
-                if (this.totalCount != value)
+                if (totalCount != value)
                 {
-                    this.totalCount = value;
-                    this.OnPropertyChanged();
+                    totalCount = value;
+                    OnPropertyChanged();
                 }
             }
         }
@@ -162,13 +156,13 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// </summary>
         public string NextLink
         {
-            get { return this.nextLink; }
+            get => nextLink;
             private set
             {
-                if (this.nextLink != value)
+                if (nextLink != value)
                 {
-                    this.nextLink = value;
-                    this.OnPropertyChanged();
+                    nextLink = value;
+                    OnPropertyChanged();
                 }
             }
         }
@@ -232,13 +226,13 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// </summary>
         public bool HasMoreItems
         {
-            get { return this.hasMoreItems; }
+            get => hasMoreItems;
             set
             {
-                if (this.hasMoreItems != value)
+                if (hasMoreItems != value)
                 {
-                    this.hasMoreItems = value;
-                    this.OnPropertyChanged();
+                    hasMoreItems = value;
+                    OnPropertyChanged();
                 }
             }
         }
@@ -267,10 +261,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// This parameter overrides the pageSize specified in the constructor.
         /// </param>
         /// <returns>The result of loading the items.</returns>
-        public Task<int> LoadMoreItemsAsync(int count = 0)
-        {
-            return this.LoadMoreItemsAsync(CancellationToken.None, count);
-        }
+        public Task<int> LoadMoreItemsAsync(int count = 0) => LoadMoreItemsAsync(CancellationToken.None, count);
 
         /// <summary>
         /// Load more items asynchronously.
@@ -292,7 +283,6 @@ namespace Microsoft.WindowsAzure.MobileServices
             {
                 throw new InvalidOperationException("Loading of more items already in process.");
             }
-
             busy = true;
 
             LoadingItems?.Invoke(this, new EventArgs());
@@ -319,18 +309,18 @@ namespace Microsoft.WindowsAzure.MobileServices
                 else
                 {
                     //disable paging if pagesize is 0
-                    this.HasMoreItems = false;
+                    HasMoreItems = false;
                 }
 
-                results = await this.ProcessQueryAsync(token, query);
+                results = await ProcessQueryAsync(token, query);
 
                 if (results == 0)
                 {
-                    this.HasMoreItems = false;
+                    HasMoreItems = false;
                 }
                 else
                 {
-                    this.itemsReceived += results;
+                    itemsReceived += results;
                 }
                 //safe conversion since there can't be negative results
                 return results;
@@ -338,7 +328,7 @@ namespace Microsoft.WindowsAzure.MobileServices
             catch
             {
                 // in case of error don't automatically try again
-                this.HasMoreItems = false;
+                HasMoreItems = false;
                 throw;
             }
             finally
@@ -363,13 +353,8 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// </remarks>
         protected virtual void OnPropertyChanged([CallerMemberName]string propertyName = null)
         {
-            // this looks weird but propertyName must always been assigned to because of 
-            // the CallerMemberName attribute
-            if (propertyName == null)
-            {
-                throw new ArgumentNullException("propertyName");
-            }
-            this.OnPropertyChanged(new PropertyChangedEventArgs(propertyName));
+            Arguments.IsNotNull(propertyName, nameof(propertyName));
+            OnPropertyChanged(new PropertyChangedEventArgs(propertyName));
         }
     }
 

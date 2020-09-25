@@ -32,7 +32,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         {
             if (client == null)
             {
-                throw new ArgumentNullException("client");
+                throw new ArgumentNullException(nameof(client));
             }
 
             this.Client = client;
@@ -45,7 +45,7 @@ namespace Microsoft.WindowsAzure.MobileServices
             MobileServiceClient internalClient = client as MobileServiceClient;
             if (internalClient == null)
             {
-                throw new ArgumentException("Client must be a MobileServiceClient object");
+                throw new ArgumentException($"{nameof(client)} must be a MobileServiceClient object", nameof(client));
             }
             this.PushHttpClient = new PushHttpClient(internalClient);
 
@@ -107,7 +107,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         {
             if (string.IsNullOrWhiteSpace(channelUri))
             {
-                throw new ArgumentNullException("channelUri");
+                throw new ArgumentNullException(nameof(channelUri));
             }
             JObject installation = new JObject();
             installation[PushInstallationProperties.PUSHCHANNEL] = channelUri;
@@ -176,7 +176,7 @@ namespace Microsoft.WindowsAzure.MobileServices
                 {
                     if (string.IsNullOrWhiteSpace(tileId))
                     {
-                        throw new ArgumentNullException("tileId");
+                        throw new ArgumentNullException(nameof(tileId));
                     }
 
                     if (this.hubForTiles.ContainsKey(tileId))

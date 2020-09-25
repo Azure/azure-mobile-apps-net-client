@@ -2,11 +2,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
 
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.WindowsAzure.MobileServices
 {
@@ -57,11 +56,8 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// </param>
         public MobileServiceAuthentication(IMobileServiceClient client, string providerName, IDictionary<string, string> parameters)
         {
-            Debug.Assert(client != null, "client should not be null.");
-            if (providerName == null)
-            {
-                throw new ArgumentNullException("providerName");
-            }
+            Arguments.IsNotNull(client, nameof(client));
+            Arguments.IsNotNull(providerName, nameof(providerName));
 
             this.Client = client;
             this.Parameters = parameters;
@@ -98,13 +94,13 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// </summary>
         internal string ProviderName
         {
-            get { return this.providerName; }
+            get { return providerName; }
             private set
             {
-                this.providerName = value.ToLowerInvariant();
-                if (this.providerName.Equals(MobileServiceAuthenticationProvider.WindowsAzureActiveDirectory.ToString(), StringComparison.OrdinalIgnoreCase))
+                providerName = value.ToLowerInvariant();
+                if (providerName.Equals(MobileServiceAuthenticationProvider.WindowsAzureActiveDirectory.ToString(), StringComparison.OrdinalIgnoreCase))
                 {
-                    this.providerName = WindowsAzureActiveDirectoryRestApiPathName;
+                    providerName = WindowsAzureActiveDirectoryRestApiPathName;
                 }
             }
         }
@@ -145,8 +141,10 @@ namespace Microsoft.WindowsAzure.MobileServices
                 JToken authToken = JToken.Parse(response);
 
                 // Get the Mobile Services auth token and user data
-                this.Client.CurrentUser = new MobileServiceUser((string)authToken["user"]["userId"]);
-                this.Client.CurrentUser.MobileServiceAuthenticationToken = (string)authToken[LoginAsyncAuthenticationTokenKey];
+                this.Client.CurrentUser = new MobileServiceUser((string)authToken["user"]["userId"])
+                {
+                    MobileServiceAuthenticationToken = (string)authToken[LoginAsyncAuthenticationTokenKey]
+                };
             }
 
             return this.Client.CurrentUser;

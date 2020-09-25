@@ -3,12 +3,6 @@
 // ----------------------------------------------------------------------------
 
 using System;
-using System.Reflection;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.WindowsAzure.MobileServices.Eventing
 {
@@ -16,20 +10,17 @@ namespace Microsoft.WindowsAzure.MobileServices.Eventing
 
     internal sealed class MobileServiceEventObserver<T> : IEventObserver<T> where T : class, IMobileServiceEvent
     {
-        private Action<T> next;
+        private readonly Action<T> next;
+
         public MobileServiceEventObserver(Action<T> nextHandler)
         {
-            if (nextHandler == null)
-            {
-                throw new ArgumentNullException("nextHandler");
-            }
-
-            this.next = nextHandler;
+            Arguments.IsNotNull(nextHandler, nameof(nextHandler));
+            next = nextHandler;
         }
 
         public void OnNext(IMobileServiceEvent value)
         {
-            this.next((T)value);
+            next((T)value);
         }
 
         public void OnCompleted()

@@ -193,15 +193,15 @@ namespace Microsoft.WindowsAzure.MobileServices
         {
             if (url == null)
             {
-                throw new ArgumentNullException("url");
+                throw new ArgumentNullException(nameof(url));
             }
             if (queryParameter == null)
             {
-                throw new ArgumentNullException("queryParameter");
+                throw new ArgumentNullException(nameof(queryParameter));
             }
             if (queryValue == null)
             {
-                throw new ArgumentNullException("queryValue");
+                throw new ArgumentNullException(nameof(queryValue));
             }
 
             string queryParameterEscaped = Uri.EscapeDataString(queryParameter);

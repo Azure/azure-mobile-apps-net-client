@@ -2,11 +2,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
 
+using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.WindowsAzure.MobileServices
 {
@@ -40,8 +39,8 @@ namespace Microsoft.WindowsAzure.MobileServices
         public MobileServiceTokenAuthentication(MobileServiceClient client, string provider, JObject token, IDictionary<string, string> parameters)
             : base(client, provider, parameters)
         {
-            Debug.Assert(client != null, "client should not be null.");
-            Debug.Assert(token != null, "token should not be null.");
+            Arguments.IsNotNull(client, nameof(client));
+            Arguments.IsNotNull(token, nameof(token));
 
             this.client = client;
             this.token = token;
@@ -55,18 +54,15 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// </returns>
         protected override Task<string> LoginAsyncOverride()
         {
-            string path = MobileServiceUrlBuilder.CombinePaths(LoginAsyncUriFragment, ProviderName);
-            if (!string.IsNullOrEmpty(client.LoginUriPrefix))
-            {
-                path = MobileServiceUrlBuilder.CombinePaths(client.LoginUriPrefix, ProviderName);
-            }
+            string path = string.IsNullOrEmpty(client.LoginUriPrefix)
+                ? MobileServiceUrlBuilder.CombinePaths(LoginAsyncUriFragment, ProviderName)
+                : MobileServiceUrlBuilder.CombinePaths(client.LoginUriPrefix, ProviderName);
             string queryString = MobileServiceUrlBuilder.GetQueryString(Parameters);
             string pathAndQuery = MobileServiceUrlBuilder.CombinePathAndQuery(path, queryString);
-            if (client.AlternateLoginHost != null)
-            {
-                return client.AlternateAuthHttpClient.RequestWithoutHandlersAsync(HttpMethod.Post, pathAndQuery, client.CurrentUser, token.ToString());
-            }
-            return client.HttpClient.RequestWithoutHandlersAsync(HttpMethod.Post, pathAndQuery, client.CurrentUser, token.ToString());
+
+            return client.AlternateLoginHost != null
+                ? client.AlternateAuthHttpClient.RequestWithoutHandlersAsync(HttpMethod.Post, pathAndQuery, client.CurrentUser, token.ToString())
+                : client.HttpClient.RequestWithoutHandlersAsync(HttpMethod.Post, pathAndQuery, client.CurrentUser, token.ToString());
         }
     }
 }

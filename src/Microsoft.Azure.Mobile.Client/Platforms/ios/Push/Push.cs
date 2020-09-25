@@ -20,18 +20,13 @@ namespace Microsoft.WindowsAzure.MobileServices
 
         internal Push(IMobileServiceClient client)
         {
-            if (client == null)
-            {
-                throw new ArgumentNullException("client");
-            }
+            this.Client = client ?? throw new ArgumentNullException(nameof(client));
 
             if (!(client is MobileServiceClient internalClient))
             {
                 throw new ArgumentException("Client must be a MobileServiceClient object");
             }
-
             this.PushHttpClient = new PushHttpClient(internalClient);
-            this.Client = client;
         }
 
         /// <summary>
@@ -99,12 +94,12 @@ namespace Microsoft.WindowsAzure.MobileServices
         {
             if (deviceToken == null)
             {
-                throw new ArgumentNullException("deviceToken");
+                throw new ArgumentNullException(nameof(deviceToken));
             }
             byte[] byteArray = deviceToken.ToArray();
             if (byteArray.Length == 0)
             {
-                throw new ArgumentException("deviceToken cannot be empty.");
+                throw new ArgumentException($"{nameof(deviceToken)} cannot be empty.", nameof(deviceToken));
             }
             StringBuilder hex = new StringBuilder(byteArray.Length * 2);
             foreach (byte b in byteArray)

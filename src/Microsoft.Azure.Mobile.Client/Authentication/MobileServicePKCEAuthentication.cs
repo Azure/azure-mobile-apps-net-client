@@ -1,4 +1,8 @@
-﻿using System;
+﻿// ----------------------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// ----------------------------------------------------------------------------
+
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
@@ -23,24 +27,16 @@ namespace Microsoft.WindowsAzure.MobileServices
         protected MobileServicePKCEAuthentication(MobileServiceClient client, string provider, string uriScheme, IDictionary<string, string> parameters)
             : base(client, provider, parameters)
         {
-            if (client == null)
-            {
-                throw new ArgumentNullException("client");
-            }
-            if (string.IsNullOrWhiteSpace(uriScheme))
-            {
-                throw new ArgumentException("uriScheme");
-            }
+            Arguments.IsNotNull(client, nameof(client));
+            Arguments.IsNotNullOrWhiteSpace(uriScheme, nameof(uriScheme));
 
             this.client = client;
-            this.CodeVerifier = GetCodeVerifier();
-            this.CallbackUri = new Uri(MobileServiceUrlBuilder.CombileSchemeAndPath(uriScheme, "easyauth.callback"));
+            CodeVerifier = GetCodeVerifier();
+            CallbackUri = new Uri(MobileServiceUrlBuilder.CombileSchemeAndPath(uriScheme, "easyauth.callback"));
 
-            var path = MobileServiceUrlBuilder.CombinePaths(LoginAsyncUriFragment, this.ProviderName);
-            if (!string.IsNullOrEmpty(this.Client.LoginUriPrefix))
-            {
-                path = MobileServiceUrlBuilder.CombinePaths(this.Client.LoginUriPrefix, this.ProviderName);
-            }
+            var path = string.IsNullOrEmpty(Client.LoginUriPrefix)
+                ? MobileServiceUrlBuilder.CombinePaths(LoginAsyncUriFragment, ProviderName)
+                : MobileServiceUrlBuilder.CombinePaths(this.Client.LoginUriPrefix, ProviderName);
             var loginParameters = parameters != null ? new Dictionary<string, string>(parameters) : new Dictionary<string, string>();
             loginParameters.Add("post_login_redirect_url", this.CallbackUri.AbsoluteUri);
             loginParameters.Add("code_challenge", GetSha256Hash(this.CodeVerifier));
@@ -48,12 +44,7 @@ namespace Microsoft.WindowsAzure.MobileServices
             loginParameters.Add("session_mode", "token");
             var loginQueryString = MobileServiceUrlBuilder.GetQueryString(loginParameters, false);
             var loginPathAndQuery = MobileServiceUrlBuilder.CombinePathAndQuery(path, loginQueryString);
-            
-            this.LoginUri = new Uri(this.Client.MobileAppUri, loginPathAndQuery);
-            if (this.Client.AlternateLoginHost != null)
-            {
-                this.LoginUri = new Uri(this.Client.AlternateLoginHost, loginPathAndQuery);
-            }
+            LoginUri = new Uri(Client.AlternateLoginHost ?? Client.MobileAppUri, loginPathAndQuery);
         }
 
         /// <summary>
@@ -63,14 +54,12 @@ namespace Microsoft.WindowsAzure.MobileServices
         protected sealed override async Task<string> LoginAsyncOverride()
         {
             // Show platform-specific login ui and care about handling authorization_code from callback via deep linking.
-            var authorizationCode = await this.GetAuthorizationCodeAsync();
+            var authorizationCode = await GetAuthorizationCodeAsync();
 
             // Send authorization_code and code_verifier via HTTPS request to complete the PKCE flow.
-            var path = MobileServiceUrlBuilder.CombinePaths(LoginAsyncUriFragment, ProviderName);
-            if (!string.IsNullOrEmpty(client.LoginUriPrefix))
-            {
-                path = MobileServiceUrlBuilder.CombinePaths(client.LoginUriPrefix, ProviderName);
-            }
+            var path = string.IsNullOrEmpty(Client.LoginUriPrefix)
+                ? MobileServiceUrlBuilder.CombinePaths(LoginAsyncUriFragment, ProviderName)
+                : MobileServiceUrlBuilder.CombinePaths(this.Client.LoginUriPrefix, ProviderName);
             path = MobileServiceUrlBuilder.CombinePaths(path, "token");
             var tokenParameters = Parameters != null ? new Dictionary<string, string>(Parameters) : new Dictionary<string, string>();
             tokenParameters.Add("authorization_code", authorizationCode);

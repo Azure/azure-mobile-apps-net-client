@@ -2,12 +2,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Microsoft.WindowsAzure.MobileServices.Eventing
 {
     /// <summary>
@@ -15,7 +9,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Eventing
     /// </summary>
     public class MobileServiceEvent : IMobileServiceEvent
     {
-        private string name;
+        private readonly string name;
 
         /// <summary>
         /// Creates an instance of a <see cref="MobileServiceEvent"/>.
@@ -23,10 +17,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Eventing
         /// <param name="name">The event name.</param>
         public MobileServiceEvent(string name)
         {
-            if (name == null)
-            {
-                throw new ArgumentNullException("name");
-            }
+            Arguments.IsNotNull(name, nameof(name));
 
             this.name = name;
         }
@@ -34,7 +25,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Eventing
         /// <summary>
         /// Gets the event name.
         /// </summary>
-        public virtual string Name { get { return this.name; } }
+        public virtual string Name => name;
     }
 
     /// <summary>
@@ -48,10 +39,9 @@ namespace Microsoft.WindowsAzure.MobileServices.Eventing
         /// </summary>
         /// <param name="name">The event name.</param>
         /// <param name="payload">The payload associated with this event.</param>
-        public MobileServiceEvent(string name, T payload)
-            : base(name)
+        public MobileServiceEvent(string name, T payload) : base(name)
         {
-            this.Payload = payload;
+            Payload = payload;
         }
 
         /// <summary>

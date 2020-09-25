@@ -177,7 +177,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         {
             if (uri == null)
             {
-                throw new ArgumentNullException("uri");
+                throw new ArgumentNullException(nameof(uri));
             }
 
             if (!uri.EndsWith(Slash.ToString()))
@@ -205,7 +205,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         {
             if (uri == null)
             {
-                throw new ArgumentNullException("uri");
+                throw new ArgumentNullException(nameof(uri));
             }
 
             if (!uri.StartsWith(Slash.ToString()))

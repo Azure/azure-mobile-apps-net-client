@@ -23,12 +23,12 @@ namespace Microsoft.WindowsAzure.MobileServices
         {
             if (client == null)
             {
-                throw new ArgumentNullException("client");
+                throw new ArgumentNullException(nameof(client));
             }
 
             if (!(client is MobileServiceClient internalClient))
             {
-                throw new ArgumentException("Client must be a MobileServiceClient object");
+                throw new ArgumentException("Client must be a MobileServiceClient object", nameof(client));
             }
 
             this.PushHttpClient = new PushHttpClient(internalClient);
@@ -66,7 +66,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         {
             if (string.IsNullOrWhiteSpace(registrationId))
             {
-                throw new ArgumentNullException("registrationId");
+                throw new ArgumentNullException(nameof(registrationId));
             }
 
             JObject installation = new JObject();

@@ -152,7 +152,7 @@ namespace Microsoft.WindowsAzure.MobileServices
 
             set
             {
-                this.Serializer.SerializerSettings = value ?? throw new ArgumentNullException("value");
+                this.Serializer.SerializerSettings = value ?? throw new ArgumentNullException(nameof(value));
             }
         }
 
@@ -207,24 +207,23 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// Chain of <see cref="HttpMessageHandler" /> instances.
         /// All but the last should be <see cref="DelegatingHandler"/>s.
         /// </param>
-        public MobileServiceClient(Uri mobileAppUri,
-            params HttpMessageHandler[] handlers)
+        public MobileServiceClient(Uri mobileAppUri, params HttpMessageHandler[] handlers)
         {
             if (mobileAppUri == null)
             {
-                throw new ArgumentNullException("mobileAppUri");
+                throw new ArgumentNullException(nameof(mobileAppUri));
             }
 
             if (mobileAppUri.IsAbsoluteUri)
             {
                 // Trailing slash in the MobileAppUri is important. Fix it right here before we pass it on further.
-                this.MobileAppUri = new Uri(MobileServiceUrlBuilder.AddTrailingSlash(mobileAppUri.AbsoluteUri), UriKind.Absolute);
+                MobileAppUri = new Uri(MobileServiceUrlBuilder.AddTrailingSlash(mobileAppUri.AbsoluteUri), UriKind.Absolute);
             }
             else
             {
                 throw new ArgumentException(
                     string.Format(CultureInfo.InvariantCulture, Resources.MobileServiceClient_NotAnAbsoluteURI, mobileAppUri),
-                    "mobileAppUri");
+                    nameof(mobileAppUri));
             }
 
             this.InstallationId = GetApplicationInstallationId();
@@ -387,7 +386,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         {
             if (token == null)
             {
-                throw new ArgumentNullException("token");
+                throw new ArgumentNullException(nameof(token));
             }
 
             MobileServiceTokenAuthentication auth = new MobileServiceTokenAuthentication(this, provider, token, parameters: null);
@@ -514,7 +513,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         {
             if (string.IsNullOrWhiteSpace(apiName))
             {
-                throw new ArgumentNullException("apiName");
+                throw new ArgumentNullException(nameof(apiName));
             }
 
             MobileServiceSerializer serializer = this.Serializer;
@@ -588,7 +587,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         {
             if (string.IsNullOrWhiteSpace(apiName))
             {
-                throw new ArgumentNullException("apiName");
+                throw new ArgumentNullException(nameof(apiName));
             }
 
             string content = null;
@@ -720,16 +719,12 @@ namespace Microsoft.WindowsAzure.MobileServices
         {
             if (tableName == null)
             {
-                throw new ArgumentNullException("tableName");
+                throw new ArgumentNullException(nameof(tableName));
             }
 
             if (string.IsNullOrWhiteSpace(tableName))
             {
-                throw new ArgumentException(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "{0} cannot be null, empty or only whitespace.",
-                        "tableName"));
+                throw new ArgumentException($"{nameof(tableName)} cannot be null, empty or only whitespace.");
             }
         }
 

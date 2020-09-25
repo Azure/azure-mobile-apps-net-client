@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,7 +15,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Eventing
     {
         private readonly List<ISubscription> subscriptions;
         private readonly ReaderWriterLockSlim subscriptionLock = new ReaderWriterLockSlim();
-        private static Type observerTypeDefinition;
+        private static readonly Type observerTypeDefinition;
 
         static MobileServiceEventManager()
         {
@@ -35,27 +34,20 @@ namespace Microsoft.WindowsAzure.MobileServices.Eventing
 
         public Task PublishAsync(IMobileServiceEvent mobileServiceEvent)
         {
-            if (mobileServiceEvent == null)
-            {
-                throw new ArgumentNullException("mobileServiceEvent");
-            }
+            Arguments.IsNotNull(mobileServiceEvent, nameof(mobileServiceEvent));
 
             return Task.Run(() =>
             {
                 TypeInfo messageType = mobileServiceEvent.GetType().GetTypeInfo();
-
-                this.subscriptionLock.EnterReadLock();
-
+                subscriptionLock.EnterReadLock();
                 IList<ISubscription> subscriptionMatches = null;
-
                 try
                 {
-                    subscriptionMatches = this.subscriptions.Where(s => s.TargetMessageType.GetTypeInfo()
-                        .IsAssignableFrom(messageType)).ToList();
+                    subscriptionMatches = subscriptions.Where(s => s.TargetMessageType.GetTypeInfo().IsAssignableFrom(messageType)).ToList();
                 }
                 finally
                 {
-                    this.subscriptionLock.ExitReadLock();
+                    subscriptionLock.ExitReadLock();
                 }
 
                 foreach (var subscription in subscriptionMatches)
@@ -67,41 +59,32 @@ namespace Microsoft.WindowsAzure.MobileServices.Eventing
 
         public IDisposable Subscribe(IObserver<IMobileServiceEvent> observer)
         {
-            if (observer == null)
-            {
-                throw new ArgumentNullException("observer");
-            }
+            Arguments.IsNotNull(observer, nameof(observer));
 
             Type messageType = GetMessageType(observer);
             var subscription = new Subscription<IMobileServiceEvent>(this, observer, messageType);
-
             return Subscribe(subscription);
         }
 
         public IDisposable Subscribe<T>(Action<T> next) where T : class, IMobileServiceEvent
         {
-            if (next == null)
-            {
-                throw new ArgumentNullException("next");
-            }
+            Arguments.IsNotNull(next, nameof(next));
 
             var observer = new MobileServiceEventObserver<T>(next);
             var subscription = new Subscription<T>(this, observer);
-
             return Subscribe(subscription);
         }
 
         private IDisposable Subscribe(ISubscription subscription)
         {
-            this.subscriptionLock.EnterWriteLock();
-
+            subscriptionLock.EnterWriteLock();
             try
             {
-                this.subscriptions.Add(subscription);
+                subscriptions.Add(subscription);
             }
             finally
             {
-                this.subscriptionLock.ExitWriteLock();
+                subscriptionLock.ExitWriteLock();
             }
 
             return subscription;
@@ -111,14 +94,14 @@ namespace Microsoft.WindowsAzure.MobileServices.Eventing
         {
             Task.Run(() =>
             {
-                this.subscriptionLock.EnterWriteLock();
+                subscriptionLock.EnterWriteLock();
                 try
                 {
-                    this.subscriptions.Remove(subscription);
+                    subscriptions.Remove(subscription);
                 }
                 finally
                 {
-                    this.subscriptionLock.ExitWriteLock();
+                    subscriptionLock.ExitWriteLock();
                 }
             });
         }
@@ -141,7 +124,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Eventing
         {
             if (disposing)
             {
-                this.subscriptionLock.Dispose();
+                subscriptionLock.Dispose();
             }
         }
 
@@ -149,19 +132,12 @@ namespace Microsoft.WindowsAzure.MobileServices.Eventing
         {
             private readonly MobileServiceEventManager service;
             private readonly IObserver<T> observer;
-            private Type targetMessageType;
+            private readonly Type targetMessageType;
 
             public Subscription(MobileServiceEventManager service, IObserver<T> observer, Type targetMessageType = null)
             {
-                if (service == null)
-                {
-                    throw new ArgumentNullException("service");
-                }
-
-                if (observer == null)
-                {
-                    throw new ArgumentNullException("observer");
-                }
+                Arguments.IsNotNull(service, nameof(service));
+                Arguments.IsNotNull(observer, nameof(observer));
 
                 this.service = service;
                 this.observer = observer;
@@ -169,20 +145,17 @@ namespace Microsoft.WindowsAzure.MobileServices.Eventing
                 this.targetMessageType = targetMessageType ?? typeof(T);
             }
 
-            public Type TargetMessageType
-            {
-                get { return this.targetMessageType; }
-            }
+            public Type TargetMessageType => targetMessageType;
 
             public void Dispose()
             {
-                this.service.Unsubscribe(this);
+                service.Unsubscribe(this);
             }
 
 
             public void OnNext(IMobileServiceEvent mobileServiceEvent)
             {
-                this.observer.OnNext((T)mobileServiceEvent);
+                observer.OnNext((T)mobileServiceEvent);
             }
         }
     }

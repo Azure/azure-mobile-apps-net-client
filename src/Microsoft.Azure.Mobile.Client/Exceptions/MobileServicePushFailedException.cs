@@ -24,7 +24,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
         public MobileServicePushFailedException(MobileServicePushCompletionResult pushResult, Exception innerException)
             : base("Push operation has failed. See the PushResult for details.", innerException)
         {
-            this.PushResult = pushResult;
+            PushResult = pushResult;
         }
     }
 }

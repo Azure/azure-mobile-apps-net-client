@@ -47,14 +47,9 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// </returns>
         public static Expression VisitAll(Expression expression, Func<Expression, Func<Expression, Expression>, Expression> visitor)
         {
-            if (expression == null)
-            {
-                throw new ArgumentNullException("expression");
-            }
-            else if (visitor == null)
-            {
-                throw new ArgumentNullException("visitor");
-            }
+            Arguments.IsNotNull(expression, nameof(expression));
+            Arguments.IsNotNull(visitor, nameof(visitor));
+
             return new VisitorHelper() { visitor = visitor }.Visit(expression);
         }
 
@@ -71,14 +66,9 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// </returns>
         public static Expression VisitMembers(Expression expression, Func<MemberExpression, Func<MemberExpression, Expression>, Expression> visitor)
         {
-            if (expression == null)
-            {
-                throw new ArgumentNullException("expression");
-            }
-            else if (visitor == null)
-            {
-                throw new ArgumentNullException("visitor");
-            }
+            Arguments.IsNotNull(expression, nameof(expression));
+            Arguments.IsNotNull(visitor, nameof(visitor));
+
             return new VisitorHelper() { memberVisitor = visitor }.Visit(expression);
         }
 
@@ -88,11 +78,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <param name="expression">The expression to visit.</param>
         /// <returns>The visisted expression.</returns>
         public override Expression Visit(Expression expression)
-        {
-            return this.visitor != null ?
-                this.visitor(expression, e => base.Visit(e)) :
-                base.Visit(expression);
-        }
+            => visitor != null ? visitor(expression, e => base.Visit(e)) : base.Visit(expression);
 
         /// <summary>
         /// Visit member access.
@@ -100,10 +86,6 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <param name="expression">The expression to visit.</param>
         /// <returns>The visited expression.</returns>
         protected override Expression VisitMember(MemberExpression expression)
-        {
-            return this.memberVisitor != null ?
-                this.memberVisitor(expression, e => base.VisitMember(e)) :
-                base.VisitMember(expression);
-        }
+            => memberVisitor != null ? memberVisitor(expression, e => base.VisitMember(e)) : base.VisitMember(expression);
     }
 }
