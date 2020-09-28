@@ -7,9 +7,9 @@
     <Title>Azure Mobile SQLiteStore</Title>
     <Authors>Microsoft</Authors>
     <Product>$(AssemblyName) ($(TargetFramework))</Product>
-    <PackageLicenseUrl>http://go.microsoft.com/fwlink/?LinkId=286110</PackageLicenseUrl>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <PackageIcon>icon.png</PackageIcon>
     <PackageProjectUrl>https://github.com/Azure/azure-mobile-apps-net-client</PackageProjectUrl>
-    <PackageIconUrl>http://go.microsoft.com/fwlink/?LinkID=288890</PackageIconUrl>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <Description>This library provides features for creating offline sync-enabled Windows and Xamarin mobile apps that connect to Azure Mobile Apps. It provides an implementation of a local store based on SQLite. To learn more about Azure Mobile, go to http://azure.microsoft.com/mobile. </Description>
     <Summary>Azure Mobile Apps offline store for SQLite</Summary>
@@ -21,6 +21,7 @@
     <DebugType>portable</DebugType>
     <RootNamespace>Microsoft.WindowsAzure.MobileServices.SQLiteStore</RootNamespace>
     <Company>Microsoft</Company>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)'=='Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -30,6 +31,8 @@
     <PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.0.4" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\images\icon.png" PackagePath="icon.png" Pack="True" />
+    <None Include="..\..\LICENSE.txt" PackagePath="LICENSE.txt" Pack="True" />
     <Compile Update="Properties\Resources.Designer.cs" AutoGen="True" DesignTime="True" DependentUpon="Resources.resx" />
     <EmbeddedResource Update="Properties\Resources.resx" Generator="ResXFileCodeGenerator" LastGenOutput="Resources.Designer.cs" />
   </ItemGroup>
