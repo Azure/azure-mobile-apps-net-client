@@ -7,12 +7,12 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Microsoft.WindowsAzure.MobileServices
+namespace Microsoft.WindowsAzure.MobileServices.Internal
 {
     /// <summary>
     /// Provides login functionality for the <see cref="MobileServiceClient"/>. 
     /// </summary>
-    internal abstract class MobileServiceAuthentication
+    public abstract class MobileServiceAuthentication
     {
         /// <summary>
         /// Name of the  JSON member in the config setting that stores the
@@ -23,12 +23,12 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <summary>
         /// Relative URI fragment of the login endpoint.
         /// </summary>
-        protected const string LoginAsyncUriFragment = "/.auth/login";
+        public const string LoginAsyncUriFragment = "/.auth/login";
 
         /// <summary>
         /// Relative URI fragment of the login/done endpoint.
         /// </summary>
-        protected const string LoginAsyncDoneUriFragment = "/.auth/login/done";
+        public const string LoginAsyncDoneUriFragment = "/.auth/login/done";
 
         /// <summary>
         /// Name of the authentication provider as expected by the service REST API.
@@ -39,7 +39,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// The name for the Azure Active Directory authentication provider as used by the
         /// service REST API.
         /// </summary>
-        internal const string WindowsAzureActiveDirectoryRestApiPathName = "aad";
+        public const string WindowsAzureActiveDirectoryRestApiPathName = "aad";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MobileServiceAuthentication"/> class.
@@ -86,13 +86,13 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// The <see cref="MobileServiceClient"/> associated with this 
         /// <see cref="MobileServiceAuthentication"/> instance.
         /// </summary>
-        protected IMobileServiceClient Client { get; private set; }
+        public IMobileServiceClient Client { get; private set; }
 
         /// <summary>
         /// The name of the authentication provider used by this
         /// <see cref="MobileServiceAuthentication"/> instance.
         /// </summary>
-        internal string ProviderName
+        public string ProviderName
         {
             get { return providerName; }
             private set
@@ -108,14 +108,14 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <summary>
         /// Provider specific extra parameters that are sent as query string parameters to login endpoint.
         /// </summary>
-        internal IDictionary<string, string> Parameters { get; private set; }
+        public IDictionary<string, string> Parameters { get; private set; }
 
         /// <summary>
         /// The start uri to use for authentication.
         /// The browser-based control should 
         /// first navigate to this Uri in order to start the authenication flow.
         /// </summary>
-        internal Uri StartUri { get; private set; }
+        public Uri StartUri { get; private set; }
 
         /// <summary>
         /// The end Uri to use for authentication.
@@ -124,7 +124,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// endUrl, the browser-based control must stop navigating and
         /// return the response data.
         /// </summary>
-        internal Uri EndUri { get; private set; }
+        public Uri EndUri { get; private set; }
 
         /// <summary>
         /// Log a user into a Mobile Services application with the provider name and
@@ -133,7 +133,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <returns>
         /// Task that will complete when the user has finished authentication.
         /// </returns>
-        internal async Task<MobileServiceUser> LoginAsync()
+        public async Task<MobileServiceUser> LoginAsync()
         {
             string response = await this.LoginAsyncOverride();
             if (!string.IsNullOrEmpty(response))
@@ -156,6 +156,6 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <returns>
         /// Task that will complete with the response string when the user has finished authentication.
         /// </returns>
-        protected abstract Task<string> LoginAsyncOverride();
+        public abstract Task<string> LoginAsyncOverride();
     }
 }

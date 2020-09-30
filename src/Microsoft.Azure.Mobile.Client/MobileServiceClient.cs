@@ -3,6 +3,7 @@
 // ----------------------------------------------------------------------------
 
 using Microsoft.WindowsAzure.MobileServices.Eventing;
+using Microsoft.WindowsAzure.MobileServices.Internal;
 using Microsoft.WindowsAzure.MobileServices.Sync;
 using Newtonsoft.Json.Linq;
 using System;

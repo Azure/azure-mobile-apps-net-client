@@ -2,126 +2,51 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
 
+using Microsoft.WindowsAzure.MobileServices.Internal;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Threading.Tasks;
-using UIKit;
-using Xamarin.Auth;
-using NSAction = System.Action;
+using Xamarin.Essentials;
 
 namespace Microsoft.WindowsAzure.MobileServices
 {
+    /// <summary>
+    /// Authenticator that uses Xamarin.Essentials WebAuthenticator to do the work of
+    /// handling Azure App Service Authentication.
+    /// </summary>
     internal class MobileServiceUIAuthentication : MobileServicePKCEAuthentication
     {
-        private readonly RectangleF rect;
-        private readonly object view;
-
-        public MobileServiceUIAuthentication(RectangleF rect, object view, MobileServiceClient client, string providerName, string uriScheme, IDictionary<string, string> parameters)
-            : base(client, providerName, uriScheme, parameters)
+        public MobileServiceUIAuthentication(
+            MobileServiceClient client,
+            string providerName,
+            string uriScheme,
+            IDictionary<string, string> parameters
+        ) : base(client, providerName, uriScheme, parameters)
         {
-            this.rect = rect;
-            this.view = view;
         }
 
-        internal static WebAuthenticator CurrentAuthenticator;
-
-        protected override Task<string> GetAuthorizationCodeAsync()
+        /// <summary>
+        /// Obtain the authorization code from the App Service Authentication.
+        /// </summary>
+        /// <returns>The authorization code</returns>
+        /// <exception cref="InvalidOperationException">
+        ///     Thrown if the authentication fails.
+        /// </exception>
+        public override async Task<string> GetAuthorizationCodeAsync()
         {
-            var tcs = new TaskCompletionSource<string>();
-
-            if (CurrentAuthenticator != null)
+            try
             {
-                tcs.TrySetException(new InvalidOperationException("Authentication is already in progress."));
-                return tcs.Task;
+                var result = await WebAuthenticator.AuthenticateAsync(LoginUri, CallbackUri).ConfigureAwait(false);
+                if (!result.Properties.TryGetValue("authorization_code", out string authorization_code))
+                {
+                    throw new InvalidOperationException("Authentication failed: authorization_code not returned");
+                }
+                return Uri.UnescapeDataString(authorization_code);
             }
-
-            CurrentAuthenticator = new WebRedirectAuthenticator(LoginUri, CallbackUri)
+            catch (Exception ex)
             {
-                ClearCookiesBeforeLogin = false
-            };
-
-            UIViewController c = CurrentAuthenticator.GetUI();
-
-            UIViewController controller = null;
-            UIPopoverController popover = null;
-
-            CurrentAuthenticator.Error += (o, e) =>
-            {
-                void completed()
-                {
-                    Exception ex = e.Exception ?? new Exception(e.Message);
-                    tcs.TrySetException(ex);
-                }
-
-                if (controller != null)
-                {
-                    controller.DismissViewController(true, null);
-                    completed();
-                }
-
-                if (popover != null)
-                {
-                    popover.Dismiss(true);
-                    completed();
-                }
-                CurrentAuthenticator = null;
-            };
-
-            CurrentAuthenticator.Completed += (o, e) =>
-            {
-                void completed()
-                {
-                    if (!e.IsAuthenticated)
-                    {
-                        tcs.TrySetException(new InvalidOperationException("Authentication was cancelled by the user."));
-                    }
-                    else if (!e.Account.Properties.TryGetValue("authorization_code", out string authorizationCode))
-                    {
-                        tcs.TrySetException(new InvalidOperationException("Authentication failed: could not found \"authorization_code\"."));
-                    }
-                    else
-                    {
-                        tcs.TrySetResult(authorizationCode);
-                    }
-                }
-
-                if (controller != null)
-                {
-                    controller.DismissViewController(true, null);
-                    completed();
-                }
-
-                if (popover != null)
-                {
-                    popover.Dismiss(true);
-                    completed();
-                }
-                CurrentAuthenticator = null;
-            };
-
-            controller = view as UIViewController;
-            if (controller != null)
-            {
-                controller.PresentViewController(c, true, null);
+                throw new InvalidOperationException($"Authorization failed: {ex.Message}", ex);
             }
-            else
-            {
-                UIView v = view as UIView;
-
-                popover = new UIPopoverController(c);
-
-                if (view is UIBarButtonItem barButton)
-                {
-                    popover.PresentFromBarButtonItem(barButton, UIPopoverArrowDirection.Any, true);
-                }
-                else
-                {
-                    popover.PresentFromRect(rect, v, UIPopoverArrowDirection.Any, true);
-                }
-            }
-
-            return tcs.Task;
         }
     }
 }

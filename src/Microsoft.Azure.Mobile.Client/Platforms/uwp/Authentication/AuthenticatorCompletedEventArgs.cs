@@ -10,12 +10,9 @@ namespace Microsoft.WindowsAzure.MobileServices
 {
     internal class AuthenticatorCompletedEventArgs : EventArgs
     {
-        // <summary>
+        /// <summary>
         /// Whether the authentication succeeded and there is a valid authorization code.
         /// </summary>
-        /// <value>
-        /// true if the user is authenticated; otherwise, false.
-        /// </value>
         public bool IsAuthenticated { get { return AuthorizationCode != null; } }
 
         /// <summary>

@@ -10,8 +10,7 @@ namespace Microsoft.WindowsAzure.MobileServices
 {
     /// <summary>
     /// An implementation of the <see cref="IApplicationStorage"/> interface
-    /// for the .NET Platform that uses .NET
-    /// <see cref="System.Configuration.ApplicationSettingsBase"/> APIs.
+    /// for the .NET Platform that uses .NET APIs.
     /// </summary>
     internal class ApplicationStorage : IApplicationStorage
     {

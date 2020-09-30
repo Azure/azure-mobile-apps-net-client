@@ -7,9 +7,9 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace Microsoft.WindowsAzure.MobileServices
+namespace Microsoft.WindowsAzure.MobileServices.Internal
 {
-    internal class MobileServiceTokenAuthentication : MobileServiceAuthentication
+    public class MobileServiceTokenAuthentication : MobileServiceAuthentication
     {
         /// <summary>
         /// The token to send.
@@ -52,7 +52,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <returns>
         /// Task that will complete with the response string when the user has finished authentication.
         /// </returns>
-        protected override Task<string> LoginAsyncOverride()
+        public override Task<string> LoginAsyncOverride()
         {
             string path = string.IsNullOrEmpty(client.LoginUriPrefix)
                 ? MobileServiceUrlBuilder.CombinePaths(LoginAsyncUriFragment, ProviderName)

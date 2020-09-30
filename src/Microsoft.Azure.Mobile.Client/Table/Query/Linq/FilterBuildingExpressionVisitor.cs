@@ -616,7 +616,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Query
         /// </summary>
         /// <param name="expression">The binary expression to check.</param>
         /// <param name="unaryExp">The expression which is the enum.</param>
-        /// <param name="constExp">The expression containing the enum value.</param>
+        /// <param name="constExpression">The expression containing the enum value.</param>
         /// <returns>True if an enum expression is found, otherwise false.</returns>
         private bool CheckEnumExpression(BinaryExpression expression, out UnaryExpression unaryExp, out ConstantExpression constExpression)
         {

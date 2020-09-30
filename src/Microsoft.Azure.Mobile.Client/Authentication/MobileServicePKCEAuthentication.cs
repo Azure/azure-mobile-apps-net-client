@@ -9,22 +9,22 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Security.Cryptography;
 
-namespace Microsoft.WindowsAzure.MobileServices
+namespace Microsoft.WindowsAzure.MobileServices.Internal
 {
-    internal abstract class MobileServicePKCEAuthentication : MobileServiceAuthentication
+    public abstract class MobileServicePKCEAuthentication : MobileServiceAuthentication
     {
         /// <summary>
         /// The <see cref="MobileServiceClient"/> used by this authentication session.
         /// </summary>
         private readonly MobileServiceClient client;
 
-        protected Uri LoginUri { get; private set; }
+        public Uri LoginUri { get; private set; }
 
-        protected Uri CallbackUri { get; private set; }
+        public Uri CallbackUri { get; private set; }
         
-        protected string CodeVerifier { get; private set; }
+        public string CodeVerifier { get; private set; }
 
-        protected MobileServicePKCEAuthentication(MobileServiceClient client, string provider, string uriScheme, IDictionary<string, string> parameters)
+        public MobileServicePKCEAuthentication(MobileServiceClient client, string provider, string uriScheme, IDictionary<string, string> parameters)
             : base(client, provider, parameters)
         {
             Arguments.IsNotNull(client, nameof(client));
@@ -51,7 +51,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// Login via OAuth 2.0 PKCE protocol.
         /// </summary>
         /// <returns></returns>
-        protected sealed override async Task<string> LoginAsyncOverride()
+        public sealed override async Task<string> LoginAsyncOverride()
         {
             // Show platform-specific login ui and care about handling authorization_code from callback via deep linking.
             var authorizationCode = await GetAuthorizationCodeAsync();
@@ -70,7 +70,7 @@ namespace Microsoft.WindowsAzure.MobileServices
             return await httpClient.RequestWithoutHandlersAsync(HttpMethod.Get, pathAndQuery, null);
         }
 
-        protected abstract Task<string> GetAuthorizationCodeAsync();
+        public abstract Task<string> GetAuthorizationCodeAsync();
 
         private static string GetCodeVerifier()
         {
@@ -87,7 +87,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// </summary>
         /// <param name="data">Input data</param>
         /// <returns>Base64 encoded SHA-256 hash</returns>
-        private static string GetSha256Hash(string data)
+        public static string GetSha256Hash(string data)
         {
             var bytes = Encoding.UTF8.GetBytes(data);
             byte[] hash;

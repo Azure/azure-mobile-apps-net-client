@@ -116,6 +116,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <summary>
         /// Pulls all items that match the given query from the associated remote table. Supports incremental sync.
         /// </summary>
+        /// <param name="table">The table to pull from.</param>
         /// <param name="queryId">
         /// A string that uniquely identifies this query and is used to keep track of its sync state. Supplying this parameter
         /// enables incremental sync whenever the same key is used again. Must be 255 characters or less and contain only
@@ -246,23 +247,16 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <summary>
         /// Pulls all items that match the given query from the associated remote table.
         /// </summary>
+        /// <param name="table">The table that is being pulled from.</param>
         /// <param name="queryId">
         /// A string that uniquely identifies this query and is used to keep track of its sync state. Supplying this parameter
         /// enables incremental sync whenever the same key is used again. Must be 255 characters or less and contain only
         /// alphanumeric characters, dash, and underscore
         /// </param>
-        /// <param name="query">
-        /// An OData query that determines which items to
-        /// pull from the remote table.
-        /// </param>
-        /// <param name="pushOtherTables">
-        /// Push other tables if this table is dirty
-        /// </param>
-        /// <param name="cancellationToken">The <see cref="System.Threading.CancellationToken"/> token to observe
-        /// </param>
-        /// <returns>
-        /// A task that completes when pull operation has finished.
-        /// </returns>
+        /// <param name="query">An OData query that determines which items to pull from the remote table.</param>
+        /// <param name="pushOtherTables">Push other tables if this table is dirty</param>
+        /// <param name="cancellationToken">The <see cref="System.Threading.CancellationToken"/> token to observe</param>
+        /// <returns>A task that completes when pull operation has finished.</returns>
         /// <exception cref="System.ArgumentException">
         /// Thrown when <paramref name="queryId"/> does not match the regular expression <value>[a-zA-Z][a-zA-Z0-9_-]{1,255}</value>.
         /// </exception>

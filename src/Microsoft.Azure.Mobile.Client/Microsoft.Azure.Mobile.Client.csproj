@@ -26,6 +26,7 @@
     <Company>Microsoft</Company>
     <NeutralLanguage>en-US</NeutralLanguage>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>4.2.0</Version>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)'=='Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -45,7 +46,7 @@
   <ItemGroup Condition="$(TargetFramework.StartsWith('monoandroid'))">
     <PackageReference Include="PCLCrypto" Version="2.0.147" />
     <PackageReference Include="Xamarin.Android.Support.CustomTabs" Version="28.0.0.3" />
-    <PackageReference Include="Xamarin.Auth" Version="1.7.0" />
+    <PackageReference Include="Xamarin.Essentials" Version="1.5.3.2" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
     <Reference Include="System.Runtime.Serialization" />
     <Compile Include="Platforms\android\**\*.cs" />
@@ -55,7 +56,7 @@
   </PropertyGroup>
   <ItemGroup Condition="$(TargetFramework.StartsWith('xamarin.ios'))">
     <PackageReference Include="PCLCrypto" Version="2.0.147" />
-    <PackageReference Include="Xamarin.Auth" Version="1.7.0" />
+    <PackageReference Include="Xamarin.Essentials" Version="1.5.3.2" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
     <Reference Include="System.Runtime.Serialization" />
     <Compile Include="Platforms\ios\**\*.cs" />

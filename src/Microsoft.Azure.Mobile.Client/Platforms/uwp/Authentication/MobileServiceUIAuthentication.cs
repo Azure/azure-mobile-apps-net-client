@@ -2,6 +2,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
 
+using Microsoft.WindowsAzure.MobileServices.Internal;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -38,7 +39,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <returns>
         /// Task that will complete with the authorization code when the user finishes authentication.
         /// </returns>
-        protected override Task<string> GetAuthorizationCodeAsync()
+        public override Task<string> GetAuthorizationCodeAsync()
         {
             var tcs = new TaskCompletionSource<string>();
 

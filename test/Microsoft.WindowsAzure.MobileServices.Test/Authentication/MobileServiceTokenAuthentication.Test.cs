@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.WindowsAzure.MobileServices.Internal;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.WindowsAzure.MobileServices.Test.Authentication
@@ -19,10 +20,10 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Authentication
     [TestClass]
     public class MobileServiceTokenAuthentication_Test
     {
-        string loginAsyncUriFragment = ".auth/login";
-        string legacyLoginAsyncUriFragment = "login";
-        string validAlternateLoginUrl = "https://www.testalternatelogin.com/";
-        string validAlternateLoginUrlWithoutTrailingSlash = "https://www.testalternatelogin.com";
+        readonly string loginAsyncUriFragment = ".auth/login";
+        readonly string legacyLoginAsyncUriFragment = "login";
+        readonly string validAlternateLoginUrl = "https://www.testalternatelogin.com/";
+        readonly string validAlternateLoginUrlWithoutTrailingSlash = "https://www.testalternatelogin.com";
 
         private AuthTestInfo Initialize_Client(string appUrl = null, string loginPrefix = null, string alternateLoginUri = null)
         {
@@ -34,8 +35,10 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Authentication
             hijack.SetResponseContent(String.Empty);
 
             MobileServiceHttpClient.DefaultHandlerFactory = () => hijack;
-            var client = new MobileServiceClient(appUrl, hijack);
-            client.LoginUriPrefix = loginPrefix;
+            var client = new MobileServiceClient(appUrl, hijack)
+            {
+                LoginUriPrefix = loginPrefix
+            };
             if (!string.IsNullOrEmpty(alternateLoginUri))
             {
                 client.AlternateLoginHost = new Uri(alternateLoginUri);
@@ -185,31 +188,39 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.Authentication
         [ExpectedException(typeof(ArgumentException))]
         public void StartUri_ThrowsInvalidAlternateLoginHost()
         {
-            var client = new MobileServiceClient(MobileAppUriValidator.DummyMobileApp);
-            client.AlternateLoginHost = new Uri(MobileAppUriValidator.DummyMobileAppUriWithFolder);
+            _ = new MobileServiceClient(MobileAppUriValidator.DummyMobileApp)
+            {
+                AlternateLoginHost = new Uri(MobileAppUriValidator.DummyMobileAppUriWithFolder)
+            };
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void StartUri_ThrowsInvalidAlternateLoginHostTS()
         {
-            var client = new MobileServiceClient(MobileAppUriValidator.DummyMobileApp);
-            client.AlternateLoginHost = new Uri(MobileAppUriValidator.DummyMobileAppUriWithFolderWithoutTralingSlash);
+            _ = new MobileServiceClient(MobileAppUriValidator.DummyMobileApp)
+            {
+                AlternateLoginHost = new Uri(MobileAppUriValidator.DummyMobileAppUriWithFolderWithoutTralingSlash)
+            };
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void StartUri_ThrowsInvalidAlternateLoginHostHTTP()
         {
-            var client = new MobileServiceClient(MobileAppUriValidator.DummyMobileApp);
-            client.AlternateLoginHost = new Uri("http://www.testalternatelogin.com/");
+            _ = new MobileServiceClient(MobileAppUriValidator.DummyMobileApp)
+            {
+                AlternateLoginHost = new Uri("http://www.testalternatelogin.com/")
+            };
         }
 
         [TestMethod]
         public void AlternateLoginUri_Null()
         {
-            var client = new MobileServiceClient(MobileAppUriValidator.DummyMobileApp);
-            client.AlternateLoginHost = null;
+            var client = new MobileServiceClient(MobileAppUriValidator.DummyMobileApp)
+            {
+                AlternateLoginHost = null
+            };
             Assert.AreEqual(client.AlternateLoginHost, client.MobileAppUri);
         }
 

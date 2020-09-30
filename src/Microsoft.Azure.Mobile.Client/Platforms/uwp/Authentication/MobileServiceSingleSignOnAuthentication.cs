@@ -2,6 +2,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
 
+using Microsoft.WindowsAzure.MobileServices.Internal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,7 +43,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <returns>
         /// Task that will complete with the response string when the user has finished authentication.
         /// </returns>
-        protected override Task<string> LoginAsyncOverride()
+        public override Task<string> LoginAsyncOverride()
         {
             AuthenticationBroker broker = new AuthenticationBroker();
 

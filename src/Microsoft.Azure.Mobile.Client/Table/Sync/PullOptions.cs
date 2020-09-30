@@ -6,6 +6,9 @@ using System;
 
 namespace Microsoft.WindowsAzure.MobileServices.Sync
 {
+    /// <summary>
+    /// Options used to adjust the pull synchronization operation.
+    /// </summary>
     public class PullOptions
     {
         private int _maxPageSize;

@@ -260,12 +260,8 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// informs the developer about how to correctly attribute the type with the
         /// <see cref="JsonPropertyAttribute"/> instead of the <see cref="DataMemberAttribute"/>.
         /// </remarks>
-        /// <param name="type">
-        /// The type for which to return a <see cref="JsonObjectContract"/>.
-        /// </param>
-        /// <returns>
-        /// The <see cref="JsonObjectContract"/> for the type.
-        /// </returns>
+        /// <param name="objectType">The type for which to return a <see cref="JsonObjectContract"/>.</param>
+        /// <returns>The <see cref="JsonObjectContract"/> for the type.</returns>
         protected override JsonObjectContract CreateObjectContract(Type objectType)
         {
             JsonObjectContract contract = base.CreateObjectContract(objectType);

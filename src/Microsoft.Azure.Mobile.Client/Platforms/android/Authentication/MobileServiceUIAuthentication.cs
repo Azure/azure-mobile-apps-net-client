@@ -4,72 +4,49 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Threading.Tasks;
 using Android.Content;
-using Xamarin.Auth;
+using Xamarin.Essentials;
 
-namespace Microsoft.WindowsAzure.MobileServices
+namespace Microsoft.WindowsAzure.MobileServices.Internal
 {
+    /// <summary>
+    /// Authenticator that uses Xamarin.Essentials WebAuthenticator to do the work of
+    /// handling Azure App Service Authentication.
+    /// </summary>
     internal class MobileServiceUIAuthentication : MobileServicePKCEAuthentication
     {
-        public MobileServiceUIAuthentication(Context context, MobileServiceClient client, string providerName, string uriScheme, IDictionary<string, string> parameters)
-            : base(client, providerName, uriScheme, parameters)
+        public MobileServiceUIAuthentication(
+            MobileServiceClient client, 
+            string providerName, 
+            string uriScheme, 
+            IDictionary<string, string> parameters
+        ) : base(client, providerName, uriScheme, parameters)
         {
-            this.context = context;
         }
 
-        private readonly Context context;
-
-        internal static WebAuthenticator CurrentAuthenticator;
-
-        protected override Task<string> GetAuthorizationCodeAsync()
+        /// <summary>
+        /// Obtain the authorization code from the App Service Authentication.
+        /// </summary>
+        /// <returns>The authorization code</returns>
+        /// <exception cref="InvalidOperationException">
+        ///     Thrown if the authentication fails.
+        /// </exception>
+        public override async Task<string> GetAuthorizationCodeAsync()
         {
-            var tcs = new TaskCompletionSource<string>();
-
-            if (CurrentAuthenticator != null)
+            try
             {
-                tcs.TrySetException(new InvalidOperationException("Authentication is already in progress."));
-                return tcs.Task;
+                var result = await WebAuthenticator.AuthenticateAsync(LoginUri, CallbackUri).ConfigureAwait(false);
+                if (!result.Properties.TryGetValue("authorization_code", out string authorization_code))
+                {
+                    throw new InvalidOperationException("Authentication failed: authorization_code not returned");
+                }
+                return Uri.UnescapeDataString(authorization_code);
             }
-
-            CurrentAuthenticator = new WebRedirectAuthenticator(LoginUri, CallbackUri)
+            catch (Exception ex)
             {
-                ClearCookiesBeforeLogin = false
-            };
-            Intent intent = CurrentAuthenticator.GetUI(this.context);
-
-            CurrentAuthenticator.Error += (sender, e) =>
-            {
-                string message = String.Format(CultureInfo.InvariantCulture, "Authentication failed with HTTP response code {0}.", e.Message);
-                InvalidOperationException ex = (e.Exception == null)
-                    ? new InvalidOperationException(message)
-                    : new InvalidOperationException(message, e.Exception);
-
-                tcs.TrySetException(ex);
-                CurrentAuthenticator = null;
-            };
-
-            CurrentAuthenticator.Completed += (sender, e) =>
-            {
-                if (!e.IsAuthenticated)
-                {
-                    tcs.TrySetException(new InvalidOperationException("Authentication was cancelled by the user."));
-                }
-                else if (!e.Account.Properties.TryGetValue("authorization_code", out string authorizationCode))
-                {
-                    tcs.TrySetException(new InvalidOperationException("Authentication failed: could not found \"authorization_code\"."));
-                }
-                else
-                {
-                    tcs.TrySetResult(authorizationCode);
-                }
-                CurrentAuthenticator = null;
-            };
-
-            context.StartActivity(intent);
-
-            return tcs.Task;
+                throw new InvalidOperationException($"Authorization failed: {ex.Message}", ex);
+            }
         }
     }
 }
