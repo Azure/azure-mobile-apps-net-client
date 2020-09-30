@@ -9,6 +9,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -99,9 +100,7 @@ namespace Microsoft.WindowsAzure.MobileServices
                 }
                 else
                 {
-                    throw new ArgumentException(
-                        string.Format(CultureInfo.InvariantCulture, Resources.MobileServiceClient_InvalidAlternateLoginHost, value),
-                        "alternateLoginHost");
+                    throw new ArgumentException("Invalid AlternateLoginHost", nameof(value));
                 }
 
                 this.AlternateAuthHttpClient = new MobileServiceHttpClient(EmptyHttpMessageHandlers, alternateLoginHost, this.InstallationId);
@@ -227,6 +226,22 @@ namespace Microsoft.WindowsAzure.MobileServices
             this.Serializer = new MobileServiceSerializer();
             this.EventManager = new MobileServiceEventManager();
             this.SyncContext = new MobileServiceSyncContext(this);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MobileServiceClient"/> class.
+        /// </summary>
+        /// <param name="options">the connection options.</param>
+        public MobileServiceClient(IMobileServiceClientOptions options) : this(options.MobileAppUri, null)
+        {
+            AlternateLoginHost = options.AlternateLoginHost;
+            LoginUriPrefix = options.LoginUriPrefix;
+
+            var handlers = options.GetDefaultMessageHandlers(this) ?? EmptyHttpMessageHandlers;
+            if (handlers.Any())
+            {
+                HttpClient = new MobileServiceHttpClient(handlers, MobileAppUri, InstallationId);
+            }
         }
 
         /// <summary>
