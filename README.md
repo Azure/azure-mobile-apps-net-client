@@ -11,8 +11,9 @@ If you are new to Azure Mobile Apps, you can get started by following our tutori
 ## Supported platforms
 
 * .NET Standard 2.0
-
-With the release of v5.0.0 of the libraries, we only support .NET Standard 2.0.  This includes the latest versions of Xamarin Android, Xamarin iOS, Xamarin Forms, and UWP.  
+* Xamarin.Android 9.0 (up to Android API level 29)
+* Xamarin.iOS 1.0 (up to iOS 14.0)
+* UAP 10.0 (builds 16299 - 19041)
 
 ## Building the Library
 
@@ -30,7 +31,7 @@ To get the source code of our SDKs and samples via **git** just type:
 
 ### Building and Referencing the SDK
 
-1. Open the ```Microsoft.Azure.Mobile.Client.sln``` solution file in Visual Studio 2019.
+1. Open the `Microsoft.Azure.Mobile.Client.sln` solution file in Visual Studio 2019.
 2. Use Solution -> Restore NuGet Packages...
 3. Press F6 to build the solution.
 

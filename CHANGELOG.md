@@ -1,18 +1,22 @@
 # Azure Mobile Apps Managed SDK Change Log
 
-## Version 5.0.0
+## Version 4.2.0
 
-- **Breaking** Support for .NET Standard 2.0
-- **Breaking** Convenience methods for logging into the service provider are no longer supported.  You must integrate the authentication provider library and pass the appropriate tokens to `LoginAsync(provider, tokens)` as a `JObject`.
+- Added support for .NET Standard 2.0, Xamarin.Android 9.0, Xamarin.iOS 1.0
+- Updated support for UAP to builds 16299 through 19041.
 - **Breaking** Removed support for .NET Standard 1.4 and PCL editions
 - **Breaking** Update of Newtonsoft.JSON to v12.0.3 - this causes some changes in how the JSON parser handles overflow conditions.
 - **Breaking** You can no longer create a `MobileServiceUser` with an invalid or illegal username (such as null or the empty string).
-- **Breaking** Unbundled Xamarin.Auth.
-- Update of SQLitePCL to v2.0.3 
+- **Breaking** Switched to using Xamarin.Essentials for authentication broker.  This requires changes to the per-platform setup.
+- Update of SQLitePCL to v2.0.4
 - Moved all non-live tests to use MSTest v2
 - Push technologies / registration is no longer tested
 - [#511](https://github.com/Azure/azure-mobile-apps-net-client/issues/511) Support for Visual Studio 2019
 - [#415](https://github.com/Azure/azure-mobile-apps-net-client/issues/415) Support for latest Xamarin iOS and Android releases.
+- [#543](https://github.com/Azure/azure-mobile-apps-net-client/pull/543) Check compression header of response
+- [#300](https://github.com/Azure/azure-mobile-apps-net-client/issues/300) Options based client configuration for improved dependency injection configuration.
+- [#539](https://github.com/Azure/azure-mobile-apps-net-client/issues/539) Removed dependency on Xamarin.Auth, which removes dependency on UIWebView.
+- [#533](https://github.com/Azure/azure-mobile-apps-net-client/issues/533) All packages used have been updated to latest editions, which should alleviate compatibility issues.
 
 ## Version 4.1.2
 
