@@ -66,7 +66,7 @@
   </PropertyGroup>
   <ItemGroup Condition="$(TargetFramework.StartsWith('xamarin.mac'))">
     <PackageReference Include="PCLCrypto" Version="2.0.147" />
-    <PackageReference Include="Xamarin.Essentials" Version="1.5.3.2" />
+    <PackageReference Include="Xamarin.Essentials" Version="1.6.0-pre2" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
     <Reference Include="System.Runtime.Serialization" />
     <Compile Include="Platforms\mac\**\*.cs" />
