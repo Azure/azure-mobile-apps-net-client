@@ -25,8 +25,8 @@ jobs:
       masterBranchName: ns2
       publishJob: windows
       areaPath: 'DevDiv\Xamarin SDK'
-      buildType: 'basic'
-      # linuxImage: 'ubuntu-latest'
+      linuxImage: '' # skip linux builds
+      macosImage: '' # skip macos builds
       validPackagePrefixes:
         - Microsoft.Azure.Mobile.Client
 

@@ -17,8 +17,7 @@ Task("Build")
         .EnableBinaryLogger("./output/build.binlog")
         .WithRestore()
         .WithTarget("Build")
-        .WithProperty("PackageOutputPath", MakeAbsolute((DirectoryPath)"./output/").FullPath)
-        .WithProperty("GeneratePackageOnBuild", "true"));
+        .WithProperty("PackageOutputPath", MakeAbsolute((DirectoryPath)"./output/").FullPath));
 });
 
 Task("Test")
