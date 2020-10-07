@@ -1,11 +1,11 @@
 trigger:
   - master
-  - ns
+  - ns2
   - refs/tags/*
 
 pr:
   - master
-  - ns
+  - ns2
 
 resources:
   repositories:
