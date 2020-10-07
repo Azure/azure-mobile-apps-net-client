@@ -1,11 +1,11 @@
-# NOTE: the 'ns2' is currently the "main branch" for now. As soon as things are ready, it will be changed to whatever the main should be once merged.
-
 trigger:
   - master
+  - ns
   - refs/tags/*
 
 pr:
   - master
+  - ns
 
 resources:
   repositories:
