@@ -2,15 +2,14 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
 
+using Microsoft.WindowsAzure.MobileServices.SQLiteStore;
 using Microsoft.WindowsAzure.MobileServices.Sync;
 using SQLitePCL;
 
-namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
+namespace SQLiteStore.Tests.Helpers
 {
     internal static class TestUtilities
     {
-        public static string TestDbName { get; } = "test.db";
-
         public static void ResetDatabase(string dbName)
         {
             DropTestTable(dbName, MobileServiceLocalSystemTables.OperationQueue);

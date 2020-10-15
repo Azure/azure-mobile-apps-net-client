@@ -1,26 +1,30 @@
-﻿using System;
+﻿// ----------------------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// ----------------------------------------------------------------------------
+
+using Microsoft.WindowsAzure.MobileServices;
+using Microsoft.WindowsAzure.MobileServices.SQLiteStore;
+using Microsoft.WindowsAzure.MobileServices.Sync;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using SQLiteStore.Tests.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.WindowsAzure.MobileServices.Sync;
-using Microsoft.WindowsAzure.MobileServices.Test;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using Xunit;
 
-namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
+namespace SQLiteStore.Tests
 {
-    [TestClass]
     public class SQLiteStoreIntegration
     {
         private const string TestTable = "stringId_test_table";
+        private static string TestDbName = "integration-test.db";
 
-        public static string TestDbName = TestUtilities.TestDbName;
-
-        [TestMethod]
+        [Fact]
         public async Task InsertAsync_Throws_IfItemAlreadyExistsInLocalStore()
         {
             ResetDatabase(TestTable);
@@ -42,12 +46,12 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             IMobileServiceSyncTable table = service.GetSyncTable(TestTable);
             await table.PullAsync(null, null);
 
-            var ex = await AssertEx.Throws<MobileServiceLocalStoreException>(() => table.InsertAsync(new JObject() { { "id", "abc" } }));
+            var ex = await Assert.ThrowsAsync<MobileServiceLocalStoreException>(() => table.InsertAsync(new JObject() { { "id", "abc" } }));
 
-            Assert.AreEqual(ex.Message, "An insert operation on the item is already in the queue.");
+            Assert.Equal("An insert operation on the item is already in the queue.", ex.Message);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ReadAsync_RoundTripsDate()
         {
             string tableName = "itemWithDate";
@@ -68,14 +72,14 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             DateTime theDate = new DateTime(2014, 3, 10, 0, 0, 0, DateTimeKind.Utc);
             JObject inserted = await table.InsertAsync(new JObject() { { "date", theDate } });
 
-            Assert.AreEqual(inserted["date"].Value<DateTime>(), theDate);
+            Assert.Equal(inserted["date"].Value<DateTime>(), theDate);
 
             JObject rehydrated = await table.LookupAsync(inserted["id"].Value<string>());
 
-            Assert.AreEqual(rehydrated["date"].Value<DateTime>(), theDate);
+            Assert.Equal(rehydrated["date"].Value<DateTime>(), theDate);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ReadAsync_RoundTripsDate_Generic()
         {
             string tableName = "NotSystemPropertyCreatedAtType";
@@ -93,14 +97,14 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             var inserted = new NotSystemPropertyCreatedAtType() { __CreatedAt = theDate };
             await table.InsertAsync(inserted);
 
-            Assert.AreEqual(inserted.__CreatedAt.ToUniversalTime(), theDate);
+            Assert.Equal(inserted.__CreatedAt.ToUniversalTime(), theDate);
 
             NotSystemPropertyCreatedAtType rehydrated = await table.LookupAsync(inserted.Id);
 
-            Assert.AreEqual(rehydrated.__CreatedAt.ToUniversalTime(), theDate);
+            Assert.Equal(rehydrated.__CreatedAt.ToUniversalTime(), theDate);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ReadAsync_RoundTripsBytes()
         {
             const string tableName = "bytes_test_table";
@@ -121,14 +125,14 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
 
             JObject inserted = await table.InsertAsync(new JObject { { "data", theData } });
 
-            CollectionAssert.AreEquivalent(theData, inserted["data"].Value<byte[]>());
+            Assert.Equal(theData, inserted["data"].Value<byte[]>());
 
             JObject rehydrated = await table.LookupAsync(inserted["id"].Value<string>());
 
-            CollectionAssert.AreEquivalent(theData, rehydrated["data"].Value<byte[]>());
+            Assert.Equal(theData, rehydrated["data"].Value<byte[]>());
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ReadAsync_RoundTripsBytes_Generic()
         {
             const string tableName = "BytesType";
@@ -148,14 +152,14 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
 
             await table.InsertAsync(inserted);
 
-            CollectionAssert.AreEquivalent(inserted.Data, theData);
+            Assert.Equal(inserted.Data, theData);
 
             BytesType rehydrated = await table.LookupAsync(inserted.Id);
 
-            CollectionAssert.AreEquivalent(rehydrated.Data, theData);
+            Assert.Equal(rehydrated.Data, theData);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ReadAsync_WithSystemPropertyType_Generic()
         {
             string tableName = "stringId_test_table";
@@ -178,20 +182,20 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             };
             await table.InsertAsync(inserted);
 
-            Assert.AreEqual(inserted.Version, "abc");
+            Assert.Equal("abc", inserted.Version);
 
             await service.SyncContext.PushAsync();
 
             ToDoWithSystemPropertiesType rehydrated = await table.LookupAsync(inserted.Id);
 
-            Assert.AreEqual(rehydrated.Version, "xyz");
+            Assert.Equal("xyz", rehydrated.Version);
 
             string expectedRequestContent = @"{""id"":""123"",""String"":""def""}";
             // version should not be sent with insert request
-            Assert.AreEqual(hijack.RequestContents[0], expectedRequestContent);
+            Assert.Equal(hijack.RequestContents[0], expectedRequestContent);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ReadAsync_StringCompare_WithSpecialChars()
         {
             ResetDatabase("stringId_test_table");
@@ -212,10 +216,10 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
 
             ToDoWithSystemPropertiesType rehydrated = (await table.Where(t => t.String == "test@contoso.com").ToListAsync()).FirstOrDefault();
 
-            Assert.AreEqual(rehydrated.String, "test@contoso.com");
+            Assert.Equal("test@contoso.com", rehydrated.String);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task DefineTable_IgnoresColumn_IfCaseIsDifferentButNameIsSame()
         {
             string tableName = "itemWithDate";
@@ -247,7 +251,7 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Upsert_Succeeds_IfCaseIsDifferentButNameIsSame()
         {
             string tableName = "itemWithDate";
@@ -275,7 +279,7 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public async Task PullAsync_DoesIncrementalSync_WhenQueryIdIsSpecified()
         {
             ResetDatabase(TestTable);
@@ -288,7 +292,7 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             hijack.AddResponseContent("[]");
 
             await table.PullAsync(queryId: "todoItems", query: table.CreateQuery());
-            AssertEx.QueryEquals(hijack.Requests[0].RequestUri.Query, "?$filter=(updatedAt%20ge%20datetimeoffset'1970-01-01T00%3A00%3A00.0000000%2B00%3A00')&$orderby=updatedAt&$skip=0&$top=50&__includeDeleted=true");
+            QueryEquals(hijack.Requests[0].RequestUri.Query, "?$filter=(updatedAt%20ge%20datetimeoffset'1970-01-01T00%3A00%3A00.0000000%2B00%3A00')&$orderby=updatedAt&$skip=0&$top=50&__includeDeleted=true");
 
 
             pullResult = "[{\"id\":\"b\",\"String\":\"Updated\",\"version\":\"def\", \"updatedAt\":\"2014-02-27T23:01:33.444Z\"}]";
@@ -298,11 +302,11 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             await table.PullAsync(queryId: "todoItems", query: table.CreateQuery());
 
             var item = await table.LookupAsync("b");
-            Assert.AreEqual(item.String, "Updated");
-            AssertEx.QueryEquals(hijack.Requests[2].RequestUri.Query, "?$filter=(updatedAt%20ge%20datetimeoffset'2014-01-30T23%3A01%3A33.4440000%2B00%3A00')&$orderby=updatedAt&$skip=0&$top=50&__includeDeleted=true");
+            Assert.Equal("Updated", item.String);
+            QueryEquals(hijack.Requests[2].RequestUri.Query, "?$filter=(updatedAt%20ge%20datetimeoffset'2014-01-30T23%3A01%3A33.4440000%2B00%3A00')&$orderby=updatedAt&$skip=0&$top=50&__includeDeleted=true");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task PullAsync_DoesIncrementalSync_WhenQueryIdIsSpecified_WithoutCache()
         {
             ResetDatabase(TestTable);
@@ -315,7 +319,7 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             hijack.AddResponseContent("[]");
 
             await table.PullAsync(queryId: "todoItems", query: table.CreateQuery());
-            AssertEx.QueryEquals(hijack.Requests[0].RequestUri.Query, "?$filter=(updatedAt%20ge%20datetimeoffset'1970-01-01T00%3A00%3A00.0000000%2B00%3A00')&$orderby=updatedAt&$skip=0&$top=50&__includeDeleted=true");
+            QueryEquals(hijack.Requests[0].RequestUri.Query, "?$filter=(updatedAt%20ge%20datetimeoffset'1970-01-01T00%3A00%3A00.0000000%2B00%3A00')&$orderby=updatedAt&$skip=0&$top=50&__includeDeleted=true");
 
             table = await GetSynctable<ToDoWithStringId>(hijack);
 
@@ -327,11 +331,11 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             await table.PullAsync(queryId: "todoItems", query: table.CreateQuery());
 
             var item = await table.LookupAsync("b");
-            Assert.AreEqual(item.String, "Updated");
-            AssertEx.QueryEquals(hijack.Requests[2].RequestUri.Query, "?$filter=(updatedAt%20ge%20datetimeoffset'2014-01-30T23%3A01%3A33.4440000%2B00%3A00')&$orderby=updatedAt&$skip=0&$top=50&__includeDeleted=true");
+            Assert.Equal("Updated", item.String);
+            QueryEquals(hijack.Requests[2].RequestUri.Query, "?$filter=(updatedAt%20ge%20datetimeoffset'2014-01-30T23%3A01%3A33.4440000%2B00%3A00')&$orderby=updatedAt&$skip=0&$top=50&__includeDeleted=true");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task PullAsync_RequestsSystemProperties_WhenDefinedOnTableType()
         {
             ResetDatabase(TestTable);
@@ -346,17 +350,17 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             await table.PullAsync(null, null);
 
             var item = await table.LookupAsync("b");
-            Assert.AreEqual(item.String, "Wow");
-            Assert.AreEqual(item.Version, "def");
+            Assert.Equal("Wow", item.String);
+            Assert.Equal("def", item.Version);
             // we preserved the system properties returned from server on update
-            Assert.AreEqual(item.CreatedAt.ToUniversalTime(), new DateTime(2014, 01, 29, 23, 1, 33, 444, DateTimeKind.Utc));
-            Assert.AreEqual(item.UpdatedAt.ToUniversalTime(), new DateTime(2014, 01, 30, 23, 1, 33, 444, DateTimeKind.Utc));
+            Assert.Equal(item.CreatedAt.ToUniversalTime(), new DateTime(2014, 01, 29, 23, 1, 33, 444, DateTimeKind.Utc));
+            Assert.Equal(item.UpdatedAt.ToUniversalTime(), new DateTime(2014, 01, 30, 23, 1, 33, 444, DateTimeKind.Utc));
 
             // we request all the system properties present on DefineTable<> object
-            AssertEx.QueryEquals(hijack.Requests[0].RequestUri.Query, "?$skip=0&$top=50&__includeDeleted=true");
+            QueryEquals(hijack.Requests[0].RequestUri.Query, "?$skip=0&$top=50&__includeDeleted=true");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task PullAsync_DoesNotTriggerPush_OnUnrelatedTables_WhenThereIsOperationTable()
         {
             ResetDatabase(TestTable);
@@ -386,14 +390,14 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
 
             await mainTable.PullAsync(null, null, null, null, CancellationToken.None, null, "relatedTable");
 
-            Assert.AreEqual(hijack.Requests.Count, 3); // 1 for push and 2 for pull
-            AssertEx.QueryEquals(hijack.Requests[0].RequestUri.AbsolutePath, "/tables/StringIdType");
-            AssertEx.QueryEquals(hijack.Requests[0].RequestUri.AbsolutePath, "/tables/StringIdType");
-            AssertEx.QueryEquals(hijack.Requests[0].RequestUri.AbsolutePath, "/tables/StringIdType");
-            Assert.AreEqual(1L, client.SyncContext.PendingOperations);
+            Assert.Equal(3, hijack.Requests.Count); // 1 for push and 2 for pull
+            QueryEquals(hijack.Requests[0].RequestUri.AbsolutePath, "/tables/StringIdType");
+            QueryEquals(hijack.Requests[0].RequestUri.AbsolutePath, "/tables/StringIdType");
+            QueryEquals(hijack.Requests[0].RequestUri.AbsolutePath, "/tables/StringIdType");
+            Assert.Equal(1L, client.SyncContext.PendingOperations);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task PullAsync_DoesNotTriggerPush_WhenPushOtherTablesIsFalse()
         {
             ResetDatabase(TestTable);
@@ -422,14 +426,14 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
 
             await mainTable.PullAsync(null, null, null, false, CancellationToken.None);
 
-            Assert.AreEqual(hijack.Requests.Count, 3); // 1 for push and 2 for pull
-            AssertEx.QueryEquals(hijack.Requests[0].RequestUri.AbsolutePath, "/tables/StringIdType");
-            AssertEx.QueryEquals(hijack.Requests[0].RequestUri.AbsolutePath, "/tables/StringIdType");
-            AssertEx.QueryEquals(hijack.Requests[0].RequestUri.AbsolutePath, "/tables/StringIdType");
-            Assert.AreEqual(1L, client.SyncContext.PendingOperations);
+            Assert.Equal(3, hijack.Requests.Count); // 1 for push and 2 for pull
+            QueryEquals(hijack.Requests[0].RequestUri.AbsolutePath, "/tables/StringIdType");
+            QueryEquals(hijack.Requests[0].RequestUri.AbsolutePath, "/tables/StringIdType");
+            QueryEquals(hijack.Requests[0].RequestUri.AbsolutePath, "/tables/StringIdType");
+            Assert.Equal(1L, client.SyncContext.PendingOperations);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task PullAsync_TriggersPush_OnRelatedTables_WhenThereIsOperationTable()
         {
             ResetDatabase(TestTable);
@@ -459,15 +463,15 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
 
             await mainTable.PullAsync(null, null, null, null, CancellationToken.None, null, "relatedTable");
 
-            Assert.AreEqual(hijack.Requests.Count, 4); // 2 for push and 2 for pull
-            AssertEx.QueryEquals(hijack.Requests[0].RequestUri.AbsolutePath, "/tables/relatedTable");
-            AssertEx.QueryEquals(hijack.Requests[1].RequestUri.AbsolutePath, "/tables/StringIdType");
-            AssertEx.QueryEquals(hijack.Requests[1].RequestUri.AbsolutePath, "/tables/StringIdType");
-            AssertEx.QueryEquals(hijack.Requests[1].RequestUri.AbsolutePath, "/tables/StringIdType");
-            Assert.AreEqual(0L, client.SyncContext.PendingOperations);
+            Assert.Equal(4, hijack.Requests.Count); // 2 for push and 2 for pull
+            QueryEquals(hijack.Requests[0].RequestUri.AbsolutePath, "/tables/relatedTable");
+            QueryEquals(hijack.Requests[1].RequestUri.AbsolutePath, "/tables/StringIdType");
+            QueryEquals(hijack.Requests[1].RequestUri.AbsolutePath, "/tables/StringIdType");
+            QueryEquals(hijack.Requests[1].RequestUri.AbsolutePath, "/tables/StringIdType");
+            Assert.Equal(0L, client.SyncContext.PendingOperations);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task PullAsync_TriggersPush_WhenPushOtherTablesIsTrue_AndThereIsOperationTable()
         {
             ResetDatabase(TestTable);
@@ -497,15 +501,15 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
 
             await mainTable.PullAsync(null, null, null, true, CancellationToken.None);
 
-            Assert.AreEqual(hijack.Requests.Count, 4); // 2 for push and 2 for pull
-            AssertEx.QueryEquals(hijack.Requests[0].RequestUri.AbsolutePath, "/tables/relatedTable");
-            AssertEx.QueryEquals(hijack.Requests[1].RequestUri.AbsolutePath, "/tables/StringIdType");
-            AssertEx.QueryEquals(hijack.Requests[1].RequestUri.AbsolutePath, "/tables/StringIdType");
-            AssertEx.QueryEquals(hijack.Requests[1].RequestUri.AbsolutePath, "/tables/StringIdType");
-            Assert.AreEqual(0L, client.SyncContext.PendingOperations);
+            Assert.Equal(4, hijack.Requests.Count); // 2 for push and 2 for pull
+            QueryEquals(hijack.Requests[0].RequestUri.AbsolutePath, "/tables/relatedTable");
+            QueryEquals(hijack.Requests[1].RequestUri.AbsolutePath, "/tables/StringIdType");
+            QueryEquals(hijack.Requests[1].RequestUri.AbsolutePath, "/tables/StringIdType");
+            QueryEquals(hijack.Requests[1].RequestUri.AbsolutePath, "/tables/StringIdType");
+            Assert.Equal(0L, client.SyncContext.PendingOperations);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task PushAsync_PushesOnlySelectedTables_WhenSpecified()
         {
             ResetDatabase(TestTable);
@@ -532,12 +536,12 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
 
             await (client.SyncContext as MobileServiceSyncContext).PushAsync(CancellationToken.None, MobileServiceTableKind.Table, "someTable");
 
-            Assert.AreEqual(hijack.Requests.Count, 1);
-            AssertEx.QueryEquals(hijack.Requests[0].RequestUri.AbsolutePath, "/tables/someTable");
-            Assert.AreEqual(1L, client.SyncContext.PendingOperations);
+            Assert.Single(hijack.Requests);
+            QueryEquals(hijack.Requests[0].RequestUri.AbsolutePath, "/tables/someTable");
+            Assert.Equal(1L, client.SyncContext.PendingOperations);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task PushAsync_PushesAllTables_WhenEmptyListIsGiven()
         {
             ResetDatabase(TestTable);
@@ -565,13 +569,13 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
 
             await (client.SyncContext as MobileServiceSyncContext).PushAsync(CancellationToken.None);
 
-            Assert.AreEqual(hijack.Requests.Count, 2);
-            AssertEx.QueryEquals(hijack.Requests[0].RequestUri.AbsolutePath, "/tables/someTable");
-            AssertEx.QueryEquals(hijack.Requests[1].RequestUri.AbsolutePath, "/tables/StringIdType");
-            Assert.AreEqual(0L, client.SyncContext.PendingOperations);
+            Assert.Equal(2, hijack.Requests.Count);
+            QueryEquals(hijack.Requests[0].RequestUri.AbsolutePath, "/tables/someTable");
+            QueryEquals(hijack.Requests[1].RequestUri.AbsolutePath, "/tables/StringIdType");
+            Assert.Equal(0L, client.SyncContext.PendingOperations);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task SystemPropertiesArePreserved_OnlyWhenReturnedFromServer()
         {
             ResetDatabase(TestTable);
@@ -596,35 +600,35 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
 
             var lookedupItem = await table.LookupAsync("b");
 
-            Assert.AreEqual(lookedupItem.String, "Hey");
-            Assert.AreEqual(lookedupItem.Version, "abc");
+            Assert.Equal("Hey", lookedupItem.String);
+            Assert.Equal("abc", lookedupItem.Version);
             // we ignored the sys properties on the local object
-            Assert.AreEqual(lookedupItem.CreatedAt, new DateTime(0, DateTimeKind.Utc));
-            Assert.AreEqual(lookedupItem.UpdatedAt, new DateTime(0, DateTimeKind.Utc));
+            Assert.Equal(lookedupItem.CreatedAt, new DateTime(0, DateTimeKind.Utc));
+            Assert.Equal(lookedupItem.UpdatedAt, new DateTime(0, DateTimeKind.Utc));
 
-            Assert.AreEqual(service.SyncContext.PendingOperations, 1L); // operation pending
+            Assert.Equal(1L, service.SyncContext.PendingOperations); // operation pending
 
             hijack.OnSendingRequest = async req =>
             {
                 string content = await req.Content.ReadAsStringAsync();
-                Assert.AreEqual(content, @"{""id"":""b"",""String"":""Hey""}"); // the system properties are not sent to server
+                Assert.Equal(@"{""id"":""b"",""String"":""Hey""}", content); // the system properties are not sent to server
                 return req;
             };
             string updateResult = "{\"id\":\"b\",\"String\":\"Wow\",\"version\":\"def\",\"createdAt\":\"2014-01-29T23:01:33.444Z\", \"updatedAt\":\"2014-01-30T23:01:33.444Z\"}";
             hijack.Responses.Add(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(updateResult) }); // push
             await service.SyncContext.PushAsync();
 
-            Assert.AreEqual(service.SyncContext.PendingOperations, 0L); // operation removed
+            Assert.Equal(0L, service.SyncContext.PendingOperations); // operation removed
 
             lookedupItem = await table.LookupAsync("b");
-            Assert.AreEqual(lookedupItem.String, "Wow");
-            Assert.AreEqual(lookedupItem.Version, "def");
+            Assert.Equal("Wow", lookedupItem.String);
+            Assert.Equal("def", lookedupItem.Version);
             // we preserved the system properties returned from server on update
-            Assert.AreEqual(lookedupItem.CreatedAt.ToUniversalTime(), new DateTime(2014, 01, 29, 23, 1, 33, 444, DateTimeKind.Utc));
-            Assert.AreEqual(lookedupItem.UpdatedAt.ToUniversalTime(), new DateTime(2014, 01, 30, 23, 1, 33, 444, DateTimeKind.Utc));
+            Assert.Equal(lookedupItem.CreatedAt.ToUniversalTime(), new DateTime(2014, 01, 29, 23, 1, 33, 444, DateTimeKind.Utc));
+            Assert.Equal(lookedupItem.UpdatedAt.ToUniversalTime(), new DateTime(2014, 01, 30, 23, 1, 33, 444, DateTimeKind.Utc));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task TruncateAsync_DeletesAllTheRows()
         {
             string tableName = "stringId_test_table";
@@ -663,16 +667,16 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             }
 
             var result = await table.IncludeTotalCount().Take(0).ToCollectionAsync();
-            Assert.AreEqual(result.TotalCount, 2L);
+            Assert.Equal(2L, result.TotalCount);
 
             await service.SyncContext.PushAsync();
             await table.PurgeAsync();
 
             result = await table.IncludeTotalCount().Take(0).ToCollectionAsync();
-            Assert.AreEqual(result.TotalCount, 0L);
+            Assert.Equal(0L, result.TotalCount);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task PushAsync_RetriesOperation_WhenConflictOccursInLastPush()
         {
             ResetDatabase(TestTable);
@@ -694,41 +698,41 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             await table.UpdateAsync(updatedItem);
 
             // then push it to server
-            var ex = await AssertEx.Throws<MobileServicePushFailedException>(service.SyncContext.PushAsync);
+            var ex = await Assert.ThrowsAsync<MobileServicePushFailedException>(service.SyncContext.PushAsync);
 
-            Assert.IsNotNull(ex.PushResult);
-            Assert.AreEqual(ex.PushResult.Status, MobileServicePushStatus.Complete);
-            Assert.AreEqual(ex.PushResult.Errors.Count(), 1);
+            Assert.NotNull(ex.PushResult);
+            Assert.Equal(MobileServicePushStatus.Complete, ex.PushResult.Status);
+            Assert.Single(ex.PushResult.Errors);
             MobileServiceTableOperationError error = ex.PushResult.Errors.FirstOrDefault();
-            Assert.IsNotNull(error);
-            Assert.AreEqual(error.Handled, false);
-            Assert.AreEqual(error.OperationKind, MobileServiceTableOperationKind.Update);
-            Assert.AreEqual(error.RawResult, conflictResult);
-            Assert.AreEqual(error.TableName, TestTable);
-            Assert.AreEqual(error.Status, HttpStatusCode.PreconditionFailed);
+            Assert.NotNull(error);
+            Assert.False(error.Handled);
+            Assert.Equal(MobileServiceTableOperationKind.Update, error.OperationKind);
+            Assert.Equal(error.RawResult, conflictResult);
+            Assert.Equal(error.TableName, TestTable);
+            Assert.Equal(HttpStatusCode.PreconditionFailed, error.Status);
 
             var errorItem = error.Item.ToObject<ToDoWithSystemPropertiesType>(JsonSerializer.Create(service.SerializerSettings));
-            Assert.AreEqual(errorItem.Id, updatedItem.Id);
-            Assert.AreEqual(errorItem.String, updatedItem.String);
-            Assert.AreEqual(errorItem.Version, updatedItem.Version);
-            Assert.AreEqual(errorItem.CreatedAt, updatedItem.CreatedAt);
-            Assert.AreEqual(errorItem.UpdatedAt, updatedItem.UpdatedAt);
+            Assert.Equal(errorItem.Id, updatedItem.Id);
+            Assert.Equal(errorItem.String, updatedItem.String);
+            Assert.Equal(errorItem.Version, updatedItem.Version);
+            Assert.Equal(errorItem.CreatedAt, updatedItem.CreatedAt);
+            Assert.Equal(errorItem.UpdatedAt, updatedItem.UpdatedAt);
 
-            Assert.AreEqual(error.Result.ToString(Formatting.None), conflictResult);
+            Assert.Equal(error.Result.ToString(Formatting.None), conflictResult);
 
-            Assert.AreEqual(service.SyncContext.PendingOperations, 1L); // operation not removed
+            Assert.Equal(1L, service.SyncContext.PendingOperations); // operation not removed
             updatedItem = await table.LookupAsync("b");
-            Assert.AreEqual(updatedItem.String, "Hey"); // item is not updated 
+            Assert.Equal("Hey", updatedItem.String); // item is not updated 
 
             await service.SyncContext.PushAsync();
 
-            Assert.AreEqual(service.SyncContext.PendingOperations, 0L); // operation now succeeds
+            Assert.Equal(0L, service.SyncContext.PendingOperations); // operation now succeeds
 
             updatedItem = await table.LookupAsync("b");
-            Assert.AreEqual(updatedItem.String, "Wow"); // item is updated
+            Assert.Equal("Wow", updatedItem.String); // item is updated
         }
 
-        [TestMethod]
+        [Fact]
         public async Task PushAsync_DiscardsOperationAndUpdatesTheItem_WhenCancelAndUpdateItemAsync()
         {
             ResetDatabase(TestTable);
@@ -748,24 +752,24 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             await table.UpdateAsync(updatedItem);
 
             // then push it to server
-            var ex = await AssertEx.Throws<MobileServicePushFailedException>(service.SyncContext.PushAsync);
+            var ex = await Assert.ThrowsAsync<MobileServicePushFailedException>(service.SyncContext.PushAsync);
 
-            Assert.IsNotNull(ex.PushResult);
+            Assert.NotNull(ex.PushResult);
             MobileServiceTableOperationError error = ex.PushResult.Errors.FirstOrDefault();
-            Assert.IsNotNull(error);
+            Assert.NotNull(error);
 
-            Assert.AreEqual(service.SyncContext.PendingOperations, 1L); // operation is not removed
+            Assert.Equal(1L, service.SyncContext.PendingOperations); // operation is not removed
             updatedItem = await table.LookupAsync("b");
-            Assert.AreEqual(updatedItem.String, "Hey"); // item is not updated 
+            Assert.Equal("Hey", updatedItem.String); // item is not updated 
 
             await error.CancelAndUpdateItemAsync(error.Result);
 
-            Assert.AreEqual(service.SyncContext.PendingOperations, 0L); // operation is removed
+            Assert.Equal(0L, service.SyncContext.PendingOperations); // operation is removed
             updatedItem = await table.LookupAsync("b");
-            Assert.AreEqual(updatedItem.String, "Wow"); // item is updated             
+            Assert.Equal("Wow", updatedItem.String); // item is updated             
         }
 
-        [TestMethod]
+        [Fact]
         public async Task PushAsync_DiscardsOperationAndDeletesTheItem_WhenCancelAndDiscardItemAsync()
         {
             ResetDatabase(TestTable);
@@ -785,24 +789,24 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             await table.UpdateAsync(updatedItem);
 
             // then push it to server
-            var ex = await AssertEx.Throws<MobileServicePushFailedException>(service.SyncContext.PushAsync);
+            var ex = await Assert.ThrowsAsync<MobileServicePushFailedException>(service.SyncContext.PushAsync);
 
-            Assert.IsNotNull(ex.PushResult);
+            Assert.NotNull(ex.PushResult);
             MobileServiceTableOperationError error = ex.PushResult.Errors.FirstOrDefault();
-            Assert.IsNotNull(error);
+            Assert.NotNull(error);
 
-            Assert.AreEqual(service.SyncContext.PendingOperations, 1L); // operation is not removed
+            Assert.Equal(1L, service.SyncContext.PendingOperations); // operation is not removed
             updatedItem = await table.LookupAsync("b");
-            Assert.AreEqual(updatedItem.String, "Hey"); // item is not updated 
+            Assert.Equal("Hey", updatedItem.String); // item is not updated 
 
             await error.CancelAndDiscardItemAsync();
 
-            Assert.AreEqual(service.SyncContext.PendingOperations, 0L); // operation is removed
+            Assert.Equal(0L, service.SyncContext.PendingOperations); // operation is removed
             updatedItem = await table.LookupAsync("b");
-            Assert.IsNull(updatedItem); // item is deleted
+            Assert.Null(updatedItem); // item is deleted
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Insert_AllTypes_ThenRead_ThenPush_ThenLookup()
         {
             ResetDatabase("AllBaseTypesWithAllSystemPropertiesType");
@@ -849,9 +853,9 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             await table.InsertAsync(inserted);
 
             IList<AllBaseTypesWithAllSystemPropertiesType> records = await table.ToListAsync();
-            Assert.AreEqual(records.Count, 1);
+            Assert.Equal(1, records.Count);
 
-            Assert.AreEqual(records.First(), inserted);
+            Assert.Equal(records.First(), inserted);
 
             // now push
             hijack.AddResponseContent(@"
@@ -886,10 +890,10 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             await service.SyncContext.PushAsync();
             AllBaseTypesWithAllSystemPropertiesType lookedUp = await table.LookupAsync("abc");
             inserted.Version = "XYZ";
-            Assert.AreEqual(inserted, lookedUp);
+            Assert.Equal(inserted, lookedUp);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Insert_ThenPush_ThenPull_ThenRead_ThenUpdate_ThenRefresh_ThenDelete_ThenLookup_ThenPush_ThenPurge_ThenRead()
         {
             ResetDatabase(TestTable);
@@ -915,18 +919,18 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             IList<ToDoWithStringId> items = await table.OrderBy(i => i.Id).ToListAsync();
 
             // we should have 2 records 
-            Assert.AreEqual(items.Count, 2);
+            Assert.Equal(2, items.Count);
 
             // according to ordering a id comes first
-            Assert.AreEqual(items[0].Id, "a");
-            Assert.AreEqual(items[0].String, "World");
+            Assert.Equal("a", items[0].Id);
+            Assert.Equal("World", items[0].String);
 
             // then comes b record
-            Assert.AreEqual(items[1].Id, "b");
-            Assert.AreEqual(items[1].String, "Hey");
+            Assert.Equal("b", items[1].Id);
+            Assert.Equal("Hey", items[1].String);
 
             // we made 2 requests, one for push and two for pull
-            Assert.AreEqual(hijack.Requests.Count, 3);
+            Assert.Equal(3, hijack.Requests.Count);
 
             // recreating the client from state in the store
             service = await CreateTodoClient(hijack);
@@ -942,7 +946,7 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             await table.RefreshAsync(second);
 
             // make sure it is same as modified record now
-            Assert.AreEqual(second.String, items[1].String);
+            Assert.Equal(second.String, items[1].String);
 
             // now delete the record
             await table.DeleteAsync(second);
@@ -951,16 +955,16 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             ToDoWithStringId deleted = await table.LookupAsync(second.Id);
 
             // this should be null
-            Assert.IsNull(deleted);
+            Assert.Null(deleted);
 
             // try to get the non-deleted record
             ToDoWithStringId first = await table.LookupAsync(items[0].Id);
 
             // this should still be there;
-            Assert.IsNotNull(first);
+            Assert.NotNull(first);
 
             // make sure it is same as 
-            Assert.AreEqual(first.String, items[0].String);
+            Assert.Equal(first.String, items[0].String);
 
             // recreating the client from state in the store
             service = await CreateTodoClient(hijack);
@@ -974,7 +978,7 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             IEnumerable<ToDoWithStringId> remaining = await table.ReadAsync();
 
             // There shouldn't be anything remaining
-            Assert.AreEqual(remaining.Count(), 0);
+            Assert.Empty(remaining);
         }
 
         private static async Task<IMobileServiceSyncTable<T>> GetSynctable<T>(TestHttpHandler hijack)
@@ -1006,5 +1010,7 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             TestUtilities.DropTestTable(TestDbName, testTableName);
             TestUtilities.ResetDatabase(TestDbName);
         }
+
+        private void QueryEquals(string a, string b) => Assert.Equal(Uri.UnescapeDataString(a), Uri.UnescapeDataString(b));
     }
 }

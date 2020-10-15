@@ -1,4 +1,4 @@
 ﻿using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test")]
+[assembly: InternalsVisibleTo("SQLiteStore.Tests")]
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]

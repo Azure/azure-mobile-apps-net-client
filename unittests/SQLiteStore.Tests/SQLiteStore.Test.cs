@@ -2,30 +2,31 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
 
+using Microsoft.WindowsAzure.MobileServices.Query;
+using Microsoft.WindowsAzure.MobileServices.SQLiteStore;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using SQLiteStore.Tests.Helpers;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.WindowsAzure.MobileServices.Query;
-using Microsoft.WindowsAzure.MobileServices.Test;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using Xunit;
 
-namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
+namespace SQLiteStore.Tests
 {
-    [TestClass]
     public class SQLiteStore_Test
     {
         private static readonly DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        private const string TestDbName = "sqlitestore-test.db";
         private const string TestTable = "todo";
         private static readonly DateTime testDate = DateTime.Parse("2014-02-11 14:52:19").ToUniversalTime();
 
-        [TestMethod]
+        [Fact]
         public async Task InitializeAsync_InitializesTheStore()
         {
-            TestUtilities.DropTestTable(TestUtilities.TestDbName, TestTable);
+            TestUtilities.DropTestTable(TestDbName, TestTable);
 
-            var store = new MobileServiceSQLiteStore(TestUtilities.TestDbName);
+            var store = new MobileServiceSQLiteStore(TestDbName);
             store.DefineTable(TestTable, new JObject()
             {
                 {"id", String.Empty },
@@ -34,33 +35,33 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             await store.InitializeAsync();
         }
 
-        [TestMethod]
+        [Fact]
         public async Task InitializeAsync_Throws_WhenStoreIsAlreadyInitialized()
         {
-            var store = new MobileServiceSQLiteStore(TestUtilities.TestDbName);
+            var store = new MobileServiceSQLiteStore(TestDbName);
             await store.InitializeAsync();
 
-            var ex = await AssertEx.Throws<InvalidOperationException>(() => store.InitializeAsync());
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => store.InitializeAsync());
 
-            Assert.AreEqual(ex.Message, "The store is already initialized.");
+            Assert.Equal("The store is already initialized.", ex.Message);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task DefineTable_Throws_WhenStoreIsInitialized()
         {
-            var store = new MobileServiceSQLiteStore(TestUtilities.TestDbName);
+            var store = new MobileServiceSQLiteStore(TestDbName);
             await store.InitializeAsync();
-            var ex = AssertEx.Throws<InvalidOperationException>(() => store.DefineTable(TestTable, new JObject()));
-            Assert.AreEqual(ex.Message, "Cannot define a table after the store has been initialized.");
+            var ex = Assert.Throws<InvalidOperationException>(() => store.DefineTable(TestTable, new JObject()));
+            Assert.Equal("Cannot define a table after the store has been initialized.", ex.Message);
         }
 
-        [TestMethod]
+        [Fact]
         public void LookupAsync_Throws_WhenStoreIsNotInitialized()
         {
             TestStoreThrowOnUninitialized(store => store.LookupAsync("asdf", "asdf"));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task LookupAsync_ReadsItem()
         {
             await PrepareTodoTable();
@@ -68,35 +69,35 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             long date = (long)(testDate - epoch).TotalSeconds;
 
             // insert a row and make sure it is inserted
-            TestUtilities.ExecuteNonQuery(TestUtilities.TestDbName, "INSERT INTO todo (id, createdAt) VALUES ('abc', " + date + ")");
-            long count = TestUtilities.CountRows(TestUtilities.TestDbName, TestTable);
-            Assert.AreEqual(count, 1L);
+            TestUtilities.ExecuteNonQuery(TestDbName, "INSERT INTO todo (id, createdAt) VALUES ('abc', " + date + ")");
+            long count = TestUtilities.CountRows(TestDbName, TestTable);
+            Assert.Equal(1L, count);
 
-            using (var store = new MobileServiceSQLiteStore(TestUtilities.TestDbName))
+            using (var store = new MobileServiceSQLiteStore(TestDbName))
             {
                 DefineTestTable(store);
                 await store.InitializeAsync();
 
                 JObject item = await store.LookupAsync(TestTable, "abc");
-                Assert.IsNotNull(item);
-                Assert.AreEqual(item.Value<string>("id"), "abc");
-                Assert.AreEqual(item.Value<DateTime>("createdAt"), testDate);
+                Assert.NotNull(item);
+                Assert.Equal("abc", item.Value<string>("id"));
+                Assert.Equal(item.Value<DateTime>("createdAt"), testDate);
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void ReadAsync_Throws_WhenStoreIsNotInitialized()
         {
             TestStoreThrowOnUninitialized(store => store.ReadAsync(MobileServiceTableQueryDescription.Parse("abc", "")));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task UpsertAsync_ThenReadAsync_AllTypes()
         {
-            TestUtilities.DropTestTable(TestUtilities.TestDbName, TestTable);
+            TestUtilities.DropTestTable(TestDbName, TestTable);
 
             // first create a table called todo
-            using (MobileServiceSQLiteStore store = new MobileServiceSQLiteStore(TestUtilities.TestDbName))
+            using (MobileServiceSQLiteStore store = new MobileServiceSQLiteStore(TestDbName))
             {
                 store.DefineTable(TestTable, JObjectTypes.GetObjectWithAllTypes());
 
@@ -120,88 +121,88 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
 
                 var query = new MobileServiceTableQueryDescription(TestTable);
                 var items = await store.ReadAsync(query) as JArray;
-                Assert.IsNotNull(items);
-                Assert.AreEqual(items.Count, 1);
+                Assert.NotNull(items);
+                Assert.Single(items);
 
                 var lookedup = items.First as JObject;
-                Assert.AreEqual(upserted.ToString(Formatting.None), lookedup.ToString(Formatting.None));
+                Assert.Equal(upserted.ToString(Formatting.None), lookedup.ToString(Formatting.None));
             }
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ExecuteQueryAsync_ExecutesQuery()
         {
             await PrepareTodoTable();
 
             // insert rows and make sure they are inserted
-            TestUtilities.ExecuteNonQuery(TestUtilities.TestDbName, "INSERT INTO todo (id, createdAt) VALUES ('abc', 1), ('def', 2), ('ghi', 3)");
-            long count = TestUtilities.CountRows(TestUtilities.TestDbName, TestTable);
-            Assert.AreEqual(count, 3L);
+            TestUtilities.ExecuteNonQuery(TestDbName, "INSERT INTO todo (id, createdAt) VALUES ('abc', 1), ('def', 2), ('ghi', 3)");
+            long count = TestUtilities.CountRows(TestDbName, TestTable);
+            Assert.Equal(3L, count);
 
-            using (var store = new MobileServiceSQLiteStore(TestUtilities.TestDbName))
+            using (var store = new MobileServiceSQLiteStore(TestDbName))
             {
                 DefineTestTable(store);
                 await store.InitializeAsync();
 
                 var result = await store.ExecuteQueryAsync(TestTable, $"SELECT COUNT(1) FROM {TestTable}", null);
-                Assert.IsNotNull(result);
-                Assert.AreEqual(result.Count, 1);
+                Assert.NotNull(result);
+                Assert.Equal(1, result.Count);
                 var item = result.FirstOrDefault();
                 var jsonCount = item["COUNT(1)"];
-                Assert.AreEqual(jsonCount.ToString(), "3");
+                Assert.Equal("3", jsonCount.ToString());
             }
         }
 
-        [TestMethod]
+        [Fact]
         public async Task ReadAsync_ReadsItems()
         {
             await PrepareTodoTable();
 
             // insert rows and make sure they are inserted
-            TestUtilities.ExecuteNonQuery(TestUtilities.TestDbName, "INSERT INTO todo (id, createdAt) VALUES ('abc', 1), ('def', 2), ('ghi', 3)");
-            long count = TestUtilities.CountRows(TestUtilities.TestDbName, TestTable);
-            Assert.AreEqual(count, 3L);
+            TestUtilities.ExecuteNonQuery(TestDbName, "INSERT INTO todo (id, createdAt) VALUES ('abc', 1), ('def', 2), ('ghi', 3)");
+            long count = TestUtilities.CountRows(TestDbName, TestTable);
+            Assert.Equal(3L, count);
 
-            using (var store = new MobileServiceSQLiteStore(TestUtilities.TestDbName))
+            using (var store = new MobileServiceSQLiteStore(TestDbName))
             {
                 DefineTestTable(store);
                 await store.InitializeAsync();
 
                 var query = MobileServiceTableQueryDescription.Parse(TestTable, "$filter=createdAt gt 1&$inlinecount=allpages");
                 JToken item = await store.ReadAsync(query);
-                Assert.IsNotNull(item);
+                Assert.NotNull(item);
                 var results = item["results"].Value<JArray>();
                 long resultCount = item["count"].Value<long>();
 
-                Assert.AreEqual(results.Count, 2);
-                Assert.AreEqual(resultCount, 2L);
+                Assert.Equal(2, results.Count);
+                Assert.Equal(2L, resultCount);
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void DeleteAsyncByQuery_Throws_WhenStoreIsNotInitialized()
         {
             TestStoreThrowOnUninitialized(store => store.DeleteAsync(MobileServiceTableQueryDescription.Parse("abc", "")));
         }
 
-        [TestMethod]
+        [Fact]
         public void DeleteAsyncById_Throws_WhenStoreIsNotInitialized()
         {
             TestStoreThrowOnUninitialized(store => store.DeleteAsync("abc", new[] { "" }));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task DeleteAsync_DeletesTheRow_WhenTheyMatchTheQuery()
         {
             await PrepareTodoTable();
 
             // insert rows and make sure they are inserted
-            TestUtilities.ExecuteNonQuery(TestUtilities.TestDbName, "INSERT INTO todo (id, createdAt) VALUES ('abc', 1), ('def', 2), ('ghi', 3)");
-            long count = TestUtilities.CountRows(TestUtilities.TestDbName, TestTable);
-            Assert.AreEqual(count, 3L);
+            TestUtilities.ExecuteNonQuery(TestDbName, "INSERT INTO todo (id, createdAt) VALUES ('abc', 1), ('def', 2), ('ghi', 3)");
+            long count = TestUtilities.CountRows(TestDbName, TestTable);
+            Assert.Equal(3L, count);
 
             // delete the row
-            using (var store = new MobileServiceSQLiteStore(TestUtilities.TestDbName))
+            using (var store = new MobileServiceSQLiteStore(TestDbName))
             {
                 DefineTestTable(store);
                 await store.InitializeAsync();
@@ -210,22 +211,22 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             }
 
             // 1 row should be left
-            count = TestUtilities.CountRows(TestUtilities.TestDbName, TestTable);
-            Assert.AreEqual(count, 1L);
+            count = TestUtilities.CountRows(TestDbName, TestTable);
+            Assert.Equal(1L, count);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task DeleteAsync_DeletesTheRow()
         {
             await PrepareTodoTable();
 
             // insert a row and make sure it is inserted
-            TestUtilities.ExecuteNonQuery(TestUtilities.TestDbName, "INSERT INTO todo (id, createdAt) VALUES ('abc', 123)");
-            long count = TestUtilities.CountRows(TestUtilities.TestDbName, TestTable);
-            Assert.AreEqual(count, 1L);
+            TestUtilities.ExecuteNonQuery(TestDbName, "INSERT INTO todo (id, createdAt) VALUES ('abc', 123)");
+            long count = TestUtilities.CountRows(TestDbName, TestTable);
+            Assert.Equal(1L, count);
 
             // delete the row
-            using (var store = new MobileServiceSQLiteStore(TestUtilities.TestDbName))
+            using (var store = new MobileServiceSQLiteStore(TestDbName))
             {
                 DefineTestTable(store);
                 await store.InitializeAsync();
@@ -233,22 +234,22 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             }
 
             // rows should be zero now
-            count = TestUtilities.CountRows(TestUtilities.TestDbName, TestTable);
-            Assert.AreEqual(count, 0L);
+            count = TestUtilities.CountRows(TestDbName, TestTable);
+            Assert.Equal(0L, count);
         }
 
-        [TestMethod]
+        [Fact]
         public void UpsertAsync_Throws_WhenStoreIsNotInitialized()
         {
             TestStoreThrowOnUninitialized(store => store.UpsertAsync("asdf", new[] { new JObject() }, ignoreMissingColumns: false));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task UpsertAsync_Throws_WhenColumnInItemIsNotDefinedAndItIsLocal()
         {
-            TestUtilities.DropTestTable(TestUtilities.TestDbName, TestTable);
+            TestUtilities.DropTestTable(TestDbName, TestTable);
 
-            using (var store = new MobileServiceSQLiteStore(TestUtilities.TestDbName))
+            using (var store = new MobileServiceSQLiteStore(TestDbName))
             {
                 store.DefineTable(TestTable, new JObject()
                 {
@@ -258,18 +259,18 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
 
                 await store.InitializeAsync();
 
-                var ex = await AssertEx.Throws<InvalidOperationException>(() => store.UpsertAsync(TestTable, new[] { new JObject() { { "notDefined", "okok" } } }, ignoreMissingColumns: false));
+                var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => store.UpsertAsync(TestTable, new[] { new JObject() { { "notDefined", "okok" } } }, ignoreMissingColumns: false));
 
-                Assert.AreEqual(ex.Message, "Column with name 'notDefined' is not defined on the local table 'todo'.");
+                Assert.Equal("Column with name 'notDefined' is not defined on the local table 'todo'.", ex.Message);
             }
         }
 
-        [TestMethod]
+        [Fact]
         public async Task UpsertAsync_DoesNotThrow_WhenColumnInItemIsNotDefinedAndItIsFromServer()
         {
-            TestUtilities.DropTestTable(TestUtilities.TestDbName, TestTable);
+            TestUtilities.DropTestTable(TestDbName, TestTable);
 
-            using (var store = new MobileServiceSQLiteStore(TestUtilities.TestDbName))
+            using (var store = new MobileServiceSQLiteStore(TestDbName))
             {
                 store.DefineTable(TestTable, new JObject()
                 {
@@ -288,12 +289,12 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public async Task UpsertAsync_DoesNotThrow_WhenItemIsEmpty()
         {
-            TestUtilities.DropTestTable(TestUtilities.TestDbName, TestTable);
+            TestUtilities.DropTestTable(TestDbName, TestTable);
 
-            using (var store = new MobileServiceSQLiteStore(TestUtilities.TestDbName))
+            using (var store = new MobileServiceSQLiteStore(TestDbName))
             {
                 store.DefineTable(TestTable, new JObject()
                 {
@@ -308,13 +309,13 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public async Task UpsertAsync_InsertsTheRow_WhenItemHasNullValues()
         {
-            TestUtilities.DropTestTable(TestUtilities.TestDbName, TestTable);
+            TestUtilities.DropTestTable(TestDbName, TestTable);
 
             // insert a row and make sure it is inserted
-            using (var store = new MobileServiceSQLiteStore(TestUtilities.TestDbName))
+            using (var store = new MobileServiceSQLiteStore(TestDbName))
             {
                 store.DefineTable(TestTable, new JObject()
                 {
@@ -345,17 +346,17 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
 
                 JObject read = await store.LookupAsync(TestTable, "abc");
 
-                Assert.AreEqual(inserted.ToString(), read.ToString());
+                Assert.Equal(inserted.ToString(), read.ToString());
             }
         }
 
-        [TestMethod]
+        [Fact]
         public async Task UpsertAsync_InsertsTheRow_WhenItDoesNotExist()
         {
             await PrepareTodoTable();
 
             // insert a row and make sure it is inserted
-            using (var store = new MobileServiceSQLiteStore(TestUtilities.TestDbName))
+            using (var store = new MobileServiceSQLiteStore(TestDbName))
             {
                 DefineTestTable(store);
                 await store.InitializeAsync();
@@ -365,17 +366,17 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
                     { "createdAt", DateTime.Now }
                 }}, ignoreMissingColumns: false);
             }
-            long count = TestUtilities.CountRows(TestUtilities.TestDbName, TestTable);
-            Assert.AreEqual(count, 1L);
+            long count = TestUtilities.CountRows(TestDbName, TestTable);
+            Assert.Equal(1L, count);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task UpsertAsync_UpdatesTheRow_WhenItExists()
         {
             await PrepareTodoTable();
 
             // insert a row and make sure it is inserted
-            using (var store = new MobileServiceSQLiteStore(TestUtilities.TestDbName))
+            using (var store = new MobileServiceSQLiteStore(TestDbName))
             {
                 DefineTestTable(store);
                 await store.InitializeAsync();
@@ -395,20 +396,20 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
 
                 JObject result = await store.LookupAsync(TestTable, "abc");
 
-                Assert.AreEqual(result.Value<string>("id"), "abc");
-                Assert.AreEqual(result.Value<string>("text"), "xyz");
-                Assert.AreEqual(result.Value<string>("createdAt"), "01/01/0200 00:00:00");
+                Assert.Equal("abc", result.Value<string>("id"));
+                Assert.Equal("xyz", result.Value<string>("text"));
+                Assert.Equal("01/01/0200 00:00:00", result.Value<string>("createdAt"));
             }
-            long count = TestUtilities.CountRows(TestUtilities.TestDbName, TestTable);
-            Assert.AreEqual(count, 1L);
+            long count = TestUtilities.CountRows(TestDbName, TestTable);
+            Assert.Equal(1L, count);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task UpsertAsync_Throws_WhenInsertingRecordsWhichAreTooLarge()
         {
-            TestUtilities.DropTestTable(TestUtilities.TestDbName, TestTable);
+            TestUtilities.DropTestTable(TestDbName, TestTable);
 
-            using (var store = new MobileServiceSQLiteStore(TestUtilities.TestDbName))
+            using (var store = new MobileServiceSQLiteStore(TestDbName))
             {
                 var template = new JObject
                 {
@@ -433,18 +434,18 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
                 var item2 = new JObject(template);
                 item1["id"] = 2;
 
-                InvalidOperationException ex = await AssertEx.Throws<InvalidOperationException>(() => store.UpsertAsync(TestTable, new[] { item1, item2 }, ignoreMissingColumns: false));
+                InvalidOperationException ex = await Assert.ThrowsAsync<InvalidOperationException>(() => store.UpsertAsync(TestTable, new[] { item1, item2 }, ignoreMissingColumns: false));
 
-                Assert.AreEqual("The number of fields per entity in an upsert operation is limited to 800.", ex.Message);
+                Assert.Equal("The number of fields per entity in an upsert operation is limited to 800.", ex.Message);
             }
         }
 
-        [TestMethod]
+        [Fact]
         public async Task UpsertAsync_CanProcessManyRecordsAtOnce()
         {
-            TestUtilities.DropTestTable(TestUtilities.TestDbName, TestTable);
+            TestUtilities.DropTestTable(TestDbName, TestTable);
 
-            using (var store = new MobileServiceSQLiteStore(TestUtilities.TestDbName))
+            using (var store = new MobileServiceSQLiteStore(TestDbName))
             {
                 var template = new JObject
                 {
@@ -479,22 +480,22 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
                 JArray records = (JArray)await store.ReadAsync(MobileServiceTableQueryDescription.Parse(TestTable, "$orderby=id"));
 
                 //Verify that all 500 records were inserted
-                Assert.AreEqual(records.Count, insertedItemCount);
+                Assert.Equal(records.Count, insertedItemCount);
 
                 //Verify that all fields are intact
                 for (var i = 0; i < insertedItemCount; i++)
                 {
-                    Assert.IsTrue(JToken.DeepEquals(itemsToInsert[i], records[i]), "Results retrieved from DB do not match input");
+                    Assert.True(JToken.DeepEquals(itemsToInsert[i], records[i]), "Results retrieved from DB do not match input");
                 }
             }
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Upsert_ThenLookup_ThenUpsert_ThenDelete_ThenLookup()
         {
-            TestUtilities.DropTestTable(TestUtilities.TestDbName, TestTable);
+            TestUtilities.DropTestTable(TestDbName, TestTable);
 
-            using (var store = new MobileServiceSQLiteStore(TestUtilities.TestDbName))
+            using (var store = new MobileServiceSQLiteStore(TestDbName))
             {
                 // define item with all type of supported fields
                 var originalItem = new JObject()
@@ -520,7 +521,7 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
                 JObject itemRead = await store.LookupAsync(TestTable, "abc");
 
                 // make sure everything was persisted the same
-                Assert.AreEqual(originalItem.ToString(), itemRead.ToString());
+                Assert.Equal(originalItem.ToString(), itemRead.ToString());
 
                 // change the item
                 originalItem["double"] = 111.222d;
@@ -532,13 +533,13 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
                 JObject updatedItem = await store.LookupAsync(TestTable, "abc");
 
                 // make sure the float was updated
-                Assert.AreEqual(updatedItem.Value<double>("double"), 111.222d);
+                Assert.Equal(111.222d, updatedItem.Value<double>("double"));
 
                 // make sure the item is same as updated item
-                Assert.AreEqual(originalItem.ToString(), updatedItem.ToString());
+                Assert.Equal(originalItem.ToString(), updatedItem.ToString());
 
                 // make sure item is not same as its initial state
-                Assert.AreNotEqual(originalItem.ToString(), itemRead.ToString());
+                Assert.NotEqual(originalItem.ToString(), itemRead.ToString());
 
                 // now delete the item
                 await store.DeleteAsync(TestTable, new[] { "abc" });
@@ -547,23 +548,23 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
                 JObject item4 = await store.LookupAsync(TestTable, "abc");
 
                 // it should be null because it doesn't exist
-                Assert.IsNull(item4);
+                Assert.Null(item4);
             }
         }
 
         private void TestStoreThrowOnUninitialized(Action<MobileServiceSQLiteStore> storeAction)
         {
-            var store = new MobileServiceSQLiteStore(TestUtilities.TestDbName);
-            var ex = AssertEx.Throws<InvalidOperationException>(() => storeAction(store));
-            Assert.AreEqual(ex.Message, "The store must be initialized before it can be used.");
+            var store = new MobileServiceSQLiteStore(TestDbName);
+            var ex = Assert.Throws<InvalidOperationException>(() => storeAction(store));
+            Assert.Equal("The store must be initialized before it can be used.", ex.Message);
         }
 
         private static async Task PrepareTodoTable()
         {
-            TestUtilities.DropTestTable(TestUtilities.TestDbName, TestTable);
+            TestUtilities.DropTestTable(TestDbName, TestTable);
 
             // first create a table called todo
-            using (MobileServiceSQLiteStore store = new MobileServiceSQLiteStore(TestUtilities.TestDbName))
+            using (MobileServiceSQLiteStore store = new MobileServiceSQLiteStore(TestDbName))
             {
                 DefineTestTable(store);
 
@@ -571,7 +572,7 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             }
         }
 
-        public static void DefineTestTable(MobileServiceSQLiteStore store)
+        private static void DefineTestTable(MobileServiceSQLiteStore store)
         {
             store.DefineTable(TestTable, new JObject()
             {

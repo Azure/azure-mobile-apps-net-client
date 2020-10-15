@@ -2,17 +2,19 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
 
+using Microsoft.WindowsAzure.MobileServices;
+using Microsoft.WindowsAzure.MobileServices.Query;
+using Microsoft.WindowsAzure.MobileServices.SQLiteStore;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using SQLiteStore.Tests.Helpers;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.WindowsAzure.MobileServices.Query;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using Xunit;
 
-namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
+namespace SQLiteStore.Tests
 {
-    [TestClass]
     public class SQLiteStoreQuery_Test
     {
         private static readonly Guid guid = Guid.Parse("d9c8bcf9-9c85-42e6-967b-c686d92f32cb");
@@ -26,75 +28,76 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             new JObject(){{"id", "5"}, {"col1", "jumped"}, {"col2", 9}, {"col3", 678.932}, {"col4", epoch.AddMilliseconds(333333333332)}, {"col5", true}, {"col6", guid}},
             new JObject(){{"id", "6"}, {"col1", "EndsWithBackslash\\"}, {"col2", 8}, {"col3", 521f}, {"col4", epoch.AddMilliseconds(17071985)}, {"col5", true}, {"col6", guid}}
         };
+        private static string TestDbName = "query-test.db";
         private const string TestTable = "test";
         private const string MathTestTable = "mathtest";
         private static bool queryTableInitialized;
 
-        [TestMethod]
+        [Fact]
         public async Task Query_OnBool_Implicit()
         {
             await TestQuery("$filter=col5", 4);
             await TestQuery("$filter=not(col5)", 2);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Query_OnBool_Explicit()
         {
             await TestQuery("$filter=col5 eq true", 4);
             await TestQuery("$filter=col5 eq false", 2);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Query_NotOperator_WithBoolComparison()
         {
             await TestQuery("$filter=not(col5 eq true)", 2);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Query_Date_BeforeEpoch()
         {
             await TestQuery("$filter=col4 gt datetime'1969-12-31T11:00:00.000Z'", 6);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Query_Date_Functions()
         {
             await TestQuery("$filter=year(col4) ge 1980", 2);
             await TestQuery("$filter=col4 gt datetime'1970-09-12T12:00:00Z'", 3);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Query_Date_ReturnedAsDate()
         {
             JArray results = await Query<JArray>("$filter=id eq '1'");
-            Assert.AreEqual(results.Count, 1);
+            Assert.Single(results);
 
             JObject result = (JObject)results[0];
             DateTime col4 = result.Value<DateTime>("col4");
 
-            Assert.AreEqual(col4.Kind, DateTimeKind.Utc);
-            Assert.AreEqual(col4, testData[0]["col4"].Value<DateTime>());
+            Assert.Equal(DateTimeKind.Utc, col4.Kind);
+            Assert.Equal(testData[0]["col4"].Value<DateTime>(), col4);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Query_WithTop()
         {
             await TestQuery("$top=5", 5);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Query_OnString()
         {
             await TestQuery("$filter=col1 eq 'jumped'", 1);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Query_OnGuid()
         {
             await TestQuery(string.Format("$filter=col6 eq guid'{0}'", guid), 2);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Query_WithSelection()
         {
             JArray results = await Query<JArray>("$select=col1,col2");
@@ -102,7 +105,7 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             AssertJArraysAreEqual(results, expected);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Query_WithOrdering_Ascending()
         {
             JArray results = await Query<JArray>("$orderby=col2");
@@ -110,7 +113,7 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             AssertJArraysAreEqual(results, expected);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Query_WithOrdering_Descending()
         {
             JArray results = await Query<JArray>("$orderby=col2 desc");
@@ -118,72 +121,72 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             AssertJArraysAreEqual(results, expected);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Query_Complex_Filter()
         {
             JArray results = await Query<JArray>("$filter=((col1 eq 'brown') or (col1 eq 'fox')) and (col2 le 5)");
-            Assert.AreEqual(results.Count, 1);
+            Assert.Single(results);
 
-            Assert.AreEqual(results[0].ToString(), testData[2].ToString());
+            Assert.Equal(results[0].ToString(), testData[2].ToString());
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Query_OnString_IndexOf()
         {
             await TestQuery("$filter=indexof(col1, 'ump') eq 1", 1);
             await TestQuery("$filter=indexof(col1, 'ump') eq 2", 0);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Query_OnString_SubstringOf()
         {
             await TestQuery("$filter=substringof('ump', col1)", 1);
             await TestQuery("$filter=substringof('umx', col1)", 0);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Query_OnString_StartsWith()
         {
             await TestQuery("$filter=startswith(col1, 'jum')", 1);
             await TestQuery("$filter=startswith(col1, 'pum')", 0);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Query_OnString_EndsWith()
         {
             await TestQuery("$filter=endswith(col1, 'umped')", 1);
             await TestQuery("$filter=endswith(col1, 'umxed')", 0);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Query_OnString_ConcatAndCompare()
         {
             await TestQuery("$filter=concat(concat(col1, 'ies'), col2) eq 'brownies1'", 1);
             await TestQuery("$filter=concat(concat(col1, 'ies'), col2) eq 'brownies2'", 0);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Query_OnString_ReplaceAndCompare()
         {
             await TestQuery("$filter=replace(col1, 'j', 'p') eq 'pumped'", 1);
             await TestQuery("$filter=replace(col1, 'j', 'x') eq 'pumped'", 0);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Query_OnString_SubstringAndCompare()
         {
             await TestQuery("$filter=substring(col1, 1) eq 'ox'", 1);
             await TestQuery("$filter=substring(col1, 1) eq 'oy'", 0);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Query_OnString_SubstringWithLengthAndCompare()
         {
             await TestQuery("$filter=substring(col1, 1, 3) eq 'uic'", 1);
             await TestQuery("$filter=substring(col1, 1, 3) eq 'uix'", 0);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Query_Math_ModuloOperator()
         {
             JArray results = await Query<JArray>("$filter=(col3 mod 6) eq 0");
@@ -195,7 +198,7 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             AssertJArraysAreEqual(results, expected);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Query_Math_Round()
         {
             JObject[] mathTestData = new[]{
@@ -209,7 +212,7 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             await TestMathQuery(mathTestData, "$filter=round(val) eq expected");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Query_Math_Floor()
         {
             JObject[] mathTestData = new[]{
@@ -221,7 +224,7 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             await TestMathQuery(mathTestData, "$filter=floor(val) eq expected");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Query_Math_Ceiling()
         {
             JObject[] mathTestData = new[]{
@@ -233,14 +236,14 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             await TestMathQuery(mathTestData, "$filter=ceiling(val) eq expected");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Query_OnString_Length()
         {
             await TestQuery("$filter=length(col1) eq 18", 1);
             await TestQuery("$filter=length(col1) eq 19", 0);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Query_WithPaging()
         {
             for (int skip = 0; skip < 4; skip++)
@@ -255,18 +258,18 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             }
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Query_WithTotalCount()
         {
             JObject result = await Query<JObject>("$top=5&$inlinecount=allpages");
-            Assert.AreEqual(result.Value<JArray>("results").Count, 5);
-            Assert.AreEqual(result.Value<int>("count"), 6);
+            Assert.Equal(5, result.Value<JArray>("results").Count);
+            Assert.Equal(6, result.Value<int>("count"));
         }
 
         private static async Task<MobileServiceSQLiteStore> SetupMathTestTable(JObject[] mathTestData)
         {
-            TestUtilities.DropTestTable(TestUtilities.TestDbName, MathTestTable);
-            var store = new MobileServiceSQLiteStore(TestUtilities.TestDbName);
+            TestUtilities.DropTestTable(TestDbName, MathTestTable);
+            var store = new MobileServiceSQLiteStore(TestDbName);
             store.DefineTable(MathTestTable, new JObject()
             {
                 { "id", String.Empty },
@@ -290,10 +293,10 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
         {
             if (!queryTableInitialized)
             {
-                TestUtilities.DropTestTable(TestUtilities.TestDbName, TestTable);
+                TestUtilities.DropTestTable(TestDbName, TestTable);
             }
 
-            var store = new MobileServiceSQLiteStore(TestUtilities.TestDbName);
+            var store = new MobileServiceSQLiteStore(TestDbName);
             store.DefineTable(TestTable, new JObject()
             {
                 { "col1", String.Empty },
@@ -319,7 +322,7 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
         {
             string actualResult = results.ToString(Formatting.None);
             string expectedResult = expected.ToString(Formatting.None);
-            Assert.AreEqual(actualResult, expectedResult);
+            Assert.Equal(actualResult, expectedResult);
         }
 
         private static async Task TestMathQuery(JObject[] mathTestData, string query)
@@ -327,14 +330,14 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             using (MobileServiceSQLiteStore store = await SetupMathTestTable(mathTestData))
             {
                 var results = await Query<JArray>(store, MathTestTable, query);
-                Assert.AreEqual(results.Count, mathTestData.Length);
+                Assert.Equal(results.Count, mathTestData.Length);
             }
         }
 
         private static async Task TestQuery(string query, int expectedResults)
         {
             JArray results = await Query<JArray>(query);
-            Assert.AreEqual(results.Count, expectedResults);
+            Assert.Equal(results.Count, expectedResults);
         }
 
         private static async Task<T> Query<T>(string query) where T : JToken

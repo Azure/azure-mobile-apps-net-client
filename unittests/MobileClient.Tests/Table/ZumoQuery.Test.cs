@@ -2,15 +2,16 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
 
+using Microsoft.WindowsAzure.MobileServices;
+using Microsoft.WindowsAzure.MobileServices.Query;
+using MobileClient.Tests.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Microsoft.WindowsAzure.MobileServices.Query;
-using MobileClient.Tests.Helpers;
 using Xunit;
 
-namespace Microsoft.WindowsAzure.MobileServices.Test.Table
+namespace MobileClient.Tests.Table
 {
     public class ZumoQuery_Test
     {

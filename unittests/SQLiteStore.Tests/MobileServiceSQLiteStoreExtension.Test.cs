@@ -2,21 +2,22 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
 
+
+using Microsoft.WindowsAzure.MobileServices.SQLiteStore;
+using Moq;
+using Newtonsoft.Json.Linq;
+using SQLiteStore.Tests.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.WindowsAzure.MobileServices.Test;
-using Moq;
-using Newtonsoft.Json.Linq;
+using Xunit;
 
-namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
+namespace SQLiteStore.Tests
 {
-    [TestClass]
     public class MobileServiceSQLiteStoreExtension_Test
     {
-        [TestMethod]
+        [Fact]
         public async Task DefineTable_Succeeds_WithAllTypes_Generic()
         {
             var columns = new[]
@@ -55,7 +56,7 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             await TestDefineTable<AllBaseTypesWithAllSystemPropertiesType>("AllBaseTypesWithAllSystemPropertiesType", columns);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task DefineTable_Succeeds_WithAllTypes()
         {
             var item = JObjectTypes.GetObjectWithAllTypes();
@@ -78,7 +79,7 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             await TestDefineTable(item, "AllTypes", columns);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task DefineTable_Succeeds_WithReadonlyProperty()
         {
             var columns = new[]
@@ -90,7 +91,7 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             await TestDefineTable<PocoType>("PocoType", columns);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task DefineTable_Succeeds_WithSystemProperties()
         {
             var columns = new[]
@@ -106,15 +107,15 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             await TestDefineTable<ToDoWithSystemPropertiesType>("stringId_test_table", columns);
         }
 
-        [TestMethod]
+        [Fact]
         public void DefineTable_Throws_WithTypeWithConstructor()
         {
             var storeMock = new Mock<MobileServiceSQLiteStore>() { CallBase = true };
-            var ex = AssertEx.Throws<ArgumentException>(() => storeMock.Object.DefineTable<TypeWithConstructor>());
-            Assert.AreEqual("The generic type T does not have parameterless constructor.", ex.Message);
+            var ex = Assert.Throws<ArgumentException>(() => storeMock.Object.DefineTable<TypeWithConstructor>());
+            Assert.Equal("The generic type T does not have parameterless constructor.", ex.Message);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task DefineTable_Succeeds_WithComplexType()
         {
             var columns = new[]
@@ -127,7 +128,7 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             await TestDefineTable<ComplexType>("ComplexType", columns);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task DefineTable_Succeeds_WithDerivedType()
         {
             var columns = new[]
@@ -164,8 +165,8 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
                          if (tableName == testTableName)
                          {
                              defined = true;
-
-                             CollectionAssert.AreEquivalent(columns, properties.ToList());
+                             var actual = properties.ToList();
+                             Assert.True(!columns.Except(actual).Any() && columns.Length == actual.Count);
                          }
                      });
 
@@ -174,7 +175,7 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             defineAction(storeMock.Object);
             await storeMock.Object.InitializeAsync();
 
-            Assert.IsTrue(defined);
+            Assert.True(defined);
         }
     }
 }

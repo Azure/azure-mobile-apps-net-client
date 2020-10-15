@@ -4,18 +4,18 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.WindowsAzure.MobileServices;
 using Microsoft.WindowsAzure.MobileServices.Query;
-using Microsoft.WindowsAzure.MobileServices.Test;
+using Microsoft.WindowsAzure.MobileServices.SQLiteStore;
+using Xunit;
 
-namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
+namespace SQLiteStore.Tests
 {
-    [TestClass]
     public class SqlQueryFormatter_Tests
     {
         private static readonly DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-        [TestMethod]
+        [Fact]
         public void FormatSelect_Math_Floor()
         {
             string odata = "$filter=floor(weight) gt 5&$orderby=price asc&$select=name";
@@ -25,16 +25,16 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             TestSqlFormatting(f => f.FormatSelect, odata, expectedSql, 0L, 1L, 5L);
         }
 
-        [TestMethod]
+        [Fact]
         public void FormatSelect_InvalidQuery()
         {
             string odata = "$filter=(2 ! ??)";
-            var ex = AssertEx.Throws<MobileServiceODataException>(() => MobileServiceTableQueryDescription.Parse("test", odata));
-            Assert.AreEqual("The specified odata query has syntax errors.", ex.Message);
-            Assert.AreEqual(3, ex.ErrorPosition);
+            var ex = Assert.Throws<MobileServiceODataException>(() => MobileServiceTableQueryDescription.Parse("test", odata));
+            Assert.Equal("The specified odata query has syntax errors.", ex.Message);
+            Assert.Equal(3, ex.ErrorPosition);
         }
 
-        [TestMethod]
+        [Fact]
         public void FormatSelect_Math_Ceiling()
         {
             string odata = "$filter=ceiling(weight) gt 5&$orderby=price asc&$select=name";
@@ -44,7 +44,7 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             TestSqlFormatting(f => f.FormatSelect, odata, expectedSql, 0L, 1L, 0L, 1L, 5L);
         }
 
-        [TestMethod]
+        [Fact]
         public void FormatSelect_Math_Round()
         {
             string odata = "$filter=round(weight) gt 5.3&$orderby=price asc&$select=name";
@@ -54,7 +54,7 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             TestSqlFormatting(f => f.FormatSelect, odata, expectedSql, (double)5.3);
         }
 
-        [TestMethod]
+        [Fact]
         public void FormatSelect_Date_Comparison()
         {
             string odata = "$filter=close_dt gt datetime'2012-05-29T09:13:28'";
@@ -64,7 +64,7 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             TestSqlFormatting(f => f.FormatSelect, odata, expectedSql, (DateTime.Parse("2012-05-29T09:13:28") - epoch).TotalSeconds);
         }
 
-        [TestMethod]
+        [Fact]
         public void FormatSelect_DateTimeOffset_Comparison()
         {
             string odata = "$filter=close_dt gt datetimeoffset'2012-05-29T09:13:28'";
@@ -74,37 +74,37 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             TestSqlFormatting(f => f.FormatSelect, odata, expectedSql, (DateTime.Parse("2012-05-29T09:13:28") - epoch).TotalSeconds);
         }
 
-        [TestMethod]
+        [Fact]
         public void FormatSelect_Date_Day()
         {
             TestSelectDateTimeFunction("day", "%d");
         }
 
-        [TestMethod]
+        [Fact]
         public void FormatSelect_Date_Month()
         {
             TestSelectDateTimeFunction("month", "%m");
         }
 
-        [TestMethod]
+        [Fact]
         public void FormatSelect_Date_Year()
         {
             TestSelectDateTimeFunction("year", "%Y");
         }
 
-        [TestMethod]
+        [Fact]
         public void FormatSelect_Date_Hour()
         {
             TestSelectDateTimeFunction("hour", "%H");
         }
 
-        [TestMethod]
+        [Fact]
         public void FormatSelect_Date_Minute()
         {
             TestSelectDateTimeFunction("minute", "%M");
         }
 
-        [TestMethod]
+        [Fact]
         public void FormatSelect_Date_Second()
         {
             TestSelectDateTimeFunction("second", "%S");
@@ -119,67 +119,67 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             TestSqlFormatting(f => f.FormatSelect, odata, expectedSql, 5L);
         }
 
-        [TestMethod]
+        [Fact]
         public void FormatSelect_String_ToLower()
         {
             TestSelectStringFunction("tolower(name)", "LOWER([name])");
         }
 
-        [TestMethod]
+        [Fact]
         public void FormatSelect_String_ToUpper()
         {
             TestSelectStringFunction("toupper(name)", "UPPER([name])");
         }
 
-        [TestMethod]
+        [Fact]
         public void FormatSelect_String_Length()
         {
             TestSelectStringFunction("length(name)", "LENGTH([name])");
         }
 
-        [TestMethod]
+        [Fact]
         public void FormatSelect_String_Trim()
         {
             TestSelectStringFunction("trim(name)", "TRIM([name])");
         }
 
-        [TestMethod]
+        [Fact]
         public void FormatSelect_String_SubstringOf()
         {
             TestSelectStringFunction("substringof('khan', name)", "LIKE('%' || @p1 || '%', [name])", "khan");
         }
 
-        [TestMethod]
+        [Fact]
         public void FormatSelect_String_StartsWith()
         {
             TestSelectStringFunction("startswith(name, 'khan')", "LIKE(@p1 || '%', [name])", "khan");
         }
 
-        [TestMethod]
+        [Fact]
         public void FormatSelect_String_EndsWith()
         {
             TestSelectStringFunction("endswith(name, 'khan')", "LIKE('%' || @p1, [name])", "khan");
         }
 
-        [TestMethod]
+        [Fact]
         public void FormatSelect_String_Concat()
         {
             TestSelectStringFunction("concat(firstName, lastName)", "[firstName] || [lastName]");
         }
 
-        [TestMethod]
+        [Fact]
         public void FormatSelect_String_IndexOf()
         {
             TestSelectStringFunction("indexof(message, 'hello')", "INSTR([message], @p1) - 1", "hello");
         }
 
-        [TestMethod]
+        [Fact]
         public void FormatSelect_String_Replace()
         {
             TestSelectStringFunction("replace(message, '$author$', name)", "REPLACE([message], @p1, [name])", "$author$");
         }
 
-        [TestMethod]
+        [Fact]
         public void FormatSelect_String_Substring()
         {
             TestSelectStringFunction("substring(title, 10)", "SUBSTR([title], @p1 + 1)", 10L);
@@ -202,7 +202,7 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             TestSqlFormatting(f => f.FormatSelect, odata, expectedSql, args.ToArray());
         }
 
-        [TestMethod]
+        [Fact]
         public void FormatSelect_GeneratesSQL_WithoutTotalCount()
         {
             string odata = "$filter=(name eq 'john' and age gt 7)&$orderby=String desc,id&$skip=5&$top=3&$select=name,age";
@@ -212,7 +212,7 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             TestSqlFormatting(f => f.FormatSelect, odata, expectedSql, "john", 7L);
         }
 
-        [TestMethod]
+        [Fact]
         public void FormatSelect_GeneratesSQL_WithoutColumns()
         {
             string odata = "$filter=name eq 'john' or age le 7&$orderby=String desc,id&$skip=5&$top=3";
@@ -222,7 +222,7 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             TestSqlFormatting(f => f.FormatSelect, odata, expectedSql, "john", 7L);
         }
 
-        [TestMethod]
+        [Fact]
         public void FormatSelect_GeneratesSQL_WithTotalCount()
         {
             string odata = "$filter=(name eq 'john' and age gt 7)&$orderby=String desc,id&$skip=5&$top=3&$select=name,age&$inlinecount=allpages";
@@ -234,7 +234,7 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             TestSqlFormatting(f => f.FormatSelectCount, odata, expectedCountSql, "john", 7L);
         }
 
-        [TestMethod]
+        [Fact]
         public void FormatDeletes_GeneratesSQL()
         {
             string odata = "$filter=(name eq 'john' and age gt 7)&$orderby=String desc,id&$skip=5&$top=3&$select=name,age&$inlinecount=allpages";
@@ -250,14 +250,14 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore.Test
             var formatter = new SqlQueryFormatter(query);
             string sql = action(formatter)();
 
-            Assert.AreEqual(expectedSql, sql);
-            Assert.AreEqual(formatter.Parameters.Count, parameters.Length);
+            Assert.Equal(expectedSql, sql);
+            Assert.Equal(formatter.Parameters.Count, parameters.Length);
 
             for (int i = 0; i < parameters.Length; i++)
             {
                 string name = "@p" + (i + 1);
-                Assert.IsTrue(formatter.Parameters.ContainsKey(name));
-                Assert.AreEqual(formatter.Parameters[name], parameters[i]);
+                Assert.True(formatter.Parameters.ContainsKey(name));
+                Assert.Equal(formatter.Parameters[name], parameters[i]);
             }
         }
     }
