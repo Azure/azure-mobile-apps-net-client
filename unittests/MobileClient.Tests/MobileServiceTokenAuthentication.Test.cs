@@ -294,7 +294,8 @@ namespace MobileClient.Tests
         [Fact]
         public Task LoginAsync_Legacy_AlternateLoginUri_WithEmptyParameters()
         {
-            return TestLoginAsyncForParameters(new Dictionary<string, string>(), validAlternateLoginUrl + legacyLoginAsyncUriFragment + "/microsoftaccount", "login", validAlternateLoginUrl);
+            
+                return TestLoginAsyncForParameters(new Dictionary<string, string>(), validAlternateLoginUrl + legacyLoginAsyncUriFragment + "/microsoftaccount", "login", validAlternateLoginUrl);
         }
     }
 }
