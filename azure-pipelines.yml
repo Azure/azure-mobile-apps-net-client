@@ -42,7 +42,6 @@ stages:
 
   - stage: devicetests
     displayName: Device Tests
-    dependsOn: [ 'build' ]
     jobs:
       - template: .ci/build.yml@components
         parameters:
