@@ -19,6 +19,7 @@ using Xunit;
 
 namespace DeviceTests.Shared.Tests
 {
+    [Collection(nameof(SingleThreadedCollection))]
     public class CustomAPI_Tests : E2ETestBase
     {
         private const string AppApiName = "applicationPermission";

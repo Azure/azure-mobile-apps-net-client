@@ -11,6 +11,7 @@ using Xunit;
 
 namespace DeviceTests.Shared.Tests
 {
+    [Collection(nameof(SingleThreadedCollection))]
     public class Blogging_Tests : E2ETestBase
     {
         [Fact]

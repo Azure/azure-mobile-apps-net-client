@@ -19,12 +19,13 @@ using Xunit;
 
 namespace DeviceTests.Shared.Tests
 {
+    [Collection(nameof(SingleThreadedCollection))]
     public class Offline_Tests : E2ETestBase
     {
         public static string StoreFileName = "store.bin";
 
         [Fact]
-        private async Task BasicOfflineTest()
+        public async Task BasicOfflineTest()
         {
             ClearStore();
             DateTime now = DateTime.UtcNow;
@@ -86,7 +87,7 @@ namespace DeviceTests.Shared.Tests
 
                 serverItem = await remoteTable.LookupAsync(newItem.Id);
                 requestsSentToServer++;
-                Assert.Equal(serverItem, item);
+                Assert.Equal(serverItem, newItem);
 
                 await localTable.DeleteAsync(item);
                 await localTable.DeleteAsync(newItem);
@@ -106,31 +107,31 @@ namespace DeviceTests.Shared.Tests
         }
 
         [Fact]
-        private async Task ClientResolvesConflictsTest()
+        public async Task ClientResolvesConflictsTest()
         {
             await CreateSyncConflict(true);
         }
 
         [Fact]
-        private async Task PushFailsAfterConflictsTest()
+        public async Task PushFailsAfterConflictsTest()
         {
             await CreateSyncConflict(false);
         }
 
         [Fact]
-        private async Task AbortPushAtStartSyncTest()
+        public async Task AbortPushAtStartSyncTest()
         {
             await AbortPushDuringSync(SyncAbortLocation.Start);
         }
 
         [Fact]
-        private async Task AbortPushAtMiddleSyncTest()
+        public async Task AbortPushAtMiddleSyncTest()
         {
             await AbortPushDuringSync(SyncAbortLocation.Middle);
         }
 
         [Fact]
-        private async Task AbortPushAtEndSyncTest()
+        public async Task AbortPushAtEndSyncTest()
         {
             await AbortPushDuringSync(SyncAbortLocation.End);
         }

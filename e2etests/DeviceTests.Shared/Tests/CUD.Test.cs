@@ -19,6 +19,7 @@ using Xunit;
 
 namespace DeviceTests.Shared.Tests
 {
+    [Collection(nameof(SingleThreadedCollection))]
     public class CUDTests : E2ETestBase
     {
         enum DeleteTestType { ValidDelete, NonExistingId, NoIdField }
@@ -53,19 +54,32 @@ namespace DeviceTests.Shared.Tests
         }
 
         [Fact]
-        private async Task CUD_TypedIntId()
-        {
-            Random rndGen = s_Random.Value;
+        public Task CUD_TypedIntId_UpdateTypedItem()
+            => CreateTypedUpdateTest(
+                "[int id] Update typed item", 
+                new IntIdRoundTripTableItem(s_Random.Value), 
+                new IntIdRoundTripTableItem(s_Random.Value));
 
-            await CreateTypedUpdateTest("[int id] Update typed item", new IntIdRoundTripTableItem(rndGen), new IntIdRoundTripTableItem(rndGen));
-            await CreateTypedUpdateTest("[int id] Update typed item, setting values to null",
-                new IntIdRoundTripTableItem(rndGen),
-                new IntIdRoundTripTableItem(rndGen) { Name = null, Bool = null, Date = null });
-            await CreateTypedUpdateTest<IntIdRoundTripTableItem, MobileServiceInvalidOperationException>("[int id] (Neg) Update typed item, non-existing item id",
-                new IntIdRoundTripTableItem(rndGen), new IntIdRoundTripTableItem(rndGen) { Id = 1000000000 }, false);
-            await CreateTypedUpdateTest<IntIdRoundTripTableItem, ArgumentException>("[int id] (Neg) Update typed item, id = 0",
-                new IntIdRoundTripTableItem(rndGen), new IntIdRoundTripTableItem(rndGen) { Id = 0 }, false);
-        }
+        [Fact]
+        public Task TypedIntId_SettingValuesToNull()
+            => CreateTypedUpdateTest(
+                "[int id] Update typed item, setting values to null",
+                new IntIdRoundTripTableItem(s_Random.Value),
+                new IntIdRoundTripTableItem(s_Random.Value) { Name = null, Bool = null, Date = null });
+
+        [Fact]
+        public Task TypedIntId_Neg_UpdateTypedItem_NonExistingItemId()
+            => CreateTypedUpdateTest<IntIdRoundTripTableItem, MobileServiceInvalidOperationException>(
+                "[int id] (Neg) Update typed item, non-existing item id",
+                new IntIdRoundTripTableItem(s_Random.Value), 
+                new IntIdRoundTripTableItem(s_Random.Value) { Id = 1000000000 }, false);
+
+        [Fact]
+        public Task TypedIntId_Neg_UpdatedTypedItem_IdZero()
+            =>CreateTypedUpdateTest<IntIdRoundTripTableItem, ArgumentException>(
+                "[int id] (Neg) Update typed item, id = 0",
+                new IntIdRoundTripTableItem(s_Random.Value), 
+                new IntIdRoundTripTableItem(s_Random.Value) { Id = 0 }, false);
 
         [Fact]
         private async Task CUD_UntypedStringId()

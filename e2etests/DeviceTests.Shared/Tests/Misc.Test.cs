@@ -11,17 +11,18 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Xamarin.Forms.Internals;
 using Xunit;
 
 namespace DeviceTests.Shared.Tests
 {
+    [Collection(nameof(SingleThreadedCollection))]
     public class Misc_Tests : E2ETestBase
     {
         [DataTable("ParamsTestTable")]
@@ -100,24 +101,64 @@ namespace DeviceTests.Shared.Tests
         }
 
         [Fact]
-        public async Task CreateFilterTestWithMultipleRequests_Base()
+        public async Task CreateFilterTestWithMultipleRequests_WithTypedTable()
         {
-            await CreateFilterTestWithMultipleRequests(true);
-            await CreateFilterTestWithMultipleRequests(false);
+            var client = this.GetClient();
+            int numberOfRequests = new Random().Next(2, 5);
+            var handler = new HandlerWithMultipleRequests(this, numberOfRequests);
+            var filteredClient = new MobileServiceClient(client.MobileAppUri, handler);
+
+            var typedTable = filteredClient.GetTable<RoundTripTableItem>();
+            var untypedTable = filteredClient.GetTable("RoundTripTable");
+            var uniqueId = Guid.NewGuid().ToString("N");
+            var item = new RoundTripTableItem { Name = uniqueId };
+            await typedTable.InsertAsync(item);
+
+            Assert.False(handler.TestFailed);
+
+            // Cleanup
+            handler.NumberOfRequests = 1; // no need to send it multiple times anymore
+            var items = await untypedTable.ReadAsync("$select=name,id&$filter=name eq '" + uniqueId + "'") as JArray;
+            items.ForEach(async t => await untypedTable.DeleteAsync(t as JObject));
+
+            Assert.True(items.Count == numberOfRequests);
         }
 
         [Fact]
-        public async Task ValidateUserAgent()
+        public async Task CreateFilterTestWithMultipleRequests_WithUntypedTable()
         {
-            await CreateUserAgentValidationTest();
+            var client = this.GetClient();
+            int numberOfRequests = new Random().Next(2, 5);
+            var handler = new HandlerWithMultipleRequests(this, numberOfRequests);
+            var filteredClient = new MobileServiceClient(client.MobileAppUri, handler);
+
+            var untypedTable = filteredClient.GetTable("RoundTripTable");
+            var uniqueId = Guid.NewGuid().ToString("N");
+            
+            var item = new JObject(new JProperty("name", uniqueId));
+            await untypedTable.InsertAsync(item);
+
+            Assert.False(handler.TestFailed);
+
+            // Cleanup
+            handler.NumberOfRequests = 1; // no need to send it multiple times anymore
+            var items = await untypedTable.ReadAsync("$select=name,id&$filter=name eq '" + uniqueId + "'") as JArray;
+            items.ForEach(async t => await untypedTable.DeleteAsync(t as JObject));
+
+            Assert.True(items.Count == numberOfRequests);
         }
 
         [Fact]
-        public async Task ParameterPassingTests()
-        {
-            await CreateParameterPassingTest(true);
-            await CreateParameterPassingTest(false);
-        }
+        public Task ValidateUserAgent()
+         => CreateUserAgentValidationTest();
+
+        [Fact]
+        public Task ParameterPassingTests_WithTypedTable()
+            => CreateParameterPassingTest(true);
+
+        [Fact]
+        public Task ParameterPassingTests_WithUntypedTable()
+            => CreateParameterPassingTest(false);
 
         [Fact]
         public async Task OptimisticConcurrency_ClientSide()
@@ -142,24 +183,20 @@ namespace DeviceTests.Shared.Tests
         }
 
         [Fact]
-        public async Task OptimisticConcurrency_ServerSide_ClientWins()
-        {
-            await CreateOptimisticConcurrencyWithServerConflictsTest("Conflicts (server side) - client wins", true);
-        }
+        public Task OptimisticConcurrency_ServerSide_ClientWins()
+            => CreateOptimisticConcurrencyWithServerConflictsTest("Conflicts (server side) - client wins", true);
 
         [Fact]
-        public async Task OptimisticConcurrency_ServerSide_ServerWins()
-        {
-            await CreateOptimisticConcurrencyWithServerConflictsTest("Conflicts (server side) - server wins", false);
-        }
+        public Task OptimisticConcurrency_ServerSide_ServerWins()
+            => CreateOptimisticConcurrencyWithServerConflictsTest("Conflicts (server side) - server wins", false);
 
         [Fact]
-        public async Task SystemPropertiesTests()
-        {
-            await CreateSystemPropertiesTest(true);
-            await CreateSystemPropertiesTest(false);
-        }
+        public Task SystemPropertiesTests_WithTypedTable()
+            => CreateSystemPropertiesTest(true);
 
+        [Fact]
+        public Task SystemPropertiesTests_WithUntypedTable()
+            => CreateSystemPropertiesTest(false);
 
         private async Task CreateSystemPropertiesTest(bool useTypedTable)
         {

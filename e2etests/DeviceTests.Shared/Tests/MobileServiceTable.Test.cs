@@ -19,32 +19,32 @@ using Xunit;
 
 namespace DeviceTests.Shared.Tests
 {
+    [Collection(nameof(SingleThreadedCollection))]
     public class MobileServiceTable_Tests : E2ETestBase
     {
+        /// <summary>
+        /// Makes sure the named table is empty
+        /// </summary>
+        /// <typeparam name="T">The type the table holds</typeparam>
+        /// <returns></returns>
         private async Task EnsureEmptyTableAsync<T>()
         {
-            // Make sure the table is empty
             IMobileServiceTable<T> table = GetClient().GetTable<T>();
-
-            while (true)
+            try
             {
-                IEnumerable<T> results = await table.Take(1000).ToListAsync();
-                T[] items = results.ToArray();
-
-                if (!items.Any())
-                {
-                    break;
-                }
-
-                foreach (T item in items)
+                List<T> items = items = await table.ToListAsync();
+                foreach (var item in items)
                 {
                     await table.DeleteAsync(item);
                 }
+            } catch (MobileServiceInvalidOperationException ex)
+            {
+                Console.WriteLine($"ERROR (ignoring): Cannot clean up table: {ex.Message}");
             }
         }
 
         [Fact]
-        private async Task AsyncTableOperationsWithValidStringIdAgainstStringIdTable()
+        public async Task AsyncTableOperationsWithValidStringIdAgainstStringIdTable()
         {
             await EnsureEmptyTableAsync<ToDoWithStringId>();
 
@@ -285,7 +285,7 @@ namespace DeviceTests.Shared.Tests
                 ToDoWithStringId item = await table.LookupAsync(testId);
                 item.Name = "No we're talking!";
 
-                MobileServiceInvalidOperationException exception = await Assert.ThrowsAsync<MobileServiceInvalidOperationException>(() => table.InsertAsync(item));
+                var exception = await Assert.ThrowsAnyAsync<MobileServiceInvalidOperationException>(() => table.InsertAsync(item));
                 Assert.Equal(HttpStatusCode.Conflict, exception.Response.StatusCode);
                 Assert.True(exception.Message.Contains("Could not insert the item because an item with that id already exists.") ||
                               exception.Message == "The request could not be completed.  (Conflict)");
@@ -313,7 +313,7 @@ namespace DeviceTests.Shared.Tests
                 item.Id = testId;
                 item.Name = "Alright!";
 
-                MobileServiceInvalidOperationException exception = await Assert.ThrowsAsync<MobileServiceInvalidOperationException>(() => table.UpdateAsync(item));
+                var exception = await Assert.ThrowsAsync<MobileServiceInvalidOperationException>(() => table.UpdateAsync(item));
                 Assert.Equal(HttpStatusCode.NotFound, exception.Response.StatusCode);
                 Assert.True(exception.Message == "The item does not exist" ||
                               exception.Message == "The request could not be completed.  (Not Found)");
@@ -340,7 +340,7 @@ namespace DeviceTests.Shared.Tests
                 await table.DeleteAsync(item);
                 item.Id = testId;
 
-                MobileServiceInvalidOperationException exception = await Assert.ThrowsAsync<MobileServiceInvalidOperationException>(() => table.DeleteAsync(item));
+                var exception = await Assert.ThrowsAnyAsync<MobileServiceInvalidOperationException>(() => table.DeleteAsync(item));
                 Assert.Equal(HttpStatusCode.NotFound, exception.Response.StatusCode);
                 Assert.True(exception.Message == "The item does not exist" ||
                               exception.Message == "The request could not be completed.  (Not Found)");
@@ -358,7 +358,7 @@ namespace DeviceTests.Shared.Tests
             var inserted = await table.InsertAsync(item);
             item["version"] = "3q3A3g==";
 
-            MobileServicePreconditionFailedException expectedException = await Assert.ThrowsAsync<MobileServicePreconditionFailedException>(() => table.DeleteAsync(item));
+            var expectedException = await Assert.ThrowsAsync<MobileServicePreconditionFailedException>(() => table.DeleteAsync(item));
             Assert.Equal(expectedException.Value["version"], inserted["version"]);
             Assert.Equal(expectedException.Value["name"], inserted["name"]);
         }
@@ -726,6 +726,164 @@ namespace DeviceTests.Shared.Tests
         }
 
         [Fact]
+        public async Task AsyncFilterSelectOrdering_OrderByCreatedAt_NotImpactedBySystemProperties()
+        {
+            // Set up the table.
+            await EnsureEmptyTableAsync<RoundTripTableItemWithSystemPropertiesType>();
+
+            IMobileServiceTable<RoundTripTableItemWithSystemPropertiesType> table = GetClient().GetTable<RoundTripTableItemWithSystemPropertiesType>();
+            List<RoundTripTableItemWithSystemPropertiesType> items = new List<RoundTripTableItemWithSystemPropertiesType>();
+            for (int id = 0; id < 5; id++)
+            {
+                RoundTripTableItemWithSystemPropertiesType item = new RoundTripTableItemWithSystemPropertiesType() { Id = id.ToString(), Name = "a value" };
+                await table.InsertAsync(item);
+                Assert.NotNull(item.CreatedAt);
+                Assert.NotNull(item.UpdatedAt);
+                Assert.NotNull(item.Version);
+                items.Add(item);
+            }
+
+            // Run test
+            var results = await table.OrderBy(t => t.CreatedAt).ToListAsync(); // Fails here with .NET runtime. Why??
+            RoundTripTableItemWithSystemPropertiesType[] orderItems = results.ToArray();
+            for (int i = 0; i < orderItems.Length - 1; i++)
+            {
+                Assert.True(int.Parse(orderItems[i].Id) < int.Parse(orderItems[i + 1].Id));
+            }
+
+            // Cleanup
+            foreach (var itemToDelete in items)
+            {
+                await table.DeleteAsync(itemToDelete);
+            }
+        }
+
+        [Fact]
+        public async Task AsyncFilterSelectOrdering_OrderByUpdatedAt_NotImpactedBySystemProperties()
+        {
+            // Set up the table.
+            await EnsureEmptyTableAsync<RoundTripTableItemWithSystemPropertiesType>();
+
+            IMobileServiceTable<RoundTripTableItemWithSystemPropertiesType> table = GetClient().GetTable<RoundTripTableItemWithSystemPropertiesType>();
+            List<RoundTripTableItemWithSystemPropertiesType> items = new List<RoundTripTableItemWithSystemPropertiesType>();
+            for (int id = 0; id < 5; id++)
+            {
+                RoundTripTableItemWithSystemPropertiesType item = new RoundTripTableItemWithSystemPropertiesType() { Id = id.ToString(), Name = "a value" };
+                await table.InsertAsync(item);
+                Assert.NotNull(item.CreatedAt);
+                Assert.NotNull(item.UpdatedAt);
+                Assert.NotNull(item.Version);
+                items.Add(item);
+            }
+
+            // Run test
+            var results = await table.OrderBy(t => t.UpdatedAt).ToListAsync(); // Fails here with .NET runtime. Why??
+            RoundTripTableItemWithSystemPropertiesType[] orderItems = results.ToArray();
+            for (int i = 0; i < orderItems.Length - 1; i++)
+            {
+                Assert.True(int.Parse(orderItems[i].Id) < int.Parse(orderItems[i + 1].Id));
+            }
+
+            // Cleanup
+            foreach (var itemToDelete in items)
+            {
+                await table.DeleteAsync(itemToDelete);
+            }
+        }
+
+        [Fact]
+        public async Task AsyncFilterSelectOrdering_OrderByVersion_NotImpactedBySystemProperties()
+        {
+            // Set up the table.
+            await EnsureEmptyTableAsync<RoundTripTableItemWithSystemPropertiesType>();
+
+            IMobileServiceTable<RoundTripTableItemWithSystemPropertiesType> table = GetClient().GetTable<RoundTripTableItemWithSystemPropertiesType>();
+            List<RoundTripTableItemWithSystemPropertiesType> items = new List<RoundTripTableItemWithSystemPropertiesType>();
+            for (int id = 0; id < 5; id++)
+            {
+                RoundTripTableItemWithSystemPropertiesType item = new RoundTripTableItemWithSystemPropertiesType() { Id = id.ToString(), Name = "a value" };
+                await table.InsertAsync(item);
+                Assert.NotNull(item.CreatedAt);
+                Assert.NotNull(item.UpdatedAt);
+                Assert.NotNull(item.Version);
+                items.Add(item);
+            }
+
+            // Run test
+            var results = await table.OrderBy(t => t.Version).ToListAsync(); // Fails here with .NET runtime. Why??
+            RoundTripTableItemWithSystemPropertiesType[] orderItems = results.ToArray();
+            for (int i = 0; i < orderItems.Length - 1; i++)
+            {
+                Assert.True(int.Parse(orderItems[i].Id) < int.Parse(orderItems[i + 1].Id));
+            }
+
+            // Cleanup
+            items.ForEach(async t => await table.DeleteAsync(t));
+        }
+
+        [Fact]
+        public async Task AsyncFilterSelectOrdering_FilterByCreatedAt_NotImpactedBySystemProperties()
+        {
+            // Set up the table.
+            await EnsureEmptyTableAsync<RoundTripTableItemWithSystemPropertiesType>();
+
+            IMobileServiceTable<RoundTripTableItemWithSystemPropertiesType> table = GetClient().GetTable<RoundTripTableItemWithSystemPropertiesType>();
+            List<RoundTripTableItemWithSystemPropertiesType> items = new List<RoundTripTableItemWithSystemPropertiesType>();
+            for (int id = 0; id < 5; id++)
+            {
+                RoundTripTableItemWithSystemPropertiesType item = new RoundTripTableItemWithSystemPropertiesType() { Id = id.ToString(), Name = "a value" };
+                await table.InsertAsync(item);
+                Assert.NotNull(item.CreatedAt);
+                Assert.NotNull(item.UpdatedAt);
+                Assert.NotNull(item.Version);
+                items.Add(item);
+            }
+
+            // Run test
+            var results = await table.Where(t => t.CreatedAt >= items[4].CreatedAt).ToListAsync();
+            RoundTripTableItemWithSystemPropertiesType[] filteredItems = results.ToArray();
+
+            for (int i = 0; i < filteredItems.Length - 1; i++)
+            {
+                Assert.True(filteredItems[i].CreatedAt >= items[4].CreatedAt);
+            }
+
+            // Cleanup
+            items.ForEach(async t => await table.DeleteAsync(t));
+        }
+
+        [Fact]
+        public async Task AsyncFilterSelectOrdering_FilterByUpdatedAt_NotImpactedBySystemProperties()
+        {
+            // Set up the table.
+            await EnsureEmptyTableAsync<RoundTripTableItemWithSystemPropertiesType>();
+
+            IMobileServiceTable<RoundTripTableItemWithSystemPropertiesType> table = GetClient().GetTable<RoundTripTableItemWithSystemPropertiesType>();
+            List<RoundTripTableItemWithSystemPropertiesType> items = new List<RoundTripTableItemWithSystemPropertiesType>();
+            for (int id = 0; id < 5; id++)
+            {
+                RoundTripTableItemWithSystemPropertiesType item = new RoundTripTableItemWithSystemPropertiesType() { Id = id.ToString(), Name = "a value" };
+                await table.InsertAsync(item);
+                Assert.NotNull(item.CreatedAt);
+                Assert.NotNull(item.UpdatedAt);
+                Assert.NotNull(item.Version);
+                items.Add(item);
+            }
+
+            // Run test
+            var results = await table.Where(t => t.UpdatedAt >= items[4].UpdatedAt).ToListAsync();
+            RoundTripTableItemWithSystemPropertiesType[] filteredItems = results.ToArray();
+
+            for (int i = 0; i < filteredItems.Length - 1; i++)
+            {
+                Assert.True(filteredItems[i].UpdatedAt >= items[4].UpdatedAt);
+            }
+
+            // Cleanup
+            items.ForEach(async t => await table.DeleteAsync(t));
+        }
+
+        [Fact]
         public async Task AsyncFilterSelectOrderingOperationsNotImpactedBySystemProperties()
         {
             await EnsureEmptyTableAsync<RoundTripTableItemWithSystemPropertiesType>();
@@ -746,59 +904,6 @@ namespace DeviceTests.Shared.Tests
                 items.Add(item);
             }
 
-            // Ordering
-            var results = await table.OrderBy(t => t.CreatedAt).ToEnumerableAsync(); // Fails here with .NET runtime. Why??
-            RoundTripTableItemWithSystemPropertiesType[] orderItems = results.ToArray();
-
-            for (int i = 0; i < orderItems.Length - 1; i++)
-            {
-                Assert.True(int.Parse(orderItems[i].Id) < int.Parse(orderItems[i + 1].Id));
-            }
-
-            results = await table.OrderBy(t => t.UpdatedAt).ToEnumerableAsync();
-            orderItems = results.ToArray();
-
-            for (int i = 0; i < orderItems.Length - 1; i++)
-            {
-                Assert.True(int.Parse(orderItems[i].Id) < int.Parse(orderItems[i + 1].Id));
-            }
-
-            results = await table.OrderBy(t => t.Version).ToEnumerableAsync();
-            orderItems = results.ToArray();
-
-            for (int i = 0; i < orderItems.Length - 1; i++)
-            {
-                Assert.True(int.Parse(orderItems[i].Id) < int.Parse(orderItems[i + 1].Id));
-            }
-
-            // Filtering
-            results = await table.Where(t => t.CreatedAt >= items[4].CreatedAt).ToEnumerableAsync();
-            RoundTripTableItemWithSystemPropertiesType[] filteredItems = results.ToArray();
-
-            for (int i = 0; i < filteredItems.Length - 1; i++)
-            {
-                Assert.True(filteredItems[i].CreatedAt >= items[4].CreatedAt);
-            }
-
-            results = await table.Where(t => t.UpdatedAt >= items[4].UpdatedAt).ToEnumerableAsync();
-            filteredItems = results.ToArray();
-
-            for (int i = 0; i < filteredItems.Length - 1; i++)
-            {
-                Assert.True(filteredItems[i].UpdatedAt >= items[4].UpdatedAt);
-            }
-
-            // TODO: Seperate to own test, to not run for .NET / Fix.Net
-            /*
-            results = await table.Where(t => t.Version == items[4].Version).ToEnumerableAsync();
-            filteredItems = results.ToArray();
-
-            for (int i = 0; i < filteredItems.Length - 1; i++)
-            {
-                Assert.True(filteredItems[i].Version == items[4].Version);
-            }
-            */
-
             // Selection
             var selectionResults = await table.Select(t => new { Id = t.Id, CreatedAt = t.CreatedAt }).ToEnumerableAsync();
             var selectedItems = selectionResults.ToArray();
@@ -806,7 +911,7 @@ namespace DeviceTests.Shared.Tests
             for (int i = 0; i < selectedItems.Length; i++)
             {
                 var item = items.Where(t => t.Id == selectedItems[i].Id).FirstOrDefault();
-                Assert.True(item.CreatedAt == selectedItems[i].CreatedAt);
+                Assert.Equal(item.CreatedAt, selectedItems[i].CreatedAt);
             }
 
             var selectionResults2 = await table.Select(t => new { Id = t.Id, UpdatedAt = t.UpdatedAt }).ToEnumerableAsync();
@@ -815,7 +920,7 @@ namespace DeviceTests.Shared.Tests
             for (int i = 0; i < selectedItems2.Length; i++)
             {
                 var item = items.Where(t => t.Id == selectedItems2[i].Id).FirstOrDefault();
-                Assert.True(item.UpdatedAt == selectedItems2[i].UpdatedAt);
+                Assert.Equal(item.UpdatedAt, selectedItems2[i].UpdatedAt);
             }
 
             var selectionResults3 = await table.Select(t => new { Id = t.Id, Version = t.Version }).ToEnumerableAsync();
@@ -824,7 +929,7 @@ namespace DeviceTests.Shared.Tests
             for (int i = 0; i < selectedItems3.Length; i++)
             {
                 var item = items.Where(t => t.Id == selectedItems3[i].Id).FirstOrDefault();
-                Assert.True(item.Version == selectedItems3[i].Version);
+                Assert.Equal(item.Version, selectedItems3[i].Version);
             }
 
             // Delete
@@ -851,7 +956,7 @@ namespace DeviceTests.Shared.Tests
         }
 
         [Fact]
-        public async Task UpdateAsyncWitMergeConflict_Generic()
+        public async Task UpdateAsyncWithMergeConflict_Generic()
         {
             await EnsureEmptyTableAsync<RoundTripTableItemWithSystemPropertiesType>();
 

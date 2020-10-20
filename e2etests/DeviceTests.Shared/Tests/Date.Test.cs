@@ -13,6 +13,7 @@ using Xunit;
 
 namespace DeviceTests.Shared.Tests
 {
+    [Collection(nameof(SingleThreadedCollection))]
     public class Date_Tests : E2ETestBase
     {
         [Fact]

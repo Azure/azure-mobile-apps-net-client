@@ -15,8 +15,14 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Xunit;
 
+// The LINQ to OData Driver needs to be updated to support StringComparison.  It only supports ToLower()/ToUpper() right now
+#pragma warning disable RCS1155 // Use StringComparison when comparing strings.
+
 namespace DeviceTests.Shared.Tests
 {
+    /// <summary>
+    /// This test is allowed to run in parallel on the devices because it is query only.
+    /// </summary>
     public class Query : E2ETestBase
     {
         private const int VeryLargeTopValue = 1001;
@@ -50,272 +56,509 @@ namespace DeviceTests.Shared.Tests
         }
 
         [Fact]
-        private async Task QueryTests_Common()
-        {
-            // This test is known to fail in Xamarin -- see https://bugzilla.xamarin.com/show_bug.cgi?id=22955
-            // Numeric fields
-            await CreateQueryTestIntId("GreaterThan and LessThan - Movies from the 90s", m => m.Year > 1989 && m.Year < 2000);
-            await CreateQueryTestIntId("GreaterEqual and LessEqual - Movies from the 90s", m => m.Year >= 1990 && m.Year <= 1999);
-            await CreateQueryTestIntId("Compound statement - OR of ANDs - Movies from the 30s and 50s",
+        public Task Query_Int_GTLT_Movies90()
+            => CreateQueryTestIntId(
+                "GreaterThan and LessThan - Movies from the 90s", 
+                m => m.Year > 1989 && m.Year < 2000);
+
+        [Fact]
+        public Task Query_Int_GELE_Movies90()
+            => CreateQueryTestIntId(
+                "GreaterEqual and LessEqual - Movies from the 90s", 
+                m => m.Year >= 1990 && m.Year <= 1999);
+
+        [Fact]
+        public Task Query_Int_Compoint_ORofANDs_Movies30s50s()
+            => CreateQueryTestIntId(
+                "Compound statement - OR of ANDs - Movies from the 30s and 50s",
                 m => ((m.Year >= 1930) && (m.Year < 1940)) || ((m.Year >= 1950) && (m.Year < 1960)));
-            await CreateQueryTestIntId("Division, equal and different - Movies from the year 2001 with rating other than R",
+
+        [Fact]
+        public Task Query_Int_Division_Movies2001RatingNE_R()
+            => CreateQueryTestIntId(
+                "Division, equal and different - Movies from the year 2001 with rating other than R",
                 m => ((m.Year / 1000.5) == 2) && (m.MpaaRating != "R"));
-            await CreateQueryTestIntId("Addition, subtraction, relational, AND - Movies from the 1980s which last less than 2 hours",
+
+        [Fact]
+        public Task Query_Int_AND_Movies90sLT2hours()
+            => CreateQueryTestIntId(
+                "Addition, subtraction, relational, AND - Movies from the 1980s which last less than 2 hours",
                 m => ((m.Year - 1900) >= 80) && (m.Year + 10 < 2000) && (m.Duration < 120));
 
-            await CreateQueryTestStringId("GreaterThan and LessThan - Movies from the 90s", m => m.Year > 1989 && m.Year < 2000);
-            await CreateQueryTestStringId("GreaterEqual and LessEqual - Movies from the 90s", m => m.Year >= 1990 && m.Year <= 1999);
-            await CreateQueryTestStringId("Compound statement - OR of ANDs - Movies from the 30s and 50s",
+        [Fact]
+        public Task Query_String_GTLT_Movies90()
+             => CreateQueryTestStringId(
+                "GreaterThan and LessThan - Movies from the 90s",
+                m => m.Year > 1989 && m.Year < 2000);
+
+        [Fact]
+        public Task Query_String_GELE_Movies90()
+            => CreateQueryTestStringId(
+                "GreaterEqual and LessEqual - Movies from the 90s",
+                m => m.Year >= 1990 && m.Year <= 1999);
+
+        [Fact]
+        public Task Query_String_Compoint_ORofANDs_Movies30s50s()
+            => CreateQueryTestStringId(
+                "Compound statement - OR of ANDs - Movies from the 30s and 50s",
                 m => ((m.Year >= 1930) && (m.Year < 1940)) || ((m.Year >= 1950) && (m.Year < 1960)));
-            await CreateQueryTestStringId("Division, equal and different - Movies from the year 2001 with rating other than R",
+
+        [Fact]
+        public Task Query_String_Division_Movies2001RatingNE_R()
+            => CreateQueryTestStringId(
+                "Division, equal and different - Movies from the year 2001 with rating other than R",
                 m => ((m.Year / 1000.5) == 2) && (m.MpaaRating != "R"));
-            await CreateQueryTestStringId("Addition, subtraction, relational, AND - Movies from the 1980s which last less than 2 hours",
+
+        [Fact]
+        public Task Query_String_AND_Movies90sLT2hours()
+            => CreateQueryTestStringId(
+                "Addition, subtraction, relational, AND - Movies from the 1980s which last less than 2 hours",
                 m => ((m.Year - 1900) >= 80) && (m.Year + 10 < 2000) && (m.Duration < 120));
 
-            // String functions
-            // The LINQ to OData Driver needs to be updated to support StringComparison.  It only supports ToLower()/ToUpper() right now
-#pragma warning disable RCS1155 // Use StringComparison when comparing strings.
-            await CreateQueryTestIntId("String: StartsWith - Movies which starts with 'The'",
+        [Fact]
+        public Task Query_Int_StartsWith()
+            => CreateQueryTestIntId(
+                "String: StartsWith - Movies which starts with 'The'",
                 m => m.Title.StartsWith("The"), 100);
-            await CreateQueryTestIntId("String: StartsWith, case insensitive - Movies which start with 'the'",
+
+        [Fact]
+        public Task Query_Int_StartsWithInsensitive()
+            => CreateQueryTestIntId(
+                "String: StartsWith, case insensitive - Movies which start with 'the'",
                 m => m.Title.ToLower().StartsWith("the"), 100);
-            await CreateQueryTestIntId("String: EndsWith, case insensitive - Movies which end with 'r'",
+
+        [Fact]
+        public Task Query_Int_EndsWith()
+            => CreateQueryTestIntId(
+                "String: EndsWith, case insensitive - Movies which end with 'r'",
                 m => m.Title.ToLower().EndsWith("r"));
-            await CreateQueryTestIntId("String: Contains - Movies which contain the word 'one', case insensitive",
+
+        [Fact]
+        public Task Query_Int_EndsWithInsensitive()
+            => CreateQueryTestIntId(
+                "String: Contains - Movies which contain the word 'one', case insensitive",
                 m => m.Title.ToUpper().Contains("ONE"));
-            await CreateQueryTestIntId("String: Length - Movies with small names",
+
+        [Fact]
+        public Task Query_Int_Length()
+            => CreateQueryTestIntId(
+                "String: Length - Movies with small names",
                 m => m.Title.Length < 10, 200);
-            await CreateQueryTestIntId("String: Substring (1 parameter), length - Movies which end with 'r'",
+
+        [Fact]
+        public Task Query_Int_Substring_1param()
+            => CreateQueryTestIntId(
+                "String: Substring (1 parameter), length - Movies which end with 'r'",
                 m => m.Title.Substring(m.Title.Length - 1) == "r");
-            await CreateQueryTestIntId("String: Substring (2 parameters), length - Movies which end with 'r'",
+
+        [Fact]
+        public Task Query_Int_Substring_2param()
+            => CreateQueryTestIntId(
+                "String: Substring (2 parameters), length - Movies which end with 'r'",
                 m => m.Title.Substring(m.Title.Length - 1, 1) == "r");
-            await CreateQueryTestIntId("String: Concat - Movies rated 'PG' or 'PG-13' from the 2000s",
+
+        [Fact]
+        public Task Query_Int_Concat()
+            => CreateQueryTestIntId(
+                "String: Concat - Movies rated 'PG' or 'PG-13' from the 2000s",
                 m => m.Year >= 2000 && string.Concat(m.MpaaRating, "-13").StartsWith("PG-13"));
 
-            await CreateQueryTestStringId("String: StartsWith - Movies which starts with 'The'",
+        [Fact]
+        public Task Query_String_StartsWith()
+            => CreateQueryTestStringId(
+                "String: StartsWith - Movies which starts with 'The'",
                 m => m.Title.StartsWith("The"), 100);
-            await CreateQueryTestStringId("String: StartsWith, case insensitive - Movies which start with 'the'",
+
+        [Fact]
+        public Task Query_String_StartsWithInsensitive()
+            => CreateQueryTestStringId(
+                "String: StartsWith, case insensitive - Movies which start with 'the'",
                 m => m.Title.ToLower().StartsWith("the"), 100);
-            await CreateQueryTestStringId("String: EndsWith, case insensitive - Movies which end with 'r'",
+
+        [Fact]
+        public Task Query_String_EndsWith()
+            => CreateQueryTestStringId(
+                "String: EndsWith, case insensitive - Movies which end with 'r'",
                 m => m.Title.ToLower().EndsWith("r"));
-            await CreateQueryTestStringId("String: Contains - Movies which contain the word 'one', case insensitive",
+
+        [Fact]
+        public Task Query_String_EndsWithInsensitive()
+            => CreateQueryTestStringId(
+                "String: Contains - Movies which contain the word 'one', case insensitive",
                 m => m.Title.ToUpper().Contains("ONE"));
-            await CreateQueryTestStringId("String: Length - Movies with small names",
+
+        [Fact]
+        public Task Query_String_Length()
+            => CreateQueryTestStringId(
+                "String: Length - Movies with small names",
                 m => m.Title.Length < 10, 200);
-            await CreateQueryTestStringId("String: Substring (1 parameter), length - Movies which end with 'r'",
+
+        [Fact]
+        public Task Query_String_Substring_1param()
+            => CreateQueryTestStringId(
+                "String: Substring (1 parameter), length - Movies which end with 'r'",
                 m => m.Title.Substring(m.Title.Length - 1) == "r");
-            await CreateQueryTestStringId("String: Substring (2 parameters), length - Movies which end with 'r'",
+
+        [Fact]
+        public Task Query_String_Substring_2param()
+            => CreateQueryTestStringId(
+                "String: Substring (2 parameters), length - Movies which end with 'r'",
                 m => m.Title.Substring(m.Title.Length - 1, 1) == "r");
-            await CreateQueryTestStringId("String: Concat - Movies rated 'PG' or 'PG-13' from the 2000s",
+
+        [Fact]
+        public Task Query_String_Concat()
+            => CreateQueryTestStringId(
+                "String: Concat - Movies rated 'PG' or 'PG-13' from the 2000s",
                 m => m.Year >= 2000 && string.Concat(m.MpaaRating, "-13").StartsWith("PG-13"));
-#pragma warning restore RCS1155 // Use StringComparison when comparing strings.
 
-            // String fields
-            await CreateQueryTestIntId("String equals - Movies since 1980 with rating PG-13",
+        [Fact]
+        public Task Query_Int_StringEquals()
+            => CreateQueryTestIntId(
+                "String equals - Movies since 1980 with rating PG-13",
                 m => m.Year >= 1980 && m.MpaaRating == "PG-13", 100);
-            await CreateQueryTestIntId("String field, comparison to null - Movies since 1980 without a MPAA rating",
-                m => m.Year >= 1980 && m.MpaaRating == null,
-   whereLambda: m => m.Year >= 1980 && m.MpaaRating == null);
-            await CreateQueryTestIntId("String field, comparison (not equal) to null - Movies before 1970 with a MPAA rating",
-                m => m.Year < 1970 && m.MpaaRating != null,
-   whereLambda: m => m.Year < 1970 && m.MpaaRating != null);
 
-            await CreateQueryTestStringId("String equals - Movies since 1980 with rating PG-13",
+        [Fact]
+        public Task Query_Int_StringEqualsNull()
+            => CreateQueryTestIntId(
+                "String field, comparison to null - Movies since 1980 without a MPAA rating",
+                m => m.Year >= 1980 && m.MpaaRating == null,
+                whereLambda: m => m.Year >= 1980 && m.MpaaRating == null);
+
+        [Fact]
+        public Task Query_Int_StringNotEqualsNull()
+            => CreateQueryTestIntId(
+                "String field, comparison (not equal) to null - Movies before 1970 with a MPAA rating",
+                m => m.Year < 1970 && m.MpaaRating != null,
+                whereLambda: m => m.Year < 1970 && m.MpaaRating != null);
+
+        [Fact]
+        public Task Query_String_StringEquals()
+            => CreateQueryTestStringId(
+                "String equals - Movies since 1980 with rating PG-13",
                 m => m.Year >= 1980 && m.MpaaRating == "PG-13", 100);
-            await CreateQueryTestStringId("String field, comparison to null - Movies since 1980 without a MPAA rating",
-                m => m.Year >= 1980 && m.MpaaRating == null,
-   whereLambda: m => m.Year >= 1980 && m.MpaaRating == null);
-            await CreateQueryTestStringId("String field, comparison (not equal) to null - Movies before 1970 with a MPAA rating",
-                m => m.Year < 1970 && m.MpaaRating != null,
-   whereLambda: m => m.Year < 1970 && m.MpaaRating != null);
 
-            // Numeric functions
-            await CreateQueryTestIntId("Floor - Movies which last more than 3 hours",
+        [Fact]
+        public Task Query_String_StringEqualsNull()
+            => CreateQueryTestStringId(
+                "String field, comparison to null - Movies since 1980 without a MPAA rating",
+                m => m.Year >= 1980 && m.MpaaRating == null,
+                whereLambda: m => m.Year >= 1980 && m.MpaaRating == null);
+
+        [Fact]
+        public Task Query_String_StringNotEqualsNull()
+            => CreateQueryTestStringId(
+                "String field, comparison (not equal) to null - Movies before 1970 with a MPAA rating",
+                m => m.Year < 1970 && m.MpaaRating != null,
+                whereLambda: m => m.Year < 1970 && m.MpaaRating != null);
+
+        [Fact]
+        public Task Query_Int_Floor()
+            => CreateQueryTestIntId(
+                "Floor - Movies which last more than 3 hours",
                 m => Math.Floor(m.Duration / 60.0) >= 3);
-            await CreateQueryTestIntId("Ceiling - Best picture winners which last at most 2 hours",
+
+        [Fact]
+        public Task Query_Int_Ceiling()
+            => CreateQueryTestIntId(
+                "Ceiling - Best picture winners which last at most 2 hours",
                 m => m.BestPictureWinner == true && Math.Ceiling(m.Duration / 60.0) == 2);
-            await CreateQueryTestIntId("Round - Best picture winners which last more than 2.5 hours",
+
+        [Fact]
+        public Task Query_Int_Round()
+            => CreateQueryTestIntId(
+                "Round - Best picture winners which last more than 2.5 hours",
                 m => m.BestPictureWinner == true && Math.Round(m.Duration / 60.0) > 2);
 
-            await CreateQueryTestStringId("Floor - Movies which last more than 3 hours",
+        [Fact]
+        public Task Query_String_Floor()
+            => CreateQueryTestStringId(
+                "Floor - Movies which last more than 3 hours",
                 m => Math.Floor(m.Duration / 60.0) >= 3);
-            await CreateQueryTestStringId("Ceiling - Best picture winners which last at most 2 hours",
+
+        [Fact]
+        public Task Query_String_Ceiling()
+            => CreateQueryTestStringId(
+                "Ceiling - Best picture winners which last at most 2 hours",
                 m => m.BestPictureWinner == true && Math.Ceiling(m.Duration / 60.0) == 2);
-            await CreateQueryTestStringId("Round - Best picture winners which last more than 2.5 hours",
+
+        [Fact]
+        public Task Query_String_Round()
+            => CreateQueryTestStringId(
+                "Round - Best picture winners which last more than 2.5 hours",
                 m => m.BestPictureWinner == true && Math.Round(m.Duration / 60.0) > 2);
 
-            // Date fields
-            await CreateQueryTestIntId("Date: Greater than, less than - Movies with release date in the 70s",
-                m => m.ReleaseDate > new DateTime(1969, 12, 31, 0, 0, 0, DateTimeKind.Utc) &&
-                    m.ReleaseDate < new DateTime(1971, 1, 1, 0, 0, 0, DateTimeKind.Utc));
-            await CreateQueryTestIntId("Date: Greater than, less than - Movies with release date in the 80s",
-                m => m.ReleaseDate >= new DateTime(1980, 1, 1, 0, 0, 0, DateTimeKind.Utc) &&
-                    m.ReleaseDate < new DateTime(1989, 12, 31, 23, 59, 59, DateTimeKind.Utc));
-            await CreateQueryTestIntId("Date: Equal - Movies released on 1994-10-14 (Shawshank Redemption / Pulp Fiction)",
+        [Fact]
+        public Task Query_Int_DateGTLT()
+            => CreateQueryTestIntId(
+                "Date: Greater than, less than - Movies with release date in the 70s",
+                m => m.ReleaseDate > new DateTime(1969, 12, 31, 0, 0, 0, DateTimeKind.Utc) && m.ReleaseDate < new DateTime(1971, 1, 1, 0, 0, 0, DateTimeKind.Utc));
+
+        [Fact]
+        public Task Query_Int_DateGELT()
+            => CreateQueryTestIntId("Date: Greater than, less than - Movies with release date in the 80s",
+                m => m.ReleaseDate >= new DateTime(1980, 1, 1, 0, 0, 0, DateTimeKind.Utc) && m.ReleaseDate < new DateTime(1989, 12, 31, 23, 59, 59, DateTimeKind.Utc));
+
+        [Fact]
+        public Task Query_Int_DateEQ()
+            => CreateQueryTestIntId(
+                "Date: Equal - Movies released on 1994-10-14 (Shawshank Redemption / Pulp Fiction)",
                 m => m.ReleaseDate == new DateTime(1994, 10, 14, 0, 0, 0, DateTimeKind.Utc));
 
-            await CreateQueryTestStringId("Date: Greater than, less than - Movies with release date in the 70s",
-                m => m.ReleaseDate > new DateTime(1969, 12, 31, 0, 0, 0, DateTimeKind.Utc) &&
-                    m.ReleaseDate < new DateTime(1971, 1, 1, 0, 0, 0, DateTimeKind.Utc));
-            await CreateQueryTestStringId("Date: Greater than, less than - Movies with release date in the 80s",
-                m => m.ReleaseDate >= new DateTime(1980, 1, 1, 0, 0, 0, DateTimeKind.Utc) &&
-                    m.ReleaseDate < new DateTime(1989, 12, 31, 23, 59, 59, DateTimeKind.Utc));
-            await CreateQueryTestStringId("Date: Equal - Movies released on 1994-10-14 (Shawshank Redemption / Pulp Fiction)",
+        [Fact]
+        public Task Query_String_DateGTLT()
+            => CreateQueryTestStringId(
+                "Date: Greater than, less than - Movies with release date in the 70s",
+                m => m.ReleaseDate > new DateTime(1969, 12, 31, 0, 0, 0, DateTimeKind.Utc) && m.ReleaseDate < new DateTime(1971, 1, 1, 0, 0, 0, DateTimeKind.Utc));
+
+        [Fact]
+        public Task Query_String_DateGELT()
+            => CreateQueryTestStringId(
+                "Date: Greater than, less than - Movies with release date in the 80s",
+                m => m.ReleaseDate >= new DateTime(1980, 1, 1, 0, 0, 0, DateTimeKind.Utc) && m.ReleaseDate < new DateTime(1989, 12, 31, 23, 59, 59, DateTimeKind.Utc));
+
+        [Fact]
+        public Task Query_String_DateEQ()
+            => CreateQueryTestStringId(
+                "Date: Equal - Movies released on 1994-10-14 (Shawshank Redemption / Pulp Fiction)",
                 m => m.ReleaseDate == new DateTime(1994, 10, 14, 0, 0, 0, DateTimeKind.Utc));
 
-            // Date functions
-            await CreateQueryTestIntId("Date (month): Movies released in November",
+        [Fact]
+        public Task Query_Int_DateMonthEQ()
+            => CreateQueryTestIntId(
+                "Date (month): Movies released in November",
                 m => m.ReleaseDate.Month == 11);
-            await CreateQueryTestIntId("Date (day): Movies released in the first day of the month",
+
+        [Fact]
+        public Task Query_Int_DateDayEQ()
+            => CreateQueryTestIntId(
+                "Date (day): Movies released in the first day of the month",
                 m => m.ReleaseDate.Day == 1);
-            await CreateQueryTestIntId("Date (year): Movies whose year is different than its release year",
+
+        [Fact]
+        public Task Query_Int_DateYearNE()
+            => CreateQueryTestIntId(
+                "Date (year): Movies whose year is different than its release year",
                 m => m.ReleaseDate.Year != m.Year, 100);
 
-            await CreateQueryTestStringId("Date (month): Movies released in November",
+        [Fact]
+        public Task Query_String_DateMOnthEQ()
+            => CreateQueryTestStringId(
+                "Date (month): Movies released in November",
                 m => m.ReleaseDate.Month == 11);
-            await CreateQueryTestStringId("Date (day): Movies released in the first day of the month",
+
+        [Fact]
+        public Task Query_String_DateDayEQ()
+            => CreateQueryTestStringId(
+                "Date (day): Movies released in the first day of the month",
                 m => m.ReleaseDate.Day == 1);
-            await CreateQueryTestStringId("Date (year): Movies whose year is different than its release year",
+
+        [Fact]
+        public Task Query_String_DateYearNE()
+            => CreateQueryTestStringId(
+                "Date (year): Movies whose year is different than its release year",
                 m => m.ReleaseDate.Year != m.Year, 100);
 
-            // Bool fields
-            await CreateQueryTestIntId("Bool: equal to true - Best picture winners before 1950",
+        [Fact]
+        public Task Query_Int_BoolTrue()
+            => CreateQueryTestIntId(
+                "Bool: equal to true - Best picture winners before 1950",
                 m => m.Year < 1950 && m.BestPictureWinner == true);
-            await CreateQueryTestIntId("Bool: equal to false - Best picture winners after 2000",
+
+        [Fact]
+        public Task Query_Int_BoolFalse()
+            => CreateQueryTestIntId(
+                "Bool: equal to false - Best picture winners after 2000",
                 m => m.Year >= 2000 && !(m.BestPictureWinner == false));
-            await CreateQueryTestIntId("Bool: not equal to false - Best picture winners after 2000",
+
+        [Fact]
+        public Task Query_Int_BoolNotFalse()
+            => CreateQueryTestIntId(
+                "Bool: not equal to false - Best picture winners after 2000",
                 m => m.BestPictureWinner != false && m.Year >= 2000);
 
-            await CreateQueryTestStringId("Bool: equal to true - Best picture winners before 1950",
+        [Fact]
+        public Task Query_String_BoolTrue()
+            => CreateQueryTestStringId(
+                "Bool: equal to true - Best picture winners before 1950",
                 m => m.Year < 1950 && m.BestPictureWinner == true);
-            await CreateQueryTestStringId("Bool: equal to false - Best picture winners after 2000",
+
+        [Fact]
+        public Task Query_String_BoolFalse()
+            => CreateQueryTestStringId(
+                "Bool: equal to false - Best picture winners after 2000",
                 m => m.Year >= 2000 && !(m.BestPictureWinner == false));
-            await CreateQueryTestStringId("Bool: not equal to false - Best picture winners after 2000",
+
+        [Fact]
+        public Task Query_String_BoolNotFalse()
+            => CreateQueryTestStringId(
+                "Bool: not equal to false - Best picture winners after 2000",
                 m => m.BestPictureWinner != false && m.Year >= 2000);
 
-            // Top and skip
-            await CreateQueryTestIntId("Get all using large $top - 500", null, 500);
-            await CreateQueryTestIntId("Skip all using large skip - 500", null, null, 500, new[] { new OrderByClause("Title", true) });
-            await CreateQueryTestIntId("Get first ($top) - 10", null, 10);
-            await CreateQueryTestIntId("Get last ($skip) - 10", null, null, QueryTestData.TestIntIdMovies.Length - 10, new[] { new OrderByClause("Title", true) });
-            await CreateQueryTestIntId("Skip, take, includeTotalCount - movies 11-20, ordered by title",
+        [Fact]
+        public Task Query_Int_Top500()
+            => CreateQueryTestIntId(
+                "Get all using large $top - 500", 
+                null, 500);
+
+        [Fact]
+        public Task Query_Int_Skip500()
+            => CreateQueryTestIntId(
+                "Skip all using large skip - 500", 
+                null, null, 500, new[] { new OrderByClause("Title", true) });
+
+        [Fact]
+        public Task Query_Int_Top10()
+            => CreateQueryTestIntId(
+                "Get first ($top) - 10", 
+                null, 10);
+
+        [Fact]
+        public Task Query_Int_Last10()
+            => CreateQueryTestIntId(
+                "Get last ($skip) - 10", 
+                null, null, QueryTestData.TestIntIdMovies.Length - 10, new[] { new OrderByClause("Title", true) });
+
+        [Fact]
+        public Task Query_Int_SkipTakeTotals()
+            => CreateQueryTestIntId(
+                "Skip, take, includeTotalCount - movies 11-20, ordered by title",
                 null, 10, 10, new[] { new OrderByClause("Title", true) }, null, true);
-            await CreateQueryTestIntId("Skip, take, filter includeTotalCount - movies 11-20 which won a best picture award, ordered by year",
-                m => m.BestPictureWinner == true, 10, 10, new[] { new OrderByClause("Year", false) }, null, true);
-            await CreateQueryTestStringId("Get all using large $top - 500", null, 500);
-            await CreateQueryTestStringId("Skip all using large skip - 500", null, null, 500);
-            await CreateQueryTestStringId("Get first ($top) - 10", null, 10);
-            await CreateQueryTestStringId("Get last ($skip) - 10", null, null, QueryTestData.TestMovies().Length - 10);
-            await CreateQueryTestStringId("Skip, take, includeTotalCount - movies 11-20, ordered by title",
-                null, 10, 10, new[] { new OrderByClause("Title", true) }, null, true);
-            await CreateQueryTestStringId("Skip, take, filter includeTotalCount - movies 11-20 which won a best picture award, ordered by year",
+
+        [Fact]
+        public Task Query_Int_SkipTakeTotalsFilter()
+            => CreateQueryTestIntId(
+                "Skip, take, filter includeTotalCount - movies 11-20 which won a best picture award, ordered by year",
                 m => m.BestPictureWinner == true, 10, 10, new[] { new OrderByClause("Year", false) }, null, true);
 
-            // Order by
-            await CreateQueryTestIntId("Order by date and string - 50 movies, ordered by release date, then title",
+        [Fact]
+        public Task Query_String_Top500()
+            => CreateQueryTestStringId(
+                "Get all using large $top - 500", 
+                null, 500);
+
+        [Fact]
+        public Task Query_String_Skip500()
+            => CreateQueryTestStringId(
+                "Skip all using large skip - 500", 
+                null, null, 500);
+
+        [Fact]
+        public Task Query_String_Top10()
+            => CreateQueryTestStringId(
+                "Get first ($top) - 10", 
+                null, 10);
+
+        [Fact]
+        public Task Query_String_Last10()
+            => CreateQueryTestStringId(
+                "Get last ($skip) - 10", 
+                null, null, QueryTestData.TestMovies().Length - 10);
+
+        [Fact]
+        public Task Query_String_SkipTakeTotals()
+            => CreateQueryTestStringId(
+                "Skip, take, includeTotalCount - movies 11-20, ordered by title",
+                null, 10, 10, new[] { new OrderByClause("Title", true) }, null, true);
+
+        [Fact]
+        public Task Query_String_SkipTakeTotalFilter()
+            => CreateQueryTestStringId(
+                "Skip, take, filter includeTotalCount - movies 11-20 which won a best picture award, ordered by year",
+                m => m.BestPictureWinner == true, 10, 10, new[] { new OrderByClause("Year", false) }, null, true);
+
+        [Fact]
+        public Task Query_Int_OrderByDateString()
+            => CreateQueryTestIntId(
+                "Order by date and string - 50 movies, ordered by release date, then title",
                 null, 50, null, new[] { new OrderByClause("ReleaseDate", false), new OrderByClause("Title", true) });
-            await CreateQueryTestIntId("Order by number - 30 shortest movies since 1970",
+
+        [Fact]
+        public Task Query_Int_OrderByNumber()
+            => CreateQueryTestIntId(
+                "Order by number - 30 shortest movies since 1970",
                 m => m.Year >= 1970, 30, null, new[] { new OrderByClause("Duration", true), new OrderByClause("Title", true) }, null, true);
 
-            await CreateQueryTestStringId("Order by date and string - 50 movies, ordered by release date, then title",
+        [Fact]
+        public Task Query_String_OrderByDateString()
+            => CreateQueryTestStringId(
+                "Order by date and string - 50 movies, ordered by release date, then title",
                 null, 50, null, new[] { new OrderByClause("ReleaseDate", false), new OrderByClause("Title", true) });
-            await CreateQueryTestStringId("Order by number - 30 shortest movies since 1970",
+
+        [Fact]
+        public Task Query_String_OrderByNumber()
+            => CreateQueryTestStringId(
+                "Order by number - 30 shortest movies since 1970",
                 m => m.Year >= 1970, 30, null, new[] { new OrderByClause("Duration", true), new OrderByClause("Title", true) }, null, true);
 
-            // Select
-            await CreateQueryTestIntId("Select one field - Only title of movies from 2008",
+        [Fact]
+        public Task Query_Int_SelectOneField()
+            => CreateQueryTestIntId(
+                "Select one field - Only title of movies from 2008",
                 m => m.Year == 2008, null, null, null, m => m.Title);
-            await CreateQueryTestIntId("Select multiple fields - Nicely formatted list of movies from the 2000's",
+
+        [Fact]
+        public Task Query_Int_SelectMultiField()
+            => CreateQueryTestIntId(
+                "Select multiple fields - Nicely formatted list of movies from the 2000's",
                 m => m.Year >= 2000, 200, null, new[] { new OrderByClause("ReleaseDate", false), new OrderByClause("Title", true) },
                 m => string.Format("{0} {1} - {2} minutes", m.Title.PadRight(30), m.BestPictureWinner ? "(best picture)" : "", m.Duration));
 
-            await CreateQueryTestStringId("Select one field - Only title of movies from 2008",
+        [Fact]
+        public Task Query_String_SelectOneField()
+            => CreateQueryTestStringId(
+                "Select one field - Only title of movies from 2008",
                 m => m.Year == 2008, null, null, null, m => m.Title);
-            await CreateQueryTestStringId("Select multiple fields - Nicely formatted list of movies from the 2000's",
+
+        [Fact]
+        public Task Query_String_SelectMultiField()
+            => CreateQueryTestStringId(
+                "Select multiple fields - Nicely formatted list of movies from the 2000's",
                 m => m.Year >= 2000, 200, null, new[] { new OrderByClause("ReleaseDate", false), new OrderByClause("Title", true) },
                 m => string.Format("{0} {1} - {2} minutes", m.Title.PadRight(30), m.BestPictureWinner ? "(best picture)" : "", m.Duration));
 
-            // Tests passing the OData query directly to the Read operation
-            await CreateQueryTestIntId("Passing OData query directly - movies from the 80's, ordered by Title, items 3, 4 and 5",
+        [Fact]
+        public Task Query_Int_ODataQuery()
+            => CreateQueryTestIntId(
+                "Passing OData query directly - movies from the 80's, ordered by Title, items 3, 4 and 5",
                 whereClause: m => m.Year >= 1980 && m.Year <= 1989,
                 top: 3, skip: 2,
                 orderBy: new OrderByClause[] { new OrderByClause("Title", true) },
                 odataQueryExpression: "$filter=((Year ge 1980) and (Year le 1989))&$top=3&$skip=2&$orderby=Title asc");
 
-            await CreateQueryTestStringId("Passing OData query directly - movies from the 80's, ordered by Title, items 3, 4 and 5",
+        [Fact]
+        public Task Query_String_ODataQuery()
+            => CreateQueryTestStringId(
+                "Passing OData query directly - movies from the 80's, ordered by Title, items 3, 4 and 5",
                 whereClause: m => m.Year >= 1980 && m.Year <= 1989,
                 top: 3, skip: 2,
                 orderBy: new OrderByClause[] { new OrderByClause("Title", true) },
                 odataQueryExpression: "$filter=((Year ge 1980) and (Year le 1989))&$top=3&$skip=2&$orderby=Title asc");
 
-            // Negative tests
-            await CreateQueryTest<IntIdMovie, MobileServiceInvalidOperationException>("[Int id] (Neg) Very large top value", m => m.Year > 2000, VeryLargeTopValue);
-            await CreateQueryTest<Movie, MobileServiceInvalidOperationException>("[String id] (Neg) Very large top value", m => m.Year > 2000, VeryLargeTopValue);
-            await CreateQueryTest<IntIdMovie, NotSupportedException>("[Int id] (Neg) Unsupported predicate: unsupported arithmetic",
-                m => Math.Sqrt(m.Year) > 43);
-            await CreateQueryTest<Movie, NotSupportedException>("[String id] (Neg) Unsupported predicate: unsupported arithmetic",
+        [Fact]
+        public Task Query_IntNeg_LargeTop()
+            => CreateQueryTest<IntIdMovie, MobileServiceInvalidOperationException>("[Int id] (Neg) Very large top value", m => m.Year > 2000, VeryLargeTopValue);
+
+        [Fact]
+        public Task Query_StringNeg_LargeTop()
+            => CreateQueryTest<Movie, MobileServiceInvalidOperationException>("[String id] (Neg) Very large top value", m => m.Year > 2000, VeryLargeTopValue);
+
+        [Fact]
+        public Task Query_IntNeg_UnsupportedPredicate()
+            => CreateQueryTest<IntIdMovie, NotSupportedException>("[Int id] (Neg) Unsupported predicate: unsupported arithmetic",
                 m => Math.Sqrt(m.Year) > 43);
 
-            // Invalid lookup
-            for (int i = -1; i <= 0; i++)
+        [Fact]
+        public Task Query_StringNeg_UnsupportedPredicate()
+            => CreateQueryTest<Movie, NotSupportedException>("[String id] (Neg) Unsupported predicate: unsupported arithmetic",
+                m => Math.Sqrt(m.Year) > 43);
+
+        [Fact]
+        public Task Query_Neg_Lookup()
+            => Assert.ThrowsAsync<InvalidOperationException>(async () =>
             {
-                int id = i;
-                //(Neg) Invalid id for lookup: " + i
-
-                var table = this.GetClient().GetTable<IntIdMovie>();
-                await Assert.ThrowsAsync<InvalidOperationException>(() => table.LookupAsync(id));
-            }
-
-            // TODO: Add this test back?
-            //#if !WINDOWS_PHONE
-            //            // ToCollection - displaying movies on a ListBox
-            //            {
-            //                var client = this.GetClient();
-            //                var table = client.GetTable<StringIdMovie>();
-            //                var query = from m in table
-            //                            where m.Year > 1980
-            //                            orderby m.ReleaseDate descending
-            //                            select new
-            //                            {
-            //                                Date = m.ReleaseDate.ToUniversalTime().ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
-            //                                Title = m.Title
-            //                            };
-            //                query = query.Take(50);
-            //                var expectedItems = QueryTestData.AllMovies
-            //                    .Where(m => m.Year > 1980)
-            //                    .OrderByDescending(m => m.ReleaseDate)
-            //                    .Select(m => string.Format(
-            //                        "{0} - {1}",
-            //                        m.ReleaseDate.ToUniversalTime().ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
-            //                        m.Title))
-            //                    .Take(50)
-            //                    .ToList();
-            //                var newPage = new MoviesDisplayControl();
-            //                var collection = await query.ToCollectionAsync();
-            //                newPage.SetMoviesSource(collection);
-
-            //                Log("Displaying the movie display control with the bound collection");
-            //                await newPage.Display();
-            //                Log("Dialog displayed, verifying that the items displayed are correct...");
-            //                var pageItems = newPage.ItemsAsString;
-            //                List<string> errors = new List<string>();
-            //                if (Utilities.CompareArrays(expectedItems.ToArray(), pageItems.ToArray(), errors))
-            //                {
-            //                    Log("Movies were displayed correctly.");
-            //                    return;
-            //                }
-            //                else
-            //                {
-            //                    Log("Error comparing the movies:");
-            //                    foreach (var error in errors)
-            //                    {
-            //                        Log("  {0}", error);
-            //                    }
-            //                    Assert.Fail("");
-            //                }
-            //            }
-            //#endif
-        }
+                var table = GetClient().GetTable<IntIdMovie>();
+                await table.LookupAsync(-1);
+            });
 
         class OrderByClause
         {
@@ -368,7 +611,7 @@ namespace DeviceTests.Shared.Tests
             where MovieType : class, IMovie
             where TExpectedException : Exception
         {
-            Assert.True(whereClause == null && whereLambda != null);
+            Assert.False(whereClause == null && whereLambda != null);
 
             try
             {
@@ -500,7 +743,7 @@ namespace DeviceTests.Shared.Tests
 
                 if (includeTotalCount.HasValue)
                 {
-                    Assert.True(expectedTotalCount != actualTotalCount);
+                    Assert.Equal(expectedTotalCount, actualTotalCount);
                 }
 
                 List<string> errors = new List<string>();
