@@ -9,11 +9,11 @@ var IOS_SIM_NAME = Argument("ios-device", EnvironmentVariable("IOS_SIM_NAME") ??
 var IOS_SIM_RUNTIME = Argument("ios-runtime", EnvironmentVariable("IOS_SIM_RUNTIME") ?? "com.apple.CoreSimulator.SimRuntime.iOS-13-7");
 var IOS_PROJ = "./DeviceTests.iOS/DeviceTests.iOS.csproj";
 var IOS_BUNDLE_ID = "com.microsoft.azure.devicetests";
-var IOS_IPA_PATH = "./DeviceTests.iOS/bin/iPhoneSimulator/Release/XamarinEssentialsDeviceTestsiOS.app";
+var IOS_IPA_PATH = "./DeviceTests.iOS/bin/iPhoneSimulator/Release/ZumoDeviceTestsiOS.app";
 var IOS_TEST_RESULTS_PATH = MakeAbsolute((FilePath)"../output/test-results/ios/TestResults.xml");
 
 var ANDROID_PROJ = "./DeviceTests.Android/DeviceTests.Android.csproj";
-var ANDROID_APK_PATH = "./DeviceTests.Android/bin/Release/com.xamarin.essentials.devicetests-Signed.apk";
+var ANDROID_APK_PATH = "./DeviceTests.Android/bin/Release/com.microsoft.azure.devicetests-Signed.apk";
 var ANDROID_TEST_RESULTS_PATH = MakeAbsolute((FilePath)"../output/test-results/android/TestResults.xml");
 var ANDROID_SCREENSHOT_PATH = MakeAbsolute((DirectoryPath)"../output/test-results/android");
 var ANDROID_AVD = EnvironmentVariable("ANDROID_AVD") ?? "AzureAndroidPhone";
