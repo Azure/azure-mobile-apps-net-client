@@ -66,7 +66,6 @@ stages:
           displayName: Android API 23
           windowsImage: ''
           macosImage: 'macos-10.14'
-          xcode: '12'
           areaPath: $(AREA_PATH)
           verbosity: diagnostic
           cakeFile: e2etests/build.cake
@@ -84,7 +83,6 @@ stages:
           displayName: Android API 26
           windowsImage: ''
           macosImage: 'macos-10.14'
-          xcode: '11.3.1'
           areaPath: $(AREA_PATH)
           verbosity: diagnostic
           cakeFile: e2etests/build.cake
@@ -102,7 +100,6 @@ stages:
           displayName: Android API 29
           windowsImage: ''
           macosImage: 'macos-10.14'
-          xcode: '11.3.1'
           areaPath: $(AREA_PATH)
           verbosity: diagnostic
           cakeFile: e2etests/build.cake
