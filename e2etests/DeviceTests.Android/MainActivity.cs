@@ -2,14 +2,14 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
 
-using System.Collections.Generic;
-using System.Reflection;
-using System.Threading.Tasks;
 using Android.App;
 using Android.Content.PM;
 using Android.OS;
 using Android.Runtime;
 using DeviceTests.Shared.Tests;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Threading.Tasks;
 using UnitTests.HeadlessRunner;
 using Xunit.Runners.UI;
 
@@ -17,8 +17,8 @@ namespace DeviceTests.Android
 {
     [Activity(
         Name = "com.microsoft.azure.devicetests.MainActivity",
-        Label = "@string/app_name", 
-        Theme = "@style/MainTheme", 
+        Label = "@string/app_name",
+        Theme = "@style/MainTheme",
         MainLauncher = true,
         ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
     public class MainActivity : RunnerActivity
@@ -33,15 +33,14 @@ namespace DeviceTests.Android
             if (!string.IsNullOrEmpty(hostIp))
             {
                 // Run the headless test runner for CI
-                Task.Run(() => 
+                Task.Run(() =>
                 {
-                    return UnitTests.HeadlessRunner.Tests.RunAsync(new TestOptions 
+                    return UnitTests.HeadlessRunner.Tests.RunAsync(new TestOptions
                     {
-                        //AssemblyFileVersionAttribute = new List<Assembly> { typeof(Shared_Tests).Assembly },
+                        Assemblies = new List<Assembly> { typeof(Shared_Tests).Assembly },
                         NetworkLogHost = hostIp,
                         NetworkLogPort = hostPort,
-                        //FieldAttributes = TransactionFlags.GetCommonTraits(),
-                        //CustomAttributeFormatException = TestResultsFormat.XunitV2
+                        Format = TestResultsFormat.XunitV2,
                     });
                 });
             }
@@ -53,8 +52,8 @@ namespace DeviceTests.Android
 
             base.OnCreate(bundle);
         }
-        
-        public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Permission[] grantResults)
+
+        public override void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
         {
             Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
 

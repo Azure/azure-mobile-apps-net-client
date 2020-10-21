@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using DeviceTests.Shared.Tests;
+using Foundation;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
-using DeviceTests.Shared.Tests;
-using Foundation;
 using UIKit;
 using UnitTests.HeadlessRunner;
 
@@ -30,8 +30,7 @@ namespace DeviceTests.iOS
                             Assemblies = new List<Assembly> { typeof(Shared_Tests).Assembly },
                             NetworkLogHost = ip,
                             NetworkLogPort = port,
-                            //Filters = Traits.GetCommonTraits(),
-                            Format = TestResultsFormat.XunitV2
+                            Format = TestResultsFormat.XunitV2,
                         });
                     });
                 }
@@ -53,5 +52,3 @@ namespace DeviceTests.iOS
         }
     }
 }
-
-

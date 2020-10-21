@@ -24,7 +24,32 @@ Task("Test")
     .IsDependentOn("Build")
     .Does(() =>
 {
-    Warning("NOT YET RUNNING!");
+    var settings = new DotNetCoreTestSettings
+    {
+        Configuration = "Release",
+        NoBuild = true,
+        NoRestore = true,
+        ResultsDirectory = "./output/unittests-results"
+    };
+
+    var failCount = 0;
+
+    var projectFiles = GetFiles("./unittests/**/*.csproj");
+    foreach(var file in projectFiles)
+    {
+        settings.Logger = "trx;LogFileName=" + file.GetFilenameWithoutExtension() + "-Results.trx";
+        try
+        {
+            DotNetCoreTest(file.FullPath, settings);
+        }
+        catch
+        {
+            failCount++;
+        }
+    }
+
+    if (failCount > 0)
+        throw new Exception($"There were {failCount} test failures.");
 });
 
 ///////////////////////////////////////////////////////////////////////////////
