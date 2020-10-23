@@ -37,12 +37,12 @@ To get the source code of our SDKs and samples via **git** just type:
 
 ### Running the Unit Tests
 
-The following test suites under the 'test' directory contain the unit tests:
+The following test suites under the 'unittests' directory contain the unit tests:
 
-* Microsoft.WindowsAzure.Mobile._platform_.Test
-* Microsoft.WindowsAzure.Mobile.SQLiteStore._platform_.Test
+* MobileClient.Tests
+* SQLiteStore.Tests
 
-You can run the unit tests using the MSTest test runner.  Ensure you run the unit tests prior to submitting a PR.
+You can run the unit tests using the xUnit test runner.  Ensure you run the unit tests prior to submitting a PR.
 
 ### Running the E2E Tests
 
@@ -55,7 +55,7 @@ Before running the E2E Test Suites, you must deploy the E2E Test Server, which c
 * Set the `MS_TableConnectionString` app setting in your Azure App Service to the connection string for the SQL Azure database.
 * Deploy the `ZumoE2EServerApp` to the App Service.
 
-Once complete, switch back to the client project, mark one of the E2ETest projects as the startup project and run it.  If you run the `iOS.E2ETest` project, you will to [connect a Mac to Visual Studio](https://docs.microsoft.com/en-us/xamarin/ios/get-started/installation/windows/connecting-to-mac/).  Run the application, enter the URL of your Azure App Service, then click **Run Tests**.
+Once complete, you can run the E2E tests.  Compile one of the projects (for iOS or Android) in the `e2etests` folder, and run it on a device (which can be an emulator or simulator, if you wish).
 
 ## Future of Azure Mobile Apps
 
