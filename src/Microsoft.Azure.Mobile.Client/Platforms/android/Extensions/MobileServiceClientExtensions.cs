@@ -57,7 +57,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <param name="context">The Android Context to display the Login UI in.</param>
         /// <param name="provider">Authentication provider to use.</param>
         /// <param name="uriScheme">The URL scheme of the application.</param>
-        /// <param name="parameters">Provider specific extra parameters that are sent as query string parameters to login endpoint.
+        /// <param name="parameters">Provider specific extra parameters that are sent as query string parameters to login endpoint.</param>
         /// <returns>The user record for the authenticated user.</returns>
 #pragma warning disable IDE0060 // Remove unused parameter
         public static Task<MobileServiceUser> LoginAsync(this MobileServiceClient client, Context context, string provider, string uriScheme, IDictionary<string, string> parameters)

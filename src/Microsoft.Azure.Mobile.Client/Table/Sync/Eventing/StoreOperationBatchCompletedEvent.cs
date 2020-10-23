@@ -14,6 +14,10 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
         /// </summary>
         public const string EventName = "MobileServices.StoreOperationBatchCompleted";
 
+        /// <summary>
+        /// Create a new Batch completed event.
+        /// </summary>
+        /// <param name="batch">The batch that was completed.</param>
         public StoreOperationsBatchCompletedEvent(StoreOperationsBatch batch)
         {
             Arguments.IsNotNull(batch, nameof(batch));

@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 
 namespace Microsoft.WindowsAzure.MobileServices.Internal
 {
+    /// <summary>
+    /// Provides an OAuth type token authentication scheme.
+    /// </summary>
     public class MobileServiceTokenAuthentication : MobileServiceAuthentication
     {
         /// <summary>

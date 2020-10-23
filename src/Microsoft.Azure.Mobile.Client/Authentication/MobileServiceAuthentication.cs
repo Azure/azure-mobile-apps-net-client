@@ -83,14 +83,12 @@ namespace Microsoft.WindowsAzure.MobileServices.Internal
         }
 
         /// <summary>
-        /// The <see cref="MobileServiceClient"/> associated with this 
-        /// <see cref="MobileServiceAuthentication"/> instance.
+        /// The <see cref="MobileServiceClient"/> associated with this <see cref="MobileServiceAuthentication"/> instance.
         /// </summary>
         public IMobileServiceClient Client { get; private set; }
 
         /// <summary>
-        /// The name of the authentication provider used by this
-        /// <see cref="MobileServiceAuthentication"/> instance.
+        /// The name of the authentication provider used by this <see cref="MobileServiceAuthentication"/> instance.
         /// </summary>
         public string ProviderName
         {

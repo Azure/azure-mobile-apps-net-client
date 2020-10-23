@@ -18,6 +18,11 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
         private readonly Dictionary<LocalStoreOperationKind, int> operationsCountByType;
         private readonly SemaphoreSlim operationsCountSemaphore = new SemaphoreSlim(1);
 
+        /// <summary>
+        /// Create a new batch of store operations.
+        /// </summary>
+        /// <param name="batchId">A unique ID to identify the batch</param>
+        /// <param name="source">The source of the batch</param>
         public StoreOperationsBatch(string batchId, StoreOperationSource source)
         {
             this.BatchId = batchId;

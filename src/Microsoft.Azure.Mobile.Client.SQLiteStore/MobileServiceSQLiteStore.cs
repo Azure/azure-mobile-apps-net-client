@@ -32,6 +32,9 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore
         private readonly sqlite3 connection;
         private readonly SemaphoreSlim operationSemaphore = new SemaphoreSlim(1, 1);
 
+        /// <summary>
+        /// Parameterless constructor for unit testing.
+        /// </summary>
         protected MobileServiceSQLiteStore() { }
 
         /// <summary>
@@ -92,6 +95,10 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore
             this.tableMap.Add(tableName, new TableDefinition(tableDefinition, sysProperties));
         }
 
+        /// <summary>
+        /// Initialize the provider, including creating all tables.
+        /// </summary>
+        /// <returns>A task that resolves when initialization is complete.</returns>
         protected override async Task OnInitialize()
         {
             this.CreateAllTables();
@@ -541,7 +548,7 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore
         /// <summary>
         /// Executes a sql statement on a given table in local SQLite database.
         /// </summary>
-        /// <param name="tableName">The name of the table.</param>
+        /// <param name="sql">The SQL statement to execute.</param>
         /// <param name="parameters">The query parameters.</param>
         protected virtual void ExecuteNonQueryInternal(string sql, IDictionary<string, object> parameters)
         {
@@ -688,6 +695,10 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore
             return sysProperties;
         }
 
+        /// <summary>
+        /// Required part of the IDisposable pattern.
+        /// </summary>
+        /// <param name="disposing">True if disposing as part of a stack.</param>
         protected override void Dispose(bool disposing)
         {
             if (disposing)

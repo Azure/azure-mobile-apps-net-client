@@ -19,12 +19,23 @@ namespace Microsoft.WindowsAzure.MobileServices.SQLiteStore
     /// </summary>
     public static class MobileServiceSQLiteStoreExtensions
     {
+        /// <summary>
+        /// Defines a table to use for offline sync
+        /// </summary>
+        /// <param name="store">The offline store.</param>
+        /// <typeparam name="T">The model type of the table</typeparam>
         public static void DefineTable<T>(this MobileServiceSQLiteStore store)
         {
             var settings = new MobileServiceJsonSerializerSettings();
             DefineTable<T>(store, settings);
         }
 
+        /// <summary>
+        /// Defines a table to use for offline sync
+        /// </summary>
+        /// <param name="store">The offline store.</param>
+        /// <param name="settings">The JSON Serializer settings</param>
+        /// <typeparam name="T">The model type of the table</typeparam>
         public static void DefineTable<T>(this MobileServiceSQLiteStore store, MobileServiceJsonSerializerSettings settings)
         {
             string tableName = settings.ContractResolver.ResolveTableName(typeof(T));

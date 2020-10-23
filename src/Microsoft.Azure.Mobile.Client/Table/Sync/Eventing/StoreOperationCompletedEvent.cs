@@ -16,6 +16,10 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
         /// </summary>
         public const string EventName = "MobileServices.StoreOperationCompleted";
 
+        /// <summary>
+        /// Creates a new store operation completed event.
+        /// </summary>
+        /// <param name="operation">The operation that was completed.</param>
         public StoreOperationCompletedEvent(StoreOperation operation)
         {
             Arguments.IsNotNull(operation, nameof(operation));

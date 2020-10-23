@@ -2,10 +2,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
 
-using System;
-using System.Globalization;
-using System.Reflection;
-
 namespace Microsoft.WindowsAzure.MobileServices
 {
     /// <summary>

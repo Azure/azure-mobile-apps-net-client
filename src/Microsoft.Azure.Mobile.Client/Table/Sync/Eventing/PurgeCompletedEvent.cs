@@ -16,6 +16,10 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
         /// </summary>
         public const string EventName = "MobileServices.PurgeCompleted";
 
+        /// <summary>
+        /// Creates a new PurgeCompleted event
+        /// </summary>
+        /// <param name="tableName">The name of the table that was purged</param>
         public PurgeCompletedEvent(string tableName)
         {
             Arguments.IsNotNull(tableName, nameof(tableName));

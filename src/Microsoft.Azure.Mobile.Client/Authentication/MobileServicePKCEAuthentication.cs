@@ -11,6 +11,9 @@ using System.Security.Cryptography;
 
 namespace Microsoft.WindowsAzure.MobileServices.Internal
 {
+    /// <summary>
+    /// Implementation of the MobileServiceAuthentication that handles PKCE authentication.
+    /// </summary>
     public abstract class MobileServicePKCEAuthentication : MobileServiceAuthentication
     {
         /// <summary>
@@ -18,12 +21,28 @@ namespace Microsoft.WindowsAzure.MobileServices.Internal
         /// </summary>
         private readonly MobileServiceClient client;
 
+        /// <summary>
+        /// Uri of the endpoint used to initiate the authentication flow.
+        /// </summary>
         public Uri LoginUri { get; private set; }
 
+        /// <summary>
+        /// Uri of the endpoint called when the authentication flow is complete
+        /// </summary>
         public Uri CallbackUri { get; private set; }
         
+        /// <summary>
+        /// The random bytes used to verify the connection.
+        /// </summary>
         public string CodeVerifier { get; private set; }
 
+        /// <summary>
+        /// Create a new instance of the <see cref="MobileServicePKCEAuthentication"/>.
+        /// </summary>
+        /// <param name="client">The <see cref="MobileServiceClient"/> to use for communication.</param>
+        /// <param name="provider">The authentication provider.</param>
+        /// <param name="uriScheme">The URI Scheme</param>
+        /// <param name="parameters">The parameters to send along with the request</param>
         public MobileServicePKCEAuthentication(MobileServiceClient client, string provider, string uriScheme, IDictionary<string, string> parameters)
             : base(client, provider, parameters)
         {
@@ -70,6 +89,9 @@ namespace Microsoft.WindowsAzure.MobileServices.Internal
             return await httpClient.RequestWithoutHandlersAsync(HttpMethod.Get, pathAndQuery, null);
         }
 
+        /// <summary>
+        /// Returns the authorization code needed to complete the transaction.
+        /// </summary>
         public abstract Task<string> GetAuthorizationCodeAsync();
 
         private static string GetCodeVerifier()

@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// ----------------------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// ----------------------------------------------------------------------------
+
+using System;
 
 namespace Microsoft.WindowsAzure.MobileServices
 {
@@ -13,7 +13,14 @@ namespace Microsoft.WindowsAzure.MobileServices
     [AttributeUsage(System.AttributeTargets.All)]
     public sealed class PreserveAttribute : System.Attribute
     {
+        /// <summary>
+        /// Preserve all members
+        /// </summary>
         public bool AllMembers;
+
+        /// <summary>
+        /// Apply a condition to determine which members to preserve.
+        /// </summary>
         public bool Conditional;
     }
 }
