@@ -121,7 +121,7 @@ namespace MobileClient.Tests.Table.Sync
             this.store.VerifyAll();
             this.opQueue.VerifyAll();
             this.table.VerifyAll();
-            this.settings.VerifyAll();
+            //this.settings.VerifyAll();
 
             store.Verify(s => s.DeleteAsync("test", It.IsAny<IEnumerable<string>>()), Times.Never(), "There shouldn't be any call to delete");
         }
@@ -175,7 +175,7 @@ namespace MobileClient.Tests.Table.Sync
             this.store.VerifyAll();
             this.opQueue.VerifyAll();
             this.table.VerifyAll();
-            this.settings.VerifyAll();
+            //this.settings.VerifyAll();
 
             store.Verify(s => s.DeleteAsync("test", It.IsAny<IEnumerable<string>>()), Times.Never(), "There shouldn't be any call to delete");
         }
@@ -327,7 +327,7 @@ namespace MobileClient.Tests.Table.Sync
             this.settings
                 .Setup(s => s.GetDeltaTokenAsync("test", "latestItems"))
                 .Returns(Task.FromResult(new DateTimeOffset(2013, 1, 1, 0, 0, 0, TimeSpan.Zero)));
-                
+
             if (savesMax)
             {
                 this.settings
