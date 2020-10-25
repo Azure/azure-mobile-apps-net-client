@@ -151,9 +151,9 @@ namespace MobileClient.Tests.Table.Sync
 
             store.VerifyAll();
             opQueue.VerifyAll();
-            table.VerifyAll();
-            //settings.VerifyAll();
-            //store.Verify(s => s.DeleteAsync(testName, It.IsAny<IEnumerable<string>>()), Times.Never(), "There shouldn't be any call to delete");
+            //table.VerifyAll();
+            settings.VerifyAll();
+            store.Verify(s => s.DeleteAsync(testName, It.IsAny<IEnumerable<string>>()), Times.Never(), "There shouldn't be any call to delete");
         }
 
         [Fact]
@@ -225,9 +225,9 @@ namespace MobileClient.Tests.Table.Sync
 
             store.VerifyAll();
             opQueue.VerifyAll();
-            table.VerifyAll();
-            //this.settings.VerifyAll();
-            //store.Verify(s => s.DeleteAsync("test", It.IsAny<IEnumerable<string>>()), Times.Never(), "There shouldn't be any call to delete");
+            //table.VerifyAll();
+            this.settings.VerifyAll();
+            store.Verify(s => s.DeleteAsync("test", It.IsAny<IEnumerable<string>>()), Times.Never(), "There shouldn't be any call to delete");
         }
 
         [Fact]
