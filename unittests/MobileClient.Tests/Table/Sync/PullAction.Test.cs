@@ -19,31 +19,33 @@ namespace MobileClient.Tests.Table.Sync
 {
     public class PullActionTests
     {
-        private Mock<OperationQueue> opQueue;
-        private Mock<IMobileServiceLocalStore> store;
-        private Mock<MobileServiceSyncSettingsManager> settings;
-        private Mock<IMobileServiceSyncHandler> handler;
-        private Mock<MobileServiceClient> client;
-        private Mock<MobileServiceSyncContext> context;
-        private Mock<MobileServiceTable<ToDoWithSystemPropertiesType>> table;
-
-        public PullActionTests()
-        {
-            this.store = new Mock<IMobileServiceLocalStore>(MockBehavior.Strict);
-            this.settings = new Mock<MobileServiceSyncSettingsManager>(MockBehavior.Strict);
-            this.opQueue = new Mock<OperationQueue>(MockBehavior.Strict, this.store.Object);
-            this.handler = new Mock<IMobileServiceSyncHandler>(MockBehavior.Strict);
-            this.client = new Mock<MobileServiceClient>();
-            this.client.Object.Serializer = new MobileServiceSerializer();
-            this.context = new Mock<MobileServiceSyncContext>(this.client.Object);
-            this.table = new Mock<MobileServiceTable<ToDoWithSystemPropertiesType>>("test", this.client.Object);
-        }
-
         [Fact]
         public async Task DoesNotUpsertAnObject_IfItDoesNotHaveAnId()
         {
-            var query = new MobileServiceTableQueryDescription("test");
-            var action = new PullAction(this.table.Object, MobileServiceTableKind.Table, this.context.Object, null, query, null, null, this.opQueue.Object, this.settings.Object, this.store.Object, MobileServiceRemoteTableOptions.All, pullOptions: null, reader: null, cancellationToken: CancellationToken.None);
+            string testName = "test";
+
+            var store = new Mock<IMobileServiceLocalStore>(MockBehavior.Strict);
+            var settings = new Mock<MobileServiceSyncSettingsManager>(MockBehavior.Strict);
+            var opQueue = new Mock<OperationQueue>(MockBehavior.Strict, store.Object);
+            var handler = new Mock<IMobileServiceSyncHandler>(MockBehavior.Strict);
+            var client = new Mock<MobileServiceClient>();
+            client.Object.Serializer = new MobileServiceSerializer();
+            var context = new Mock<MobileServiceSyncContext>(client.Object);
+            var table = new Mock<MobileServiceTable<ToDoWithSystemPropertiesType>>(testName, client.Object);
+
+            var query = new MobileServiceTableQueryDescription(testName);
+            var action = new PullAction(
+                table.Object, MobileServiceTableKind.Table, 
+                context.Object, 
+                null, query, 
+                null, null, 
+                opQueue.Object, 
+                settings.Object, 
+                store.Object,
+                 MobileServiceRemoteTableOptions.All, 
+                 pullOptions: null, 
+                 reader: null, 
+                 cancellationToken: CancellationToken.None);
 
             var itemWithId = new JObject() { { "id", "abc" }, { "text", "has id" } };
             var itemWithoutId = new JObject() { { "text", "no id" } };
@@ -51,19 +53,27 @@ namespace MobileClient.Tests.Table.Sync
                 itemWithId,
                 itemWithoutId
             });
-            this.opQueue.Setup(q => q.LockTableAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult<IDisposable>(null));
-            this.opQueue.Setup(q => q.CountPending(It.IsAny<string>())).Returns(Task.FromResult(0L));
-            this.opQueue.Setup(q => q.GetOperationByItemIdAsync(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.FromResult<MobileServiceTableOperation>(null));
-            this.table.SetupSequence(t => t.ReadAsync(It.IsAny<string>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<MobileServiceFeatures>()))
-                      .Returns(Task.FromResult(QueryResult.Parse(result, null, false)))
-                      .Returns(Task.FromResult(QueryResult.Parse(new JArray(), null, false)));
-            this.store.Setup(s => s.UpsertAsync("test", It.IsAny<IEnumerable<JObject>>(), true))
-                      .Returns(Task.FromResult(0))
-                      .Callback<string, IEnumerable<JObject>, bool>((tableName, items, fromServer) =>
-                      {
-                          Assert.Single(items);
-                          Assert.Equal(itemWithId, items.First());
-                      });
+            opQueue
+                .Setup(q => q.LockTableAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult<IDisposable>(null));
+            opQueue
+                .Setup(q => q.CountPending(It.IsAny<string>()))
+                .Returns(Task.FromResult(0L));
+            opQueue
+                .Setup(q => q.GetOperationByItemIdAsync(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns(Task.FromResult<MobileServiceTableOperation>(null));
+            table
+                .SetupSequence(t => t.ReadAsync(It.IsAny<string>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<MobileServiceFeatures>()))
+                .Returns(Task.FromResult(QueryResult.Parse(result, null, false)))
+                .Returns(Task.FromResult(QueryResult.Parse(new JArray(), null, false)));
+            store
+                .Setup(s => s.UpsertAsync(testName, It.IsAny<IEnumerable<JObject>>(), true))
+                .Returns(Task.FromResult(0))
+                .Callback<string, IEnumerable<JObject>, bool>((tableName, items, fromServer) =>
+                {
+                    Assert.Single(items);
+                    Assert.Equal(itemWithId, items.First());
+                });
 
             await action.ExecuteAsync();
 
@@ -77,7 +87,19 @@ namespace MobileClient.Tests.Table.Sync
         [Fact]
         public async Task SavesTheMaxUpdatedAt_IfQueryIdIsSpecified_WithoutFilter()
         {
-            var query = new MobileServiceTableQueryDescription("test");
+            string testName = "test";
+            string queryName = "latestItems";
+
+            var store = new Mock<IMobileServiceLocalStore>(MockBehavior.Strict);
+            var settings = new Mock<MobileServiceSyncSettingsManager>(MockBehavior.Strict);
+            var opQueue = new Mock<OperationQueue>(MockBehavior.Strict, store.Object);
+            var handler = new Mock<IMobileServiceSyncHandler>(MockBehavior.Strict);
+            var client = new Mock<MobileServiceClient>();
+            client.Object.Serializer = new MobileServiceSerializer();
+            var context = new Mock<MobileServiceSyncContext>(client.Object);
+            var table = new Mock<MobileServiceTable<ToDoWithSystemPropertiesType>>(testName, client.Object);
+
+            var query = new MobileServiceTableQueryDescription(testName);
             var maxUpdatedAt = new DateTime(2014, 07, 09);
             var result = new JArray(new[]
             {
@@ -87,49 +109,69 @@ namespace MobileClient.Tests.Table.Sync
             string firstQuery = "$filter=(updatedAt ge datetimeoffset'2013-01-01T00%3A00%3A00.0000000%2B00%3A00')&$orderby=updatedAt&$skip=0&$top=50";
             string secondQuery = "$filter=(updatedAt ge datetimeoffset'2014-07-09T07%3A00%3A00.0000000%2B00%3A00')&$orderby=updatedAt&$skip=0&$top=50";
 
-            var action = new PullAction(this.table.Object, MobileServiceTableKind.Table, this.context.Object,
-                "latestItems", query, null, null, this.opQueue.Object, this.settings.Object, this.store.Object,
-                MobileServiceRemoteTableOptions.All, pullOptions: null, reader: null, cancellationToken: CancellationToken.None);
+            var action = new PullAction(
+                table.Object, MobileServiceTableKind.Table, 
+                context.Object,
+                queryName, query, 
+                null, null, 
+                opQueue.Object, 
+                settings.Object, 
+                store.Object,
+                MobileServiceRemoteTableOptions.All, 
+                pullOptions: null, 
+                reader: null, 
+                cancellationToken: CancellationToken.None);
 
-            this.opQueue
+            opQueue
                 .Setup(q => q.LockTableAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult<IDisposable>(null));
-            this.opQueue
+            opQueue
                 .Setup(q => q.CountPending(It.IsAny<string>()))
                 .Returns(Task.FromResult(0L));
-            this.table
+            table
                 .Setup(t => t.ReadAsync(firstQuery, It.IsAny<IDictionary<string, string>>(), It.IsAny<MobileServiceFeatures>()))
                 .Returns(Task.FromResult(QueryResult.Parse(result, null, false)));
-            this.opQueue
+            opQueue
                 .Setup(q => q.GetOperationByItemIdAsync(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(Task.FromResult<MobileServiceTableOperation>(null));
-            this.table
+            table
                 .Setup(t => t.ReadAsync(secondQuery, It.IsAny<IDictionary<string, string>>(), It.IsAny<MobileServiceFeatures>()))
                 .Returns(Task.FromResult(QueryResult.Parse(new JArray(), null, false)));
-            this.store
-                .Setup(s => s.UpsertAsync("test", It.IsAny<IEnumerable<JObject>>(), true))
+            store
+                .Setup(s => s.UpsertAsync(testName, It.IsAny<IEnumerable<JObject>>(), true))
                 .Returns(Task.FromResult(0));
-            this.settings
-                .Setup(s => s.GetDeltaTokenAsync("test", "latestItems"))
+            settings
+                .Setup(s => s.GetDeltaTokenAsync(testName, queryName))
                 .Returns(Task.FromResult(new DateTimeOffset(2013, 1, 1, 0, 0, 0, TimeSpan.Zero)));
-            this.settings
-                .Setup(s => s.SetDeltaTokenAsync("test", "latestItems", maxUpdatedAt))
+            settings
+                .Setup(s => s.SetDeltaTokenAsync(testName, queryName, maxUpdatedAt))
                 .Returns(Task.FromResult(0));
 
             await action.ExecuteAsync();
 
-            this.store.VerifyAll();
-            this.opQueue.VerifyAll();
-            this.table.VerifyAll();
-            this.settings.VerifyAll();
-
-            store.Verify(s => s.DeleteAsync("test", It.IsAny<IEnumerable<string>>()), Times.Never(), "There shouldn't be any call to delete");
+            store.VerifyAll();
+            opQueue.VerifyAll();
+            table.Verify(t => t.ReadAsync(firstQuery, It.IsAny<IDictionary<string, string>>(), It.IsAny<MobileServiceFeatures>()), Times.AtLeastOnce());
+            settings.VerifyAll();
+            store.Verify(s => s.DeleteAsync(testName, It.IsAny<IEnumerable<string>>()), Times.Never(), "There shouldn't be any call to delete");
         }
 
         [Fact]
         public async Task SavesTheMaxUpdatedAt_IfQueryIdIsSpecified()
         {
-            var query = new MobileServiceTableQueryDescription("test");
+            string testName = "test";
+            string queryName = "latestItems";
+
+            var store = new Mock<IMobileServiceLocalStore>(MockBehavior.Strict);
+            var settings = new Mock<MobileServiceSyncSettingsManager>(MockBehavior.Strict);
+            var opQueue = new Mock<OperationQueue>(MockBehavior.Strict, store.Object);
+            var handler = new Mock<IMobileServiceSyncHandler>(MockBehavior.Strict);
+            var client = new Mock<MobileServiceClient>();
+            client.Object.Serializer = new MobileServiceSerializer();
+            var context = new Mock<MobileServiceSyncContext>(client.Object);
+            var table = new Mock<MobileServiceTable<ToDoWithSystemPropertiesType>>(testName, client.Object);
+
+            var query = new MobileServiceTableQueryDescription(testName);
             query.Filter = new BinaryOperatorNode(BinaryOperatorKind.Equal, new ConstantNode(4), new ConstantNode(3));
             query.Ordering.Add(new OrderByNode(new MemberAccessNode(null, "text"), OrderByDirection.Descending));
             var maxUpdatedAt = new DateTime(2014, 07, 09);
@@ -140,59 +182,123 @@ namespace MobileClient.Tests.Table.Sync
             });
             string firstQuery = "$filter=((4 eq 3) and (updatedAt ge datetimeoffset'2013-01-01T00%3A00%3A00.0000000%2B00%3A00'))&$orderby=updatedAt&$skip=0&$top=50";
             string secondQuery = "$filter=((4 eq 3) and (updatedAt ge datetimeoffset'2014-07-09T07%3A00%3A00.0000000%2B00%3A00'))&$orderby=updatedAt&$skip=0&$top=50";
-                        
-            var action = new PullAction(this.table.Object, MobileServiceTableKind.Table, this.context.Object,
-                "latestItems", query, null, null, this.opQueue.Object, this.settings.Object, this.store.Object,
-                MobileServiceRemoteTableOptions.All, pullOptions: null, reader: null, cancellationToken: CancellationToken.None);
 
-            this.opQueue
+            var action = new PullAction(
+                table.Object, MobileServiceTableKind.Table, 
+                context.Object,
+                queryName, query, 
+                null, null, 
+                opQueue.Object, 
+                settings.Object, 
+                store.Object,
+                MobileServiceRemoteTableOptions.All, 
+                pullOptions: null, 
+                reader: null, 
+                cancellationToken: CancellationToken.None);          
+
+            opQueue
                 .Setup(q => q.LockTableAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult<IDisposable>(null));
-            this.opQueue
+            opQueue
                 .Setup(q => q.CountPending(It.IsAny<string>()))
                 .Returns(Task.FromResult(0L));
-            this.table
+            table
                 .Setup(t => t.ReadAsync(firstQuery, It.IsAny<IDictionary<string, string>>(), It.IsAny<MobileServiceFeatures>()))
                 .Returns(Task.FromResult(QueryResult.Parse(result, null, false)));
-            this.opQueue
+            opQueue
                 .Setup(q => q.GetOperationByItemIdAsync(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(Task.FromResult<MobileServiceTableOperation>(null));
-            this.table
+            table
                 .Setup(t => t.ReadAsync(secondQuery, It.IsAny<IDictionary<string, string>>(), It.IsAny<MobileServiceFeatures>()))
                 .Returns(Task.FromResult(QueryResult.Parse(new JArray(), null, false)));
-            this.store
-                .Setup(s => s.UpsertAsync("test", It.IsAny<IEnumerable<JObject>>(), true))
+            store
+                .Setup(s => s.UpsertAsync(testName, It.IsAny<IEnumerable<JObject>>(), true))
                 .Returns(Task.FromResult(0));
-            this.settings
-                .Setup(s => s.GetDeltaTokenAsync("test", "latestItems"))
+            settings
+                .Setup(s => s.GetDeltaTokenAsync(testName, queryName))
                 .Returns(Task.FromResult(new DateTimeOffset(2013, 1, 1, 0, 0, 0, TimeSpan.Zero)));
-            this.settings
-                .Setup(s => s.SetDeltaTokenAsync("test", "latestItems", maxUpdatedAt))
+            settings
+                .Setup(s => s.SetDeltaTokenAsync(testName, queryName, maxUpdatedAt))
                 .Returns(Task.FromResult(0));
 
             await action.ExecuteAsync();
 
-            this.store.VerifyAll();
-            this.opQueue.VerifyAll();
-            this.table.VerifyAll();
-            this.settings.VerifyAll();
-
+            store.VerifyAll();
+            opQueue.VerifyAll();
+            table.Verify(t => t.ReadAsync(firstQuery, It.IsAny<IDictionary<string, string>>(), It.IsAny<MobileServiceFeatures>()), Times.AtLeastOnce());
+            settings.VerifyAll();
             store.Verify(s => s.DeleteAsync("test", It.IsAny<IEnumerable<string>>()), Times.Never(), "There shouldn't be any call to delete");
         }
 
         [Fact]
         public async Task DoesNotSaveTheMaxUpdatedAt_IfThereAreNoResults()
         {
-            var query = new MobileServiceTableQueryDescription("test");
+            string testName = "test";
+            string queryName = "latestItems";
+
+            var store = new Mock<IMobileServiceLocalStore>(MockBehavior.Strict);
+            var settings = new Mock<MobileServiceSyncSettingsManager>(MockBehavior.Strict);
+            var opQueue = new Mock<OperationQueue>(MockBehavior.Strict, store.Object);
+            var handler = new Mock<IMobileServiceSyncHandler>(MockBehavior.Strict);
+            var client = new Mock<MobileServiceClient>();
+            client.Object.Serializer = new MobileServiceSerializer();
+            var context = new Mock<MobileServiceSyncContext>(client.Object);
+            var table = new Mock<MobileServiceTable<ToDoWithSystemPropertiesType>>(testName, client.Object);
+
+            var query = new MobileServiceTableQueryDescription(testName);
             var result = new JArray();
-            string expectedOdata = "$filter=(updatedAt ge datetimeoffset'2013-01-01T00%3A00%3A00.0000000%2B00%3A00')&$orderby=updatedAt&$skip=0&$top=50";
-            await TestIncrementalSync(query, result, DateTime.MinValue, savesMax: false, firstQuery: expectedOdata, secondQuery: null);
+            string firstQuery = "$filter=(updatedAt ge datetimeoffset'2013-01-01T00%3A00%3A00.0000000%2B00%3A00')&$orderby=updatedAt&$skip=0&$top=50";
+
+            var action = new PullAction(
+                table.Object, MobileServiceTableKind.Table, 
+                context.Object,
+                queryName, query, 
+                null, null, 
+                opQueue.Object, 
+                settings.Object, 
+                store.Object,
+                MobileServiceRemoteTableOptions.All, 
+                pullOptions: null, 
+                reader: null, 
+                cancellationToken: CancellationToken.None); 
+
+            opQueue
+                .Setup(q => q.LockTableAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult<IDisposable>(null));
+            opQueue
+                .Setup(q => q.CountPending(It.IsAny<string>()))
+                .Returns(Task.FromResult(0L));
+            table
+                .Setup(t => t.ReadAsync(firstQuery, It.IsAny<IDictionary<string, string>>(), It.IsAny<MobileServiceFeatures>()))
+                .Returns(Task.FromResult(QueryResult.Parse(result, null, false)));
+            settings
+                .Setup(s => s.GetDeltaTokenAsync(testName, queryName))
+                .Returns(Task.FromResult(new DateTimeOffset(2013, 1, 1, 0, 0, 0, TimeSpan.Zero)));
+
+            await action.ExecuteAsync();
+
+            store.VerifyAll();
+            opQueue.VerifyAll();
+            table.VerifyAll();
+            settings.VerifyAll();
         }
 
         [Fact]
         public async Task DoesNotSaveTheMaxUpdatedAt_IfResultsHaveOlderUpdatedAt()
         {
-            var query = new MobileServiceTableQueryDescription("test");
+            string testName = "test";
+            string queryName = "latestItems";
+
+            var store = new Mock<IMobileServiceLocalStore>(MockBehavior.Strict);
+            var settings = new Mock<MobileServiceSyncSettingsManager>(MockBehavior.Strict);
+            var opQueue = new Mock<OperationQueue>(MockBehavior.Strict, store.Object);
+            var handler = new Mock<IMobileServiceSyncHandler>(MockBehavior.Strict);
+            var client = new Mock<MobileServiceClient>();
+            client.Object.Serializer = new MobileServiceSerializer();
+            var context = new Mock<MobileServiceSyncContext>(client.Object);
+            var table = new Mock<MobileServiceTable<ToDoWithSystemPropertiesType>>(testName, client.Object);
+
+            var query = new MobileServiceTableQueryDescription(testName);
             query.Filter = new BinaryOperatorNode(BinaryOperatorKind.Equal, new ConstantNode(4), new ConstantNode(3));
             var result = new JArray(new[]
             {
@@ -200,13 +306,69 @@ namespace MobileClient.Tests.Table.Sync
             });
             string firstQuery = "$filter=((4 eq 3) and (updatedAt ge datetimeoffset'2013-01-01T00%3A00%3A00.0000000%2B00%3A00'))&$orderby=updatedAt&$skip=0&$top=50";
             string secondQuery = "$filter=((4 eq 3) and (updatedAt ge datetimeoffset'2013-01-01T00%3A00%3A00.0000000%2B00%3A00'))&$orderby=updatedAt&$skip=1&$top=50";
-            await TestIncrementalSync(query, result, new DateTime(2014, 07, 09), savesMax: false, firstQuery: firstQuery, secondQuery: secondQuery);
+
+            var action = new PullAction(
+                table.Object, MobileServiceTableKind.Table, 
+                context.Object,
+                queryName, query, 
+                null, null, 
+                opQueue.Object, 
+                settings.Object, 
+                store.Object,
+                MobileServiceRemoteTableOptions.All, 
+                pullOptions: null, 
+                reader: null, 
+                cancellationToken: CancellationToken.None); 
+
+            opQueue
+                .Setup(q => q.LockTableAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult<IDisposable>(null));
+            opQueue
+                .Setup(q => q.CountPending(It.IsAny<string>()))
+                .Returns(Task.FromResult(0L));
+            table
+                .Setup(t => t.ReadAsync(firstQuery, It.IsAny<IDictionary<string, string>>(), It.IsAny<MobileServiceFeatures>()))
+                .Returns(Task.FromResult(QueryResult.Parse(result, null, false)));
+
+            opQueue
+                .Setup(q => q.GetOperationByItemIdAsync(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns(Task.FromResult<MobileServiceTableOperation>(null));
+            table
+                .Setup(t => t.ReadAsync(secondQuery, It.IsAny<IDictionary<string, string>>(), It.IsAny<MobileServiceFeatures>()))
+                .Returns(Task.FromResult(QueryResult.Parse(new JArray(), null, false)));
+            store
+                .Setup(s => s.UpsertAsync(testName, It.IsAny<IEnumerable<JObject>>(), true))
+                .Returns(Task.FromResult(0));
+            settings
+                .Setup(s => s.GetDeltaTokenAsync(testName, queryName))
+                .Returns(Task.FromResult(new DateTimeOffset(2013, 1, 1, 0, 0, 0, TimeSpan.Zero)));
+
+            await action.ExecuteAsync();
+
+            store.VerifyAll();
+            opQueue.VerifyAll();
+            table.VerifyAll();
+            settings.VerifyAll();
+
+            store.Verify(s => s.DeleteAsync("test", It.IsAny<IEnumerable<string>>()), Times.Never(), "There shouldn't be any call to delete");
         }
 
         [Fact]
         public async Task DoesNotSaveTheMaxUpdatedAt_IfResultsDoNotHaveUpdatedAt()
         {
-            var query = new MobileServiceTableQueryDescription("test");
+            string testName = "test";
+            string queryName = "latestItems";
+
+            var store = new Mock<IMobileServiceLocalStore>(MockBehavior.Strict);
+            var settings = new Mock<MobileServiceSyncSettingsManager>(MockBehavior.Strict);
+            var opQueue = new Mock<OperationQueue>(MockBehavior.Strict, store.Object);
+            var handler = new Mock<IMobileServiceSyncHandler>(MockBehavior.Strict);
+            var client = new Mock<MobileServiceClient>();
+            client.Object.Serializer = new MobileServiceSerializer();
+            var context = new Mock<MobileServiceSyncContext>(client.Object);
+            var table = new Mock<MobileServiceTable<ToDoWithSystemPropertiesType>>(testName, client.Object);
+
+            var query = new MobileServiceTableQueryDescription(testName);
             query.Filter = new BinaryOperatorNode(BinaryOperatorKind.Equal, new ConstantNode(4), new ConstantNode(3));
             var result = new JArray(new[]
             {
@@ -215,7 +377,50 @@ namespace MobileClient.Tests.Table.Sync
             });
             string firstQuery = "$filter=((4 eq 3) and (updatedAt ge datetimeoffset'2013-01-01T00%3A00%3A00.0000000%2B00%3A00'))&$orderby=updatedAt&$skip=0&$top=50";
             string secondQuery = "$filter=((4 eq 3) and (updatedAt ge datetimeoffset'2013-01-01T00%3A00%3A00.0000000%2B00%3A00'))&$orderby=updatedAt&$skip=2&$top=50";
-            await TestIncrementalSync(query, result, new DateTime(2014, 07, 09), savesMax: false, firstQuery: firstQuery, secondQuery: secondQuery);
+
+            var action = new PullAction(
+                table.Object, MobileServiceTableKind.Table, 
+                context.Object,
+                queryName, query, 
+                null, null, 
+                opQueue.Object, 
+                settings.Object, 
+                store.Object,
+                MobileServiceRemoteTableOptions.All, 
+                pullOptions: null, 
+                reader: null, 
+                cancellationToken: CancellationToken.None);
+
+            opQueue
+                .Setup(q => q.LockTableAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult<IDisposable>(null));
+            opQueue
+                .Setup(q => q.CountPending(It.IsAny<string>()))
+                .Returns(Task.FromResult(0L));
+            table
+                .Setup(t => t.ReadAsync(firstQuery, It.IsAny<IDictionary<string, string>>(), It.IsAny<MobileServiceFeatures>()))
+                .Returns(Task.FromResult(QueryResult.Parse(result, null, false)));
+            opQueue
+                    .Setup(q => q.GetOperationByItemIdAsync(It.IsAny<string>(), It.IsAny<string>()))
+                    .Returns(Task.FromResult<MobileServiceTableOperation>(null));
+            table
+                .Setup(t => t.ReadAsync(secondQuery, It.IsAny<IDictionary<string, string>>(), It.IsAny<MobileServiceFeatures>()))
+                .Returns(Task.FromResult(QueryResult.Parse(new JArray(), null, false)));
+            store
+                .Setup(s => s.UpsertAsync(testName, It.IsAny<IEnumerable<JObject>>(), true))
+                .Returns(Task.FromResult(0));
+            settings
+                .Setup(s => s.GetDeltaTokenAsync(testName, queryName))
+                .Returns(Task.FromResult(new DateTimeOffset(2013, 1, 1, 0, 0, 0, TimeSpan.Zero)));
+
+            await action.ExecuteAsync();
+
+            store.VerifyAll();
+            opQueue.VerifyAll();
+            table.VerifyAll();
+            settings.VerifyAll();
+
+            store.Verify(s => s.DeleteAsync(testName, It.IsAny<IEnumerable<string>>()), Times.Never(), "There shouldn't be any call to delete");
         }
 
         [Fact]
@@ -233,8 +438,24 @@ namespace MobileClient.Tests.Table.Sync
         [Fact]
         public async Task DoesNotUpsertAnObject_IfRecordIsPresentInOperationQueue()
         {
-            var query = new MobileServiceTableQueryDescription("test");
-            var action = new PullAction(this.table.Object, MobileServiceTableKind.Table, this.context.Object, null, query, null, null, this.opQueue.Object, this.settings.Object, this.store.Object, MobileServiceRemoteTableOptions.All, pullOptions: null, reader: null, cancellationToken: CancellationToken.None);
+            string testName = "test";
+
+            var store = new Mock<IMobileServiceLocalStore>(MockBehavior.Strict);
+            var settings = new Mock<MobileServiceSyncSettingsManager>(MockBehavior.Strict);
+            var opQueue = new Mock<OperationQueue>(MockBehavior.Strict, store.Object);
+            var handler = new Mock<IMobileServiceSyncHandler>(MockBehavior.Strict);
+            var client = new Mock<MobileServiceClient>();
+            client.Object.Serializer = new MobileServiceSerializer();
+            var context = new Mock<MobileServiceSyncContext>(client.Object);
+            var table = new Mock<MobileServiceTable<ToDoWithSystemPropertiesType>>(testName, client.Object);
+
+            var query = new MobileServiceTableQueryDescription(testName);
+            var action = new PullAction(
+                table.Object, MobileServiceTableKind.Table, 
+                context.Object, null, query, null, null, 
+                opQueue.Object, settings.Object, store.Object, 
+                MobileServiceRemoteTableOptions.All, 
+                pullOptions: null, reader: null, cancellationToken: CancellationToken.None);
 
             //// item with insert operation from server
             var insertItemWithPendingOperation = new JObject() { { "id", "abc" }, { "text", "has pending operation" } };
@@ -255,13 +476,13 @@ namespace MobileClient.Tests.Table.Sync
                 itemWithNoPendingOperation
             });
 
-            this.opQueue
+            opQueue
                 .Setup(q => q.LockTableAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult<IDisposable>(null));
-            this.opQueue
+            opQueue
                 .Setup(q => q.CountPending(It.IsAny<string>()))
                 .Returns(Task.FromResult(0L));
-            this.opQueue
+            opQueue
                 .Setup(q => q.GetOperationByItemIdAsync(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns((string tableName, string id) =>
                 {
@@ -272,13 +493,13 @@ namespace MobileClient.Tests.Table.Sync
                 });
 
             //// below two reads correspond to first and second page from the server
-            this.table
+            table
                 .SetupSequence(t => t.ReadAsync(It.IsAny<string>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<MobileServiceFeatures>()))
                 .Returns(Task.FromResult(QueryResult.Parse(result, null, false)))
                 .Returns(Task.FromResult(QueryResult.Parse(new JArray(), null, false)));
 
-            this.store
-                .Setup(s => s.UpsertAsync("test", It.IsAny<IEnumerable<JObject>>(), true))
+            store
+                .Setup(s => s.UpsertAsync(testName, It.IsAny<IEnumerable<JObject>>(), true))
                 .Returns(Task.FromResult(0))
                 .Callback<string, IEnumerable<JObject>, bool>((tableName, items, fromServer) =>
                 {
@@ -292,57 +513,7 @@ namespace MobileClient.Tests.Table.Sync
             opQueue.VerifyAll();
             table.VerifyAll();
 
-            store.Verify(s => s.DeleteAsync("test", It.IsAny<IEnumerable<string>>()), Times.Never(), "There shouldn't be any call to delete");
-        }
-
-        private async Task TestIncrementalSync(MobileServiceTableQueryDescription query, JArray result, DateTime maxUpdatedAt, bool savesMax, string firstQuery, string secondQuery)
-        {
-            var action = new PullAction(this.table.Object, MobileServiceTableKind.Table, this.context.Object,
-                "latestItems", query, null, null, this.opQueue.Object, this.settings.Object, this.store.Object,
-                MobileServiceRemoteTableOptions.All, pullOptions: null, reader: null, cancellationToken: CancellationToken.None);
-
-            this.opQueue
-                .Setup(q => q.LockTableAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                .Returns(Task.FromResult<IDisposable>(null));
-            this.opQueue
-                .Setup(q => q.CountPending(It.IsAny<string>()))
-                .Returns(Task.FromResult(0L));
-            this.table
-                .Setup(t => t.ReadAsync(firstQuery, It.IsAny<IDictionary<string, string>>(), It.IsAny<MobileServiceFeatures>()))
-                .Returns(Task.FromResult(QueryResult.Parse(result, null, false)));
-
-            if (result.Any())
-            {
-                this.opQueue
-                    .Setup(q => q.GetOperationByItemIdAsync(It.IsAny<string>(), It.IsAny<string>()))
-                    .Returns(Task.FromResult<MobileServiceTableOperation>(null));
-                this.table
-                    .Setup(t => t.ReadAsync(secondQuery, It.IsAny<IDictionary<string, string>>(), It.IsAny<MobileServiceFeatures>()))
-                    .Returns(Task.FromResult(QueryResult.Parse(new JArray(), null, false)));
-                this.store
-                    .Setup(s => s.UpsertAsync("test", It.IsAny<IEnumerable<JObject>>(), true))
-                    .Returns(Task.FromResult(0));
-            }
-
-            this.settings
-                .Setup(s => s.GetDeltaTokenAsync("test", "latestItems"))
-                .Returns(Task.FromResult(new DateTimeOffset(2013, 1, 1, 0, 0, 0, TimeSpan.Zero)));
-                
-            if (savesMax)
-            {
-                this.settings
-                    .Setup(s => s.SetDeltaTokenAsync("test", "latestItems", maxUpdatedAt))
-                    .Returns(Task.FromResult(0));
-            }
-
-            await action.ExecuteAsync();
-
-            this.store.VerifyAll();
-            this.opQueue.VerifyAll();
-            this.table.VerifyAll();
-            this.settings.VerifyAll();
-
-            store.Verify(s => s.DeleteAsync("test", It.IsAny<IEnumerable<string>>()), Times.Never(), "There shouldn't be any call to delete");
+            store.Verify(s => s.DeleteAsync(testName, It.IsAny<IEnumerable<string>>()), Times.Never(), "There shouldn't be any call to delete");
         }
     }
 }
