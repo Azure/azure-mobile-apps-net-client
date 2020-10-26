@@ -151,7 +151,6 @@ namespace MobileClient.Tests.Table.Sync
 
             store.VerifyAll();
             opQueue.VerifyAll();
-            //table.VerifyAll();
             table.Verify(t => t.ReadAsync(firstQuery, It.IsAny<IDictionary<string, string>>(), It.IsAny<MobileServiceFeatures>()), Times.AtLeastOnce());
             settings.VerifyAll();
             store.Verify(s => s.DeleteAsync(testName, It.IsAny<IEnumerable<string>>()), Times.Never(), "There shouldn't be any call to delete");
@@ -226,7 +225,6 @@ namespace MobileClient.Tests.Table.Sync
 
             store.VerifyAll();
             opQueue.VerifyAll();
-            //table.VerifyAll();
             table.Verify(t => t.ReadAsync(firstQuery, It.IsAny<IDictionary<string, string>>(), It.IsAny<MobileServiceFeatures>()), Times.AtLeastOnce());
             settings.VerifyAll();
             store.Verify(s => s.DeleteAsync("test", It.IsAny<IEnumerable<string>>()), Times.Never(), "There shouldn't be any call to delete");
