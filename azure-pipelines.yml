@@ -43,8 +43,6 @@ stages:
       dependsOn: [ 'build' ]
       jobs:
         - template: sign-artifacts/jobs/v2.yml@internal-templates
-          parameters:
-            codeSignOverride: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
 
   - stage: e2etests
     displayName: Device End-to-End Tests
