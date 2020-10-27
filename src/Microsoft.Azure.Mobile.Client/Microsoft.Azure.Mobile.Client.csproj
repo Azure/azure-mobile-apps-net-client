@@ -6,7 +6,6 @@
     <LangVersion>8.0</LangVersion>
     <DefaultLanguage>en-US</DefaultLanguage>
     <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
-    <VersionPrefix>4.2.0</VersionPrefix>
     <PackageTitle>Azure Mobile Client SDK</PackageTitle>
     <Title>Azure Mobile Client SDK</Title>
     <Authors>Microsoft</Authors>
@@ -27,7 +26,6 @@
     <Company>Microsoft</Company>
     <NeutralLanguage>en-US</NeutralLanguage>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>4.2.0</Version>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)'=='Debug' ">
     <DebugSymbols>true</DebugSymbols>
