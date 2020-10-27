@@ -3,12 +3,15 @@ trigger:
   - ns2
   - refs/tags/*
 
+
 pr:
   - master
   - ns2
 
+
 variables:
   AREA_PATH: 'DevDiv\Xamarin SDK'
+
 
 resources:
   repositories:
@@ -20,6 +23,7 @@ resources:
       type: github
       name: xamarin/XamarinComponents
       endpoint: xamarin
+
 
 stages:
   - stage: build
