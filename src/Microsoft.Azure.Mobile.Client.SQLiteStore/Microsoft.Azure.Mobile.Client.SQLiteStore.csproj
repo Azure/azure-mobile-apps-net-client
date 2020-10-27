@@ -2,7 +2,6 @@
   <Import Project="..\..\build\Microsoft.Azure.Mobile.Client.Build.props" />
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net461;monoandroid90;xamarin.ios10</TargetFrameworks>
-    <VersionPrefix>4.2.0</VersionPrefix>
     <PackageTitle>Azure Mobile SQLiteStore</PackageTitle>
     <Title>Azure Mobile SQLiteStore</Title>
     <Authors>Microsoft</Authors>

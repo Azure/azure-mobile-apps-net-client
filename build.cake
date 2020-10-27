@@ -4,6 +4,8 @@
 
 var target = Argument("target", "Default");
 var configuration = Argument("configuration", "Release");
+var nugetVersion = Argument("nugetVersion", EnvironmentVariable("NUGET_VERSION") ?? "1.0.0");
+var baseVersion = Argument("baseVersion", EnvironmentVariable("BASE_VERSION") ?? "1.0.0");
 
 ///////////////////////////////////////////////////////////////////////////////
 // TASKS
@@ -17,7 +19,9 @@ Task("Build")
         .EnableBinaryLogger("./output/build.binlog")
         .WithRestore()
         .WithTarget("Build")
-        .WithProperty("PackageOutputPath", MakeAbsolute((DirectoryPath)"./output/").FullPath));
+        .WithProperty("PackageOutputPath", MakeAbsolute((DirectoryPath)"./output/").FullPath)
+        .WithProperty("PackageVersion", nugetVersion)
+        .WithProperty("Version", baseVersion));
 });
 
 Task("Test")
