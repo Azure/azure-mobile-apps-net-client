@@ -5,7 +5,9 @@
 var target = Argument("target", "Default");
 var configuration = Argument("configuration", "Release");
 var nugetVersion = Argument("nugetVersion", EnvironmentVariable("NUGET_VERSION") ?? "1.0.0");
-var baseVersion = Argument("baseVersion", EnvironmentVariable("BASE_VERSION") ?? "1.0.0");
+var baseVersion = nugetVersion.Contains("-")
+    ? nugetVersion.Substring(0, nugetVersion.IndexOf("-"))
+    : nugetVersion;
 
 ///////////////////////////////////////////////////////////////////////////////
 // TASKS
@@ -14,6 +16,9 @@ var baseVersion = Argument("baseVersion", EnvironmentVariable("BASE_VERSION") ??
 Task("Build")
     .Does(() =>
 {
+    Information("Building with NuGet version: {0}", nugetVersion);
+    Information("Building with assembly version: {0}", baseVersion);
+
     MSBuild("./Microsoft.Azure.Mobile.Client.sln", c => c
         .SetConfiguration(configuration)
         .EnableBinaryLogger("./output/build.binlog")

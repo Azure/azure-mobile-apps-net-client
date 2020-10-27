@@ -49,7 +49,6 @@ stages:
             - pwsh: |
                 $tagVersion = $env:BUILD_SOURCEBRANCHNAME
                 Write-Host "Tag version: $tagVersion"
-                Write-Host "##vso[task.setvariable variable=BASE_VERSION]$tagVersion"
                 Write-Host "##vso[task.setvariable variable=NUGET_VERSION]$tagVersion"
               displayName: Override version for tags
               condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
