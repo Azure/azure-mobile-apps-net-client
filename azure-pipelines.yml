@@ -138,7 +138,7 @@ stages:
       - template: .ci/build.yml@components
         parameters:
           name: e2etests_android_api_30
-          dependsOn: [ 'e2etests_android_api_26' ] # temporary until tests support parallel runs
+          dependsOn: [ 'e2etests_android_api_29' ] # temporary until tests support parallel runs
           runChecks: false
           displayName: Android API 30
           windowsImage: ''
