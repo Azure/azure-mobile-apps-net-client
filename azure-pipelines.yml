@@ -130,9 +130,9 @@ stages:
           verbosity: diagnostic
           cakeFile: e2etests/build.cake
           cakeTarget: test-android-emu
-          cakeExtraArgs: --avd-target="`"system-images;android-29;google_apis_playstore;x86`""
+          cakeExtraArgs: --avd-target="`"system-images;android-29;google_apis;x86`""
           preBuildSteps:
-            - bash: sh -c "echo \"y\" | $ANDROID_HOME/tools/bin/sdkmanager \"system-images;android-29;google_apis_playstore;x86\""
+            - bash: sh -c "echo \"y\" | $ANDROID_HOME/tools/bin/sdkmanager \"system-images;android-29;google_apis;x86\""
               displayName: Install the Android emulators
               
       - template: .ci/build.yml@components
@@ -148,7 +148,7 @@ stages:
           verbosity: diagnostic
           cakeFile: e2etests/build.cake
           cakeTarget: test-android-emu
-          cakeExtraArgs: --avd-target="`"system-images;android-30;google_apis_playstore;x86`""
+          cakeExtraArgs: --avd-target="`"system-images;android-30;google_apis;x86`""
           preBuildSteps:
-            - bash: sh -c "echo \"y\" | $ANDROID_HOME/tools/bin/sdkmanager \"system-images;android-30;google_apis_playstore;x86\""
+            - bash: sh -c "echo \"y\" | $ANDROID_HOME/tools/bin/sdkmanager \"system-images;android-30;google_apis;x86\""
               displayName: Install the Android emulators
