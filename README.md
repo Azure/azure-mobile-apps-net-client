@@ -1,4 +1,4 @@
-# Azure Mobile Apps: .NET Client SDK - DO NOT MERGE
+# Azure Mobile Apps: .NET Client SDK
 
 With Azure Mobile Apps you can add a scalable backend to your connected client applications in minutes.
 
