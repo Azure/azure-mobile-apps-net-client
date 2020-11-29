@@ -13,11 +13,11 @@ var IOS_IPA_PATH = "./DeviceTests.iOS/bin/iPhoneSimulator/Release/ZumoDeviceTest
 var IOS_TEST_RESULTS_PATH = MakeAbsolute((FilePath)"../output/test-results/ios/TestResults.xml");
 
 var ANDROID_PROJ = "./DeviceTests.Android/DeviceTests.Android.csproj";
-var ANDROID_APK_PATH = "./DeviceTests.Android/bin/Release/com.microsoft.azure.devicetests-Signed.apk";
-var ANDROID_TEST_RESULTS_PATH = MakeAbsolute((FilePath)"../output/test-results/android/TestResults.xml");
-var ANDROID_SCREENSHOT_PATH = MakeAbsolute((DirectoryPath)"../output/test-results/android");
-var ANDROID_AVD = EnvironmentVariable("ANDROID_AVD") ?? "AzureAndroidPhone";
+var ANDROID_APK_PATH = MakeAbsolute((FilePath)"./DeviceTests.Android/bin/Debug/com.microsoft.azure.devicetests-Signed.apk");
 var ANDROID_PKG_NAME = "com.microsoft.azure.devicetests";
+var ANDROID_INSTRUMENTATION_NAME = "com.microsoft.azure.devicetests.TestInstrumentation";
+var ANDROID_TEST_RESULTS_PATH = MakeAbsolute((FilePath)"../output/test-results/android");
+var ANDROID_AVD = EnvironmentVariable("ANDROID_AVD") ?? "AzureAndroidPhone";
 var ANDROID_EMU_TARGET = Argument("avd-target", EnvironmentVariable("ANDROID_EMU_TARGET") ?? "system-images;android-29;google_apis_playstore;x86");
 var ANDROID_EMU_DEVICE = Argument("avd-device", EnvironmentVariable("ANDROID_EMU_DEVICE") ?? "Nexus 5X");
 
@@ -85,17 +85,6 @@ Task DownloadTcpTextAsync(int port, FilePath filename, Action waitAction = null)
             throw new Exception("Test results listener failed or timed out.");
         }
     });
-}
-
-void AddPlatformToTestResults(FilePath testResultsFile, string platformName)
-{
-    if (FileExists(testResultsFile)) {
-        var txt = FileReadText(testResultsFile);
-        txt = txt.Replace("<test-case name=\"DeviceTests.", $"<test-case name=\"DeviceTests.{platformName}.");
-        txt = txt.Replace("<test name=\"DeviceTests.", $"<test name=\"DeviceTests.{platformName}.");
-        txt = txt.Replace("name=\"Test collection for DeviceTests.", $"name=\"Test collection for DeviceTests.{platformName}.");
-        FileWriteText(testResultsFile, txt);
-    }
 }
 
 
@@ -166,8 +155,6 @@ Task("test-ios-emu")
     Information("Waiting for tests...");
     tcpListenerTask.Wait();
 
-    AddPlatformToTestResults(IOS_TEST_RESULTS_PATH, "iOS");
-
     // Close up simulators
     Information("Closing Simulator");
     ShutdownAllAppleSimulators();
@@ -179,14 +166,13 @@ Task("test-ios-emu")
 Task("build-android")
     .Does(() =>
 {
-    // Build the app in debug mode
-    // needs to be debug so unit tests get discovered
     MSBuild(ANDROID_PROJ, c => {
-        c.Configuration = "Debug";
+        c.Configuration = "Debug"; // needs to be debug so unit tests get discovered
         c.Restore = true;
         c.Properties["ContinuousIntegrationBuild"]  = new List<string> { "false" };
         c.Targets.Clear();
         c.Targets.Add("Rebuild");
+        c.Targets.Add("SignAndroidPackage");
         c.BinaryLogger = new MSBuildBinaryLogSettings {
             Enabled = true,
             FileName = OUTPUT_PATH.CombineWithFilePath("binlogs/device-tests-android-build.binlog").FullPath,
@@ -199,6 +185,8 @@ Task("test-android-emu")
     .Does(() =>
 {
     var avdSettings = new AndroidAvdManagerToolSettings { SdkRoot = ANDROID_HOME };
+    var adbSettings = new AdbToolSettings { SdkRoot = ANDROID_HOME };
+    var emuSettings = new AndroidEmulatorToolSettings { SdkRoot = ANDROID_HOME, ArgumentCustomization = args => args.Append("-no-window") };
 
     // Delete AVD first, if it exists
     Information("Deleting AVD if exists: {0}...", ANDROID_AVD);
@@ -209,87 +197,37 @@ Task("test-android-emu")
     Information("Creating AVD: {0}...", ANDROID_AVD);
     AndroidAvdCreate(ANDROID_AVD, ANDROID_EMU_TARGET, ANDROID_EMU_DEVICE, force: true, settings: avdSettings);
 
+    // Start the emulator
     Information("Starting Emulator: {0}...", ANDROID_AVD);
-    var emuSettings = new AndroidEmulatorToolSettings { SdkRoot = ANDROID_HOME, ArgumentCustomization = args => args.Append("-no-window") };
     var emulatorProcess = AndroidEmulatorStart(ANDROID_AVD, emuSettings);
 
-    var adbSettings = new AdbToolSettings { SdkRoot = ANDROID_HOME };
-
-    // Keep checking adb for an emulator with an AVD name matching the one we just started
-    var emuSerial = string.Empty;
-    for (int i = 0; i < 100; i++) {
-        foreach (var device in AdbDevices(adbSettings).Where(d => d.Serial.StartsWith("emulator-"))) {
-            if (AdbGetAvdName(device.Serial).Equals(ANDROID_AVD, StringComparison.OrdinalIgnoreCase)) {
-                emuSerial = device.Serial;
-                break;
-            }
-        }
-
-        if (!string.IsNullOrEmpty(emuSerial))
+    var retries = 60 * 10;
+    while (AdbShell("getprop sys.boot_completed", adbSettings).FirstOrDefault() != "1") {
+        System.Threading.Thread.Sleep(1000);
+        if (retries-- <= 0)
             break;
-        else
-            System.Threading.Thread.Sleep(1000);
     }
 
-    Information("Matched ADB Serial: {0}", emuSerial);
-    adbSettings = new AdbToolSettings { SdkRoot = ANDROID_HOME, Serial = emuSerial };
-
-    // Wait for the emulator to enter a 'booted' state
-    AdbWaitForEmulatorToBoot(TimeSpan.FromSeconds(100), adbSettings);
-    Information("Emulator finished booting.");
-
-    // Read the logcat
-    AdbLogcat(new AdbLogcatOptions { Clear = true }, settings: adbSettings);
-    AdbLogcat(settings: adbSettings);
-
-    // Try uninstalling the existing package(if installed)
-    try {
-        AdbUninstall(ANDROID_PKG_NAME, false, adbSettings);
-        Information("Uninstalled old: {0}", ANDROID_PKG_NAME);
-    } catch { }
-
-    // Use the Install target to push the app onto emulator
-    MSBuild(ANDROID_PROJ, c => {
-        c.Configuration = "Debug";
-        c.Properties["ContinuousIntegrationBuild"] = new List<string> { "false" };
-        c.Properties["AdbTarget"] = new List<string> { "-s " + emuSerial };
-        c.Targets.Clear();
-        c.Targets.Add("Install");
-        c.BinaryLogger = new MSBuildBinaryLogSettings {
-            Enabled = true,
-            FileName = OUTPUT_PATH.CombineWithFilePath("binlogs/device-tests-android-install.binlog").FullPath,
-        };
-    });
-
-    // Start the TCP Test results listener
-    Information("Started TCP Test Results Listener on port: {0}:{1}", TCP_LISTEN_HOST, TCP_LISTEN_PORT);
-    // var printed = false;
-    var tcpListenerTask = DownloadTcpTextAsync(TCP_LISTEN_PORT, ANDROID_TEST_RESULTS_PATH, () => {
-        // if (!printed) {
-        //     AdbScreenCapture(ANDROID_SCREENSHOT_PATH.CombineWithFilePath($"screenshot.png"), adbSettings);
-        //     AdbLogcat(settings: adbSettings);
-        //     printed = true;
-        // }
-    });
-
-    // Launch the app on the emulator
-    AdbShell($"am start -n {ANDROID_PKG_NAME}/{ANDROID_PKG_NAME}.MainActivity --es HOST_IP {TCP_LISTEN_HOST} --ei HOST_PORT {TCP_LISTEN_PORT}", adbSettings);
-    AdbLogcat(settings: adbSettings);
-
-    // Wait for the test results to come back
-    Information("Waiting for tests...");
-    tcpListenerTask.Wait();
-
-    AddPlatformToTestResults(ANDROID_TEST_RESULTS_PATH, "Android");
+    // Run the tests
+    var resultCode = StartProcess("xharness", "android test " +
+        $"--app=\"{ANDROID_APK_PATH}\" " +
+        $"--package-name=\"{ANDROID_PKG_NAME}\" " +
+        $"--instrumentation=\"{ANDROID_INSTRUMENTATION_NAME}\" " +
+        $"--device-arch=\"x86\" " +
+        $"--output-directory=\"{ANDROID_TEST_RESULTS_PATH}\" " +
+        $"--verbosity=\"Debug\" ");
 
     // Stop / cleanup the emulator
     AdbEmuKill(adbSettings);
 
     System.Threading.Thread.Sleep(5000);
 
-    // Finally kill the process if it's not exited already
+    // Kill the process if it has not already exited
     try { emulatorProcess.Kill(); }
     catch { }
+
+    if (resultCode != 0)
+        throw new Exception("xharness had an error.");
 
     Information("Done Tests");
 });
@@ -359,8 +297,6 @@ Task("test-uwp-emu")
     // Wait for the test results to come back
     Information("Waiting for tests...");
     tcpListenerTask.Wait();
-
-    AddPlatformToTestResults(UWP_TEST_RESULTS_PATH, "UWP");
 
     // Uninstall the app(this will terminate it too)
     uninstallPS();

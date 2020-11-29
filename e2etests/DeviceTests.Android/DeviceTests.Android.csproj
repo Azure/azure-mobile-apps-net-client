@@ -70,6 +70,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MainActivity.cs" />
+    <Compile Include="TestInstrumentation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -116,9 +117,9 @@
     <PackageReference Include="Xamarin.Google.Android.Material" Version="1.0.0.1" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.devices" Version="2.5.25" />
-    <PackageReference Include="UnitTests.HeadlessRunner" Version="2.0.0" />
     <PackageReference Include="Xamarin.AndroidX.MediaRouter" Version="1.1.0.5" />
     <PackageReference Include="Xunit.SkippableFact" Version="1.4.13" />
+    <PackageReference Include="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="1.0.0-prerelease.20575.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.Azure.Mobile.Client.SQLiteStore\Microsoft.Azure.Mobile.Client.SQLiteStore.csproj">
